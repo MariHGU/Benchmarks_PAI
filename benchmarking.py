@@ -87,8 +87,40 @@ def test_llm_performance(prompts, num_tests=6):
     average_token_ps = total_response_tokens_ps / num_tests
     print(f"\nAverage response time over {num_tests} tests: {average_time:.4f} seconds")
     print(f"Average response tokens/s: {average_token_ps:.4f}")
-    return average_time
+    return average_time, average_token_ps
+
+import pandas as pd
+from openpyxl import load_workbook
+
+# Ny data du vil legge til
+
+def write_to_xcl(ny_data):
+    # Last eksisterende arbeidsbok
+    filnavn = 'Benchmarks.xlsx'
+    arknavn = 'Sheet1'
+
+    # Åpne arbeidsboken
+    workbook = load_workbook(filnavn)
+
+    # Finn arket og neste ledige rad
+    if arknavn in workbook.sheetnames:
+        sheet = workbook[arknavn]
+        startrow = sheet.max_row
+    else:
+        sheet = workbook.create_sheet(arknavn)
+        startrow = 0
+
+    # Bruk ExcelWriter i append-modus uten å sette writer.book
+    with pd.ExcelWriter(filnavn, engine='openpyxl', mode='a', if_sheet_exists='overlay') as writer:
+        ny_data.to_excel(writer, sheet_name=arknavn, index=False, header=False, startrow=startrow)
+
 
 # Run the test
 if __name__ == "__main__":
-    test_llm_performance(prompts)
+    # Uncomment to initiate new excel:
+    #df = pd.DataFrame({'Average Time': [], 'Average token/s': []})
+    #df.to_excel('Benchmarks.xlsx', index=False)
+    avg_time, avg_token_ps = test_llm_performance(prompts)
+    ny_data = pd.DataFrame({'Average time': [round(avg_time,4)], 'Average tokens/s': [round(avg_token_ps)]})
+
+    write_to_xcl(ny_data=ny_data)
