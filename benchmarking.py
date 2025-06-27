@@ -28,14 +28,23 @@ client = Client(
 # Function to call LLM-api
 def call_llm_api(prompt):
     try:
-        response: ChatResponse = client.chat(model='nhn-small:latest', messages=[{
-            'role': 'user',
-            'content': prompt,
-        }])
+        response: ChatResponse = client.chat(
+            model='nhn-small:latest', 
+            messages=[{
+                'role': 'user',
+                'content': prompt,
+            }],
+            options= {
+                "num_ctx": 40960 # Context window or add other parameters to test (i.e. thinking etc.)
+            },
+            stream=False
+        )
 
         # Extract and return the message content from the response
         if hasattr(response, 'message') and hasattr(response.message, 'content'):
-            return response.message.content
+            response_ps = response.eval_count / response.eval_duration * 10e9
+            prompt_ps = response.prompt_eval_count / response.prompt_eval_duration * 10e9
+            return response.message.content, response.eval_count, response.prompt_eval_count, response_ps, prompt_ps
         else:
             print("Failed to parse message content")
             return None
@@ -60,22 +69,27 @@ prompts = [
 # Test LLM performance
 def test_llm_performance(prompts, num_tests=6):
     total_time = 0
+    total_response_tokens_ps = 0
     for i in range(num_tests):
         prompt = random.choice(prompts)
         start_time = time.time()
         # Call LLM-api
-        response = call_llm_api(prompt)
+        response, response_token, prompt_token, response_ps, prompt_ps = call_llm_api(prompt)
         end_time = time.time()
         elapsed_time = end_time - start_time
         total_time += elapsed_time
+        total_response_tokens_ps += response_ps
 
         if response:
-            print(f"Test #{i+1}: Prompt='{prompt}' Response='{response[:50]}...' Time={elapsed_time:.4f}s")
+            print(f"Test #{i+1}: Prompt='{prompt}', Response='{response[:50]}...', Time={elapsed_time:.4f}s")
+            print(f"Prompt_tokens={prompt_token}, Prompt_token/s={prompt_ps:.4f}, Response_tokens={response_token}, Response_token/s={response_ps:.4f} \n")
         else:
             print(f"Test #{i+1}: Prompt='{prompt}' No response received. Time={elapsed_time:.4f}s")
 
     average_time = total_time / num_tests
+    average_token_ps = total_response_tokens_ps / num_tests
     print(f"\nAverage response time over {num_tests} tests: {average_time:.4f} seconds")
+    print(f"Average response tokens/s: {average_token_ps:.4f}")
     return average_time
 
 # Run the test
