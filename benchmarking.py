@@ -1,8 +1,11 @@
 import time
 import random
-from ollama import Client
-from ollama import ChatResponse
 import os
+import pandas as pd
+import asyncio
+from ollama import AsyncClient
+from ollama import ChatResponse
+from openpyxl import load_workbook
 
 # Initialize the client with appropriate host and authorization token
 def get_api_key(file_path='.api_key'):
@@ -18,7 +21,7 @@ def get_api_key(file_path='.api_key'):
 api_key_file = r'C:\Users\mgusdal\OneDrive - Norsk helsenett SF\Skrivebord\Benchmarkin_PAI\.api_key'
 api_key = get_api_key(api_key_file)
 
-client = Client(
+client = AsyncClient(
     host="https://chat.nhn.no/ollama",
     headers={
         'Authorization': f'{api_key}'
@@ -26,9 +29,9 @@ client = Client(
 )
 
 # Function to call LLM-api
-def call_llm_api(prompt):
+async def call_llm_api(prompt):
     try:
-        response: ChatResponse = client.chat(
+        response: ChatResponse = await client.chat(
             model='nhn-small:latest', 
             messages=[{
                 'role': 'user',
@@ -64,21 +67,21 @@ def read_prompts(file_path):
 prompts = read_prompts('Benchmarks_PAI/prompts/text_prompts.txt')
 
 # Test LLM performance
-def test_llm_performance(prompts, num_tests=6):
+async def test_llm_performance(prompts, num_tests=6):
     total_time = 0
     total_response_tokens_ps = 0
     for i in range(num_tests):
         prompt = prompts[i]
         start_time = time.time()
         # Call LLM-api
-        response, response_token, prompt_token, response_ps, prompt_ps = call_llm_api(prompt)
+        response, response_token, prompt_token, response_ps, prompt_ps = await call_llm_api(prompt)
         end_time = time.time()
         elapsed_time = end_time - start_time
         total_time += elapsed_time
         total_response_tokens_ps += response_ps
 
         if response:
-            print(f"Test #{i+1}: Prompt='{prompt[:50]}', Response='{response[:150]}...', Time={elapsed_time:.4f}s")
+            print(f"Test #{i+1}: Prompt='{prompt[:50]}', Response='{response}...', Time={elapsed_time:.4f}s")
             print(f"Prompt_tokens={prompt_token}, Prompt_token/s={prompt_ps:.4f}, Response_tokens={response_token}, Response_token/s={response_ps:.4f} \n")
         else:
             print(f"Test #{i+1}: Prompt='{prompt}' No response received. Time={elapsed_time:.4f}s")
@@ -89,8 +92,6 @@ def test_llm_performance(prompts, num_tests=6):
     print(f"Average response tokens/s: {average_token_ps:.4f}")
     return average_time, average_token_ps
 
-import pandas as pd
-from openpyxl import load_workbook
 
 # Ny data du vil legge til
 
@@ -98,11 +99,8 @@ def write_to_xcl(ny_data):
     # Last eksisterende arbeidsbok
     filnavn = 'Benchmarks.xlsx'
     arknavn = 'Sheet1'
-
-    # Åpne arbeidsboken
     workbook = load_workbook(filnavn)
 
-    # Finn arket og neste ledige rad
     if arknavn in workbook.sheetnames:
         sheet = workbook[arknavn]
         startrow = sheet.max_row
@@ -120,7 +118,7 @@ if __name__ == "__main__":
     # Uncomment to initiate new excel:
     #df = pd.DataFrame({'Average Time': [], 'Average token/s': []})
     #df.to_excel('Benchmarks.xlsx', index=False)
-    avg_time, avg_token_ps = test_llm_performance(prompts)
+    avg_time, avg_token_ps = asyncio.run(test_llm_performance(prompts))
     ny_data = pd.DataFrame({'Average time': [round(avg_time,4)], 'Average tokens/s': [round(avg_token_ps)]})
 
     write_to_xcl(ny_data=ny_data)
