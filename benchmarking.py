@@ -2,12 +2,16 @@ import time
 import random
 from ollama import Client
 from ollama import ChatResponse
+from utils import load_api_key  # Assuming you have a function to load your API key
+
+
+api_key = load_api_key()
 
 # Initialize the client with appropriate host and authorization token
 client = Client(
-    host="https://chat.nhn.no/ollama",
+    host="https://beta.chat.nhn.no/ollama",
     headers={
-        'Authorization': 'Bearer sk-16a9ef546f6b4cd493e1498c773ecc94',
+        'Authorization': 'Bearer ' + api_key,
     }
 )
 
@@ -41,7 +45,6 @@ prompts = [
     "Hva er differensialregning?",
     "Gi meg en liste over populære programmeringsspråk."
 ]
-
 # Test LLM performance
 def test_llm_performance(prompts, num_tests=5):
     total_time = 0

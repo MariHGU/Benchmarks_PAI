@@ -1,3 +1,5 @@
 # Ignorere virtuelle miljøer
 
 myenv/
+.venv/
+.api_key.txt
