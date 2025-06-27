@@ -56,22 +56,19 @@ def call_llm_api(prompt):
         print(f"An error occurred while calling the API: {e}")
         return None
 
+def read_prompts(file_path):
+    with open(file_path, 'r', encoding='utf-8') as file:
+        return [line.strip() for line in file.readlines()]
+
 # List of prompts to test the model
-prompts = [
-    "Hva er værvarselen for i dag?",
-    "Fortell meg en historie om en robot.",
-    "Hvordan lager jeg pizza?",
-    "Hva er differensiallikning?",
-    "Hvem er presidenten i usa?",
-    "Gi meg en liste over populære programmeringsspråk."
-]
+prompts = read_prompts('Benchmarks_PAI/prompts/text_prompts.txt')
 
 # Test LLM performance
 def test_llm_performance(prompts, num_tests=6):
     total_time = 0
     total_response_tokens_ps = 0
     for i in range(num_tests):
-        prompt = random.choice(prompts)
+        prompt = prompts[i]
         start_time = time.time()
         # Call LLM-api
         response, response_token, prompt_token, response_ps, prompt_ps = call_llm_api(prompt)
@@ -81,7 +78,7 @@ def test_llm_performance(prompts, num_tests=6):
         total_response_tokens_ps += response_ps
 
         if response:
-            print(f"Test #{i+1}: Prompt='{prompt}', Response='{response[:50]}...', Time={elapsed_time:.4f}s")
+            print(f"Test #{i+1}: Prompt='{prompt[:50]}', Response='{response[:150]}...', Time={elapsed_time:.4f}s")
             print(f"Prompt_tokens={prompt_token}, Prompt_token/s={prompt_ps:.4f}, Response_tokens={response_token}, Response_token/s={response_ps:.4f} \n")
         else:
             print(f"Test #{i+1}: Prompt='{prompt}' No response received. Time={elapsed_time:.4f}s")
