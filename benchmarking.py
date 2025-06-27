@@ -2,12 +2,26 @@ import time
 import random
 from ollama import Client
 from ollama import ChatResponse
+import os
 
 # Initialize the client with appropriate host and authorization token
+def get_api_key(file_path='.api_key'):
+    try:
+        with open(file_path, 'r') as f:
+            api_key = f.read().strip()
+        return api_key
+    except FileNotFoundError:
+        print(f"API key file not found: {file_path}")
+        raise
+
+# Get the API key from a file outside the git repo
+api_key_file = r'C:\Users\mgusdal\OneDrive - Norsk helsenett SF\Skrivebord\Benchmarkin_PAI\.api_key'
+api_key = get_api_key(api_key_file)
+
 client = Client(
     host="https://chat.nhn.no/ollama",
     headers={
-        'Authorization': 'Bearer sk-16a9ef546f6b4cd493e1498c773ecc94',
+        'Authorization': f'{api_key}'
     }
 )
 
@@ -38,12 +52,13 @@ prompts = [
     "Hva er værvarselen for i dag?",
     "Fortell meg en historie om en robot.",
     "Hvordan lager jeg pizza?",
-    "Hva er differensialregning?",
+    "Hva er differensiallikning?",
+    "Hvem er presidenten i usa?",
     "Gi meg en liste over populære programmeringsspråk."
 ]
 
 # Test LLM performance
-def test_llm_performance(prompts, num_tests=5):
+def test_llm_performance(prompts, num_tests=6):
     total_time = 0
     for i in range(num_tests):
         prompt = random.choice(prompts)
