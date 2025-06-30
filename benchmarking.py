@@ -1,6 +1,4 @@
 import time
-import random
-import os
 import pandas as pd
 import asyncio
 from ollama import AsyncClient
@@ -79,7 +77,7 @@ async def test_llm_performance(prompts, num_tests=len(prompts)):
         end_time = time.time()
         elapsed_time = end_time - start_time
         total_time += elapsed_time
-        total_api_time += totalt_duration/1e6
+        total_api_time += totalt_duration/1e9
         total_response_tokens_ps += response_ps
 
         if response:
@@ -150,14 +148,14 @@ if __name__ == "__main__":
     })
 
     avg_df = pd.DataFrame({
-        'Average time (experienced)': [],
+        'Average time (experienced)[s]': [],
         'Average tokens/s':[],
-        'Average Time (API)': []
+        'Average Time (API)[s]': []
     })
 
-    #with pd.ExcelWriter('Benchmarks.xlsx') as writer:
-     #   df.to_excel(writer, index=False, sheet_name='Sheet1')
-     #   avg_df.to_excel(writer, index=False, sheet_name='Sheet2')
+    with pd.ExcelWriter('Benchmarks.xlsx') as writer:
+        df.to_excel(writer, index=False, sheet_name='Sheet1')
+        avg_df.to_excel(writer, index=False, sheet_name='Sheet2')
 
     # Test and write to file
     avg_time, avg_token_ps, avg_api_time = asyncio.run(test_llm_performance(prompts))
