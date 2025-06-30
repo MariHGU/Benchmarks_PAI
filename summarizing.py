@@ -9,9 +9,7 @@ import utils  # Assuming you have a function to load your API key
 Logger = utils.CustomLogger()
 
 
-# print("loading API key...")
 api_key_file = ".api_key.txt"
-# api_key = load_api_key()
 
 Logger.info("Init eval model...")
 tester_model = utils.GroqModel()
@@ -26,6 +24,7 @@ model = utils.OllamaLocalModel(
 )
 
 # # Initialize the client with appropriate host and authorization token
+# api_key = load_api_key()
 # client = Client(
 #     host="https://beta.chat.nhn.no/ollama",
 #     headers={
