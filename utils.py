@@ -3,6 +3,8 @@ from deepeval.models import DeepEvalBaseLLM, OllamaModel
 from ollama import Client, AsyncClient
 from ollama import ChatResponse
 from groq import Groq, AsyncGroq
+from openpyxl import load_workbook
+import pandas as pd
 
 
 def load_api_key(path: str = ".api_key.txt") -> str:
@@ -138,3 +140,28 @@ class CustomLogger(logging.Logger):
         formatter = CustomRelativeFormatter('[%(asctime)s]: %(message)s')
         handler.setFormatter(formatter)
         self.addHandler(handler)
+
+
+def write_to_xlsx(new_data: pd.DataFrame, file_name: str, sheet: str) -> None:
+    """
+    Write data to an Microsoft Excel file (.xlsx), appending to a specified sheet.
+    If the sheet does not exist, it will be created.
+    If the file does not exist, it will be created.
+    
+    Args:
+        new_data (pd.DataFrame): The data to write to the Excel file.
+        file_name (str): The name of the Excel file.
+        sheet (str): The name of the sheet to write to.
+    """
+    workbook = load_workbook(file_name)
+
+    if sheet in workbook.sheetnames:
+        sheet = workbook[sheet]
+        startrow = sheet.max_row
+    else:
+        sheet = workbook.create_sheet(sheet)
+        startrow = 0
+
+    # Use ExcelWriter in append mode without setting writer.book
+    with pd.ExcelWriter(file_name, engine='openpyxl', mode='a', if_sheet_exists='overlay') as writer:
+        new_data.to_excel(writer, sheet_name=sheet, index=False, header=False, startrow=startrow)
