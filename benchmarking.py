@@ -88,7 +88,18 @@ async def test_llm_performance(prompts, num_tests=6):
 
             # Write individual params to file here
             # ...
-            ny_data = pd.DataFrame({'Model': [model],'Prompt nr':[i] , 'Total Duration': [totalt_duration/1e6], 'Load Duration':[load_duration/1e6], 'Promt Eval Count':[prompt_token], 'Prompt eval duration':[prompt_eval_duration/1e6], 'Prompt eval rate':[prompt_ps],  'Eval Count':[response_token], 'Eval duration':[response_eval_duration/1e6], 'Eval rate':[response_ps]})
+            ny_data = pd.DataFrame({
+                'Model': [model],
+                'Prompt nr':[i] , 
+                'Total Duration': [totalt_duration/1e6], 
+                'Load Duration':[load_duration/1e6], 
+                'Promt Eval Count':[prompt_token], 
+                'Prompt eval duration':[prompt_eval_duration/1e6], 
+                'Prompt eval rate':[prompt_ps],  
+                'Eval Count':[response_token], 
+                'Eval duration':[response_eval_duration/1e6], 
+                'Eval rate':[response_ps]
+                })
             write_to_xcl(ny_data=ny_data, file_name='Benchmarks.xlsx', sheet='Sheet1')
 
         else:
@@ -150,6 +161,10 @@ if __name__ == "__main__":
 
     # Test and write to file
     avg_time, avg_token_ps, avg_api_time = asyncio.run(test_llm_performance(prompts))
-    ny_data = pd.DataFrame({'Average time': [round(avg_time,4)], 'Average tokens/s': [round(avg_token_ps,4)], 'Average Time (API)': [round(avg_api_time, 4)]})
+    ny_data = pd.DataFrame({
+        'Average time': [round(avg_time,4)], 
+        'Average tokens/s': [round(avg_token_ps,4)], 
+        'Average Time (API)': [round(avg_api_time, 4)]
+        })
 
     write_to_xcl(ny_data=ny_data, file_name='Benchmarks.xlsx', sheet='Sheet2')
