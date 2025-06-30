@@ -22,7 +22,7 @@ api_key_file = r'C:\Users\mgusdal\OneDrive - Norsk helsenett SF\Skrivebord\Bench
 api_key = get_api_key(api_key_file)
 
 client = AsyncClient(
-    host="https://chat.nhn.no/ollama",
+    host="https://beta.chat.nhn.no/ollama",
     headers={
         'Authorization': f'{api_key}'
     }
@@ -32,13 +32,13 @@ client = AsyncClient(
 async def call_llm_api(prompt):
     try:
         response: ChatResponse = await client.chat(
-            model='nhn-small:latest', 
+            model='gemma3n:e4b-it-q8_0', 
             messages=[{
                 'role': 'user',
                 'content': prompt,
             }],
             options= {
-                "num_ctx": 40960 # Context window or add other parameters to test (i.e. thinking etc.)
+                "num_ctx": 32768 # Context window or add other parameters to test (i.e. thinking etc.)
             },
             stream=False
         )
@@ -64,10 +64,10 @@ def read_prompts(file_path):
         return [line.strip() for line in file.readlines()]
 
 # List of prompts to test the model
-prompts = read_prompts('Benchmarks_PAI/prompts/text_prompts.txt')
+prompts = read_prompts('Benchmarks_PAI/prompts/text_prompts.txt') # Change to coding_prompts or text_prompts depending on intended test
 
 # Test LLM performance
-async def test_llm_performance(prompts, num_tests=6):
+async def test_llm_performance(prompts, num_tests=len(prompts)):
     total_time = 0
     total_response_tokens_ps = 0
     total_api_time = 0
@@ -83,7 +83,7 @@ async def test_llm_performance(prompts, num_tests=6):
         total_response_tokens_ps += response_ps
 
         if response:
-            print(f"Test #{i+1}: Prompt='{prompt[:50]}', Response='{response}...', Time={elapsed_time:.4f}s")
+            print(f"Test #{i+1}: Prompt='{prompt[:50]}', Response='{response[:150]}...', Time={elapsed_time:.4f}s")
             print(f"Prompt_tokens={prompt_token}, Prompt_token/s={prompt_ps:.4f}, Response_tokens={response_token}, Response_token/s={response_ps:.4f} \n")
 
             # Write individual params to file here
@@ -155,9 +155,9 @@ if __name__ == "__main__":
         'Average Time (API)': []
     })
 
-    with pd.ExcelWriter('Benchmarks.xlsx') as writer:
-        df.to_excel(writer, index=False, sheet_name='Sheet1')
-        avg_df.to_excel(writer, index=False, sheet_name='Sheet2')
+    #with pd.ExcelWriter('Benchmarks.xlsx') as writer:
+     #   df.to_excel(writer, index=False, sheet_name='Sheet1')
+     #   avg_df.to_excel(writer, index=False, sheet_name='Sheet2')
 
     # Test and write to file
     avg_time, avg_token_ps, avg_api_time = asyncio.run(test_llm_performance(prompts))
