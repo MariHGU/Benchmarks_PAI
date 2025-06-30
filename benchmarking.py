@@ -45,6 +45,7 @@ prompts = [
     "Hva er differensialregning?",
     "Gi meg en liste over populære programmeringsspråk."
 ]
+
 # Test LLM performance
 def test_llm_performance(prompts, num_tests=5):
     total_time = 0
