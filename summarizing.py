@@ -5,9 +5,12 @@ from ollama import Client, ChatResponse
 import utils
 
 
-def test_summarization(model: str= "nhn-small:latest", prompts_file: str = "prompts/summarization_prompts.txt") -> list[tuple]:
-    """
-    Test the summarization model with a given prompt.
+def test_summarization(
+        model: str= "nhn-small:latest", 
+        prompts_file: str = "prompts/summarization_prompts.txt"
+        ) -> list[tuple]:
+    
+    """    Test the summarization model with a given prompt.
     
     Args:
         model (str): The model to use for summarization.
@@ -18,11 +21,11 @@ def test_summarization(model: str= "nhn-small:latest", prompts_file: str = "prom
     """
     
     Logger = utils.CustomLogger()
-    Logger.info("Init eval model...")
+    Logger.info("Init eval model")
     
     JudgeLLM = utils.GroqModel()
     
-    Logger.info("Init model...")
+    Logger.info("Init model")
 
     api_key_file = ".api_key.txt"
     LLM = utils.OllamaLocalModel(
@@ -63,14 +66,14 @@ def test_summarization(model: str= "nhn-small:latest", prompts_file: str = "prom
         #     stream=False,
         # ).message.content
 
-        Logger.info("Creating test case...")
+        Logger.info("Creating test case")
 
         test_case = LLMTestCase(
             input=prompt,
             actual_output=response,
         )
 
-        Logger.info("Preparing metric...")
+        Logger.info("Preparing metric")
 
         summarization_metric = SummarizationMetric(
             threshold=0.5,
