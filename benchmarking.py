@@ -16,7 +16,10 @@ def get_api_key(file_path='.api_key'):
         raise
 
 # Get the API key from a file outside the git repo
-api_key_file = r'C:\Users\mgusdal\OneDrive - Norsk helsenett SF\Skrivebord\Benchmarkin_PAI\.api_key'
+#api_key_file = r'C:\Users\mgusdal\OneDrive - Norsk helsenett SF\Skrivebord\Benchmarkin_PAI\.api_key'
+
+import os
+api_key_file = os.path.join(os.getcwd(), ".api_key")
 api_key = get_api_key(api_key_file)
 
 client = AsyncClient(
@@ -30,13 +33,13 @@ client = AsyncClient(
 async def call_llm_api(prompt):
     try:
         response: ChatResponse = await client.chat(
-            model='gemma3n:e4b-it-q8_0', 
+            model='nhn-small:latest', 
             messages=[{
                 'role': 'user',
                 'content': prompt,
             }],
             options= {
-                "num_ctx": 32768 # Context window or add other parameters to test (i.e. thinking etc.)
+                "num_ctx": 42760 # Context window or add other parameters to test (i.e. thinking etc.)
             },
             stream=False
         )
@@ -45,6 +48,7 @@ async def call_llm_api(prompt):
         if hasattr(response, 'message') and hasattr(response.message, 'content'):
             response_ps = response.eval_count / (response.eval_duration / 1e9)
             prompt_ps = response.prompt_eval_count / (response.prompt_eval_duration / 1e9)
+
             return response.message.content, response.model, response.total_duration, response.load_duration, response.prompt_eval_count, response.prompt_eval_duration, prompt_ps, response.eval_count, response.eval_duration, response_ps
         else:
             print("Failed to parse message content")
@@ -58,6 +62,9 @@ async def call_llm_api(prompt):
         return None
 
 def read_prompts(file_path):
+    """ 
+        Read prompts from seperate files
+    """
     with open(file_path, 'r', encoding='utf-8') as file:
         return [line.strip() for line in file.readlines()]
 
@@ -66,14 +73,23 @@ prompts = read_prompts('Benchmarks_PAI/prompts/text_prompts.txt') # Change to co
 
 # Test LLM performance
 async def test_llm_performance(prompts, num_tests=len(prompts)):
+    """
+    Performs the actual testing of the model, and writes individual prompt-performance to excel file.
+
+    Input: The prompts you wish to perform the test on
+    Output: The model used, the average experienced time, average api time(time retrieved from api-call) aswell as average number of generated tokens per second.
+    """
     total_time = 0
     total_response_tokens_ps = 0
     total_api_time = 0
+
     for i in range(num_tests):
         prompt = prompts[i]
         start_time = time.time()
+
         # Call LLM-api
         response, model, totalt_duration, load_duration, prompt_token, prompt_eval_duration, prompt_ps, response_token, response_eval_duration, response_ps,  = await call_llm_api(prompt)
+
         end_time = time.time()
         elapsed_time = end_time - start_time
         total_time += elapsed_time
@@ -85,7 +101,6 @@ async def test_llm_performance(prompts, num_tests=len(prompts)):
             print(f"Prompt_tokens={prompt_token}, Prompt_token/s={prompt_ps:.4f}, Response_tokens={response_token}, Response_token/s={response_ps:.4f} \n")
 
             # Write individual params to file here
-            # ...
             ny_data = pd.DataFrame({
                 'Model': [model],
                 'Prompt nr':[i] , 
@@ -108,12 +123,15 @@ async def test_llm_performance(prompts, num_tests=len(prompts)):
     average_api_time = total_api_time / num_tests
     print(f"\nAverage response time over {num_tests} tests: {average_time:.4f} seconds")
     print(f"Average response tokens/s: {average_token_ps:.4f}")
-    return average_time, average_token_ps, average_api_time
+    return average_time, average_token_ps, average_api_time, model
 
 
 # Ny data du vil legge til
 
 def write_to_xcl(ny_data, file_name, sheet):
+    """
+        Writes data to an excisting excel file as specified in file_name and sheet number.
+    """
     # Last eksisterende arbeidsbok
     filnavn = file_name
     arknavn = sheet
@@ -140,14 +158,15 @@ if __name__ == "__main__":
         'Total Duration[ms]': [],
         'Load Duration[ms]':[],
         'Promt Eval Count':[],
-        'Prompt eval duration':[],
+        'Prompt eval duration[ms]':[],
         'Prompt eval rate':[],
         'Eval Count':[],
-        'Eval duration':[],
+        'Eval duration[ms]':[],
         'Eval rate':[]
     })
 
     avg_df = pd.DataFrame({
+        'Model':[],
         'Average time (experienced)[s]': [],
         'Average tokens/s':[],
         'Average Time (API)[s]': []
@@ -158,8 +177,9 @@ if __name__ == "__main__":
         avg_df.to_excel(writer, index=False, sheet_name='Sheet2')
 
     # Test and write to file
-    avg_time, avg_token_ps, avg_api_time = asyncio.run(test_llm_performance(prompts))
+    avg_time, avg_token_ps, avg_api_time, model = asyncio.run(test_llm_performance(prompts))
     ny_data = pd.DataFrame({
+        'Model': [model],
         'Average time': [round(avg_time,4)], 
         'Average tokens/s': [round(avg_token_ps,4)], 
         'Average Time (API)': [round(avg_api_time, 4)]
