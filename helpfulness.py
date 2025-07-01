@@ -49,3 +49,8 @@ def test_helpfulness(model: str= "nhn-small:latest", prompts_file: str = "prompt
         Logger.info("Reason: %s", helpfulness_score.reason)
 
         helpfulness_scores.append((helpfulness_score, helpfulness_metric.reason))
+
+
+    return helpfulness_scores
+
+
