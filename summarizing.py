@@ -1,9 +1,8 @@
-# import os
-# from groq import Groq
+import os
 from deepeval.metrics import SummarizationMetric
 from deepeval.test_case import LLMTestCase
 from ollama import Client, ChatResponse
-import utils  # Assuming you have a function to load your API key
+import utils
 
 
 def test_summarization(model: str= "nhn-small:latest", prompts_file: str = "prompts/summarization_prompts.txt") -> list[tuple]:
@@ -47,11 +46,11 @@ def test_summarization(model: str= "nhn-small:latest", prompts_file: str = "prom
     with open(prompts_file, "r") as f:
         prompts = [line.strip() for line in f if line.strip()]
     
-    scores = []
+    summarization_scores = []
 
     for i, prompt in enumerate(prompts):
-        Logger.info("Generating response for %d.prompt", i + 1)
-        actual_output = LLM.generate(prompt)
+        Logger.info("Generating response for %d. prompt", i + 1)
+        response = LLM.generate(prompt)
 
         # actual_output = client.chat(
         #     model="gemma3n:e4b-it-q8_0",
@@ -68,29 +67,29 @@ def test_summarization(model: str= "nhn-small:latest", prompts_file: str = "prom
 
         test_case = LLMTestCase(
             input=prompt,
-            actual_output=actual_output,
+            actual_output=response,
         )
 
         Logger.info("Preparing metric...")
 
-        metric = SummarizationMetric(
+        summarization_metric = SummarizationMetric(
             threshold=0.5,
             model=JudgeLLM
         )
 
         Logger.info("Measuring...")
 
-        score = metric.measure(test_case)
-        Logger.info("Measurement complete. Score: %s", score.score)
+        summarization_score = summarization_metric.measure(test_case)
+        Logger.info("Measurement complete. Score: %s", summarization_score)
 
-        scores.append((score, metric.reason))
+        summarization_scores.append((summarization_score, summarization_metric.reason))
 
-    return scores
+    return summarization_scores
 
 
 if __name__ == "__main__":
     # Example usage
-    model = "nhn-small:latest"  # Replace with your model name
+    model = "nhn-small:latest"
     prompts_file = "prompts/summarization_prompts.txt"
     
     results = test_summarization(model=model, prompts_file=prompts_file)
