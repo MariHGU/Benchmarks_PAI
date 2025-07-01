@@ -1,9 +1,8 @@
-import os
+# import os
 # from groq import Groq
 from deepeval.metrics import SummarizationMetric
 from deepeval.test_case import LLMTestCase
-from ollama import Client
-from ollama import ChatResponse
+from ollama import Client, ChatResponse
 import utils  # Assuming you have a function to load your API key
 
 
@@ -51,9 +50,7 @@ def test_summarization(model: str= "nhn-small:latest", prompts_file: str = "prom
     scores = []
 
     for i, prompt in enumerate(prompts):
-
         Logger.info("Generating response for %d.prompt", i + 1)
-
         actual_output = LLM.generate(prompt)
 
         # actual_output = client.chat(
