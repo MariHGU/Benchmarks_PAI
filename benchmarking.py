@@ -1,77 +1,3 @@
-<<<<<<< HEAD
-import time
-import random
-from ollama import Client
-from ollama import ChatResponse
-from utils import load_api_key  # Assuming you have a function to load your API key
-
-
-api_key = load_api_key()
-
-# Initialize the client with appropriate host and authorization token
-client = Client(
-    host="https://beta.chat.nhn.no/ollama",
-    headers={
-        'Authorization': 'Bearer ' + api_key,
-    }
-)
-
-# Function to call LLM-api
-def call_llm_api(prompt):
-    try:
-        response: ChatResponse = client.chat(model='nhn-small:latest', messages=[{
-            'role': 'user',
-            'content': prompt,
-        }])
-
-        # Extract and return the message content from the response
-        if hasattr(response, 'message') and hasattr(response.message, 'content'):
-            return response.message.content
-        else:
-            print("Failed to parse message content")
-            return None
-
-    except ValueError as e:
-        print(f"An error occurred while parsing JSON: {e}")
-        return None
-    except Exception as e:
-        print(f"An error occurred while calling the API: {e}")
-        return None
-
-# List of prompts to test the model
-prompts = [
-    "Hva er værvarselen for i dag?",
-    "Fortell meg en historie om en robot.",
-    "Hvordan lager jeg pizza?",
-    "Hva er differensialregning?",
-    "Gi meg en liste over populære programmeringsspråk."
-]
-
-# Test LLM performance
-def test_llm_performance(prompts, num_tests=5):
-    total_time = 0
-    for i in range(num_tests):
-        prompt = random.choice(prompts)
-        start_time = time.time()
-        # Call LLM-api
-        response = call_llm_api(prompt)
-        end_time = time.time()
-        elapsed_time = end_time - start_time
-        total_time += elapsed_time
-
-        if response:
-            print(f"Test #{i+1}: Prompt='{prompt}' Response='{response[:50]}...' Time={elapsed_time:.4f}s")
-        else:
-            print(f"Test #{i+1}: Prompt='{prompt}' No response received. Time={elapsed_time:.4f}s")
-
-    average_time = total_time / num_tests
-    print(f"\nAverage response time over {num_tests} tests: {average_time:.4f} seconds")
-    return average_time
-
-# Run the test
-if __name__ == "__main__":
-    test_llm_performance(prompts)
-=======
 import os
 import time
 from typing import List, Tuple
@@ -103,16 +29,17 @@ client = AsyncClient(
 )
 
 # -- Function to call LLM-api --
-async def call_llm_api(prompt: str) -> str:
+async def call_llm_api(prompt: str, model: str) -> str:
     try:
         response: ChatResponse = await client.chat(
-            model='nhn-small:latest', 
+            model=model, 
             messages=[{
                 'role': 'user',
                 'content': prompt,
             }],
             options= {
                 "num_ctx": 42760 # Context window or add other parameters to test (i.e. thinking etc.)
+
             },
             stream=False
         )
@@ -122,7 +49,7 @@ async def call_llm_api(prompt: str) -> str:
             response_ps = response.eval_count / (response.eval_duration / 1e9)              # Converting to seconds
             prompt_ps = response.prompt_eval_count / (response.prompt_eval_duration / 1e9)  # Converting to seconds
 
-            return response.message.content, response.model, response.total_duration, response.load_duration, response.prompt_eval_count, response.prompt_eval_duration, prompt_ps, response.eval_count, response.eval_duration, response_ps
+            return response.message.content, response.total_duration, response.load_duration, response.prompt_eval_count, response.prompt_eval_duration, prompt_ps, response.eval_count, response.eval_duration, response_ps
         else:
             print("Failed to parse message content")
             return None
@@ -156,7 +83,7 @@ def initPurpose(purp: str) -> Tuple[str, List[str]]:
 
 
 # -- Test LLM performance --
-async def test_llm_performance(prompts: list, purpose: str) -> str:
+async def test_llm_performance(prompts: list, purpose: str, model: str) -> str:
     """
     Performs the actual testing of the model, and writes individual prompt-performance to excel file.
 
@@ -166,14 +93,18 @@ async def test_llm_performance(prompts: list, purpose: str) -> str:
     total_time = 0
     total_response_tokens_ps = 0
     total_api_time = 0
+
     num_tests = len(prompts)
+
+    digest, kv_cache = retrieveModel(model)
+
 
     for i in range(num_tests):
         prompt = prompts[i]
         start_time = time.time()
 
         # Call LLM-api
-        response, model, totalt_duration, load_duration, prompt_token, prompt_eval_duration, prompt_ps, response_token, response_eval_duration, response_ps,  = await call_llm_api(prompt)
+        response, totalt_duration, load_duration, prompt_token, prompt_eval_duration, prompt_ps, response_token, response_eval_duration, response_ps,  = await call_llm_api(prompt, model=model)
 
         end_time = time.time()
         elapsed_time = end_time - start_time
@@ -188,7 +119,9 @@ async def test_llm_performance(prompts: list, purpose: str) -> str:
             # Write individual params to file here
             ny_data = pd.DataFrame({
                 'Model': [model],
-                'Prompt nr':[i] , 
+                'Digest': [digest],
+                'KV Cache Type': [kv_cache],
+                'Prompt nr':[i], 
                 'Total Duration': [round(totalt_duration/1e6, 4)], 
                 'Load Duration':[round(load_duration/1e6, 4)], 
                 'Promt Eval Count':[prompt_token], 
@@ -207,9 +140,23 @@ async def test_llm_performance(prompts: list, purpose: str) -> str:
     average_time = total_time / num_tests
     average_token_ps = total_response_tokens_ps / num_tests
     average_api_time = total_api_time / num_tests
+
     print(f"\nAverage response time over {num_tests} tests: {average_time:.4f} seconds")
     print(f"Average response tokens/s: {average_token_ps:.4f}")
-    return average_time, average_token_ps, average_api_time, model
+
+    ny_data = pd.DataFrame({
+        'Model': [model],
+        'Digest': [digest],
+        'KV Cache Type': [kv_cache],
+        'Average time': [round(average_time,4)], 
+        'Average tokens/s': [round(average_token_ps,4)], 
+        'Average Time (API)': [round(average_api_time, 4)],
+        'Inteded purpose': [purpose]
+        })
+
+    write_to_xcl(ny_data=ny_data, file_name='Benchmarks.xlsx', sheet='Sheet2')
+
+    print('Test completed')
 
 
 # Ny data du vil legge til
@@ -234,13 +181,30 @@ def write_to_xcl(ny_data, file_name:str, sheet:str):
     with pd.ExcelWriter(filnavn, engine='openpyxl', mode='a', if_sheet_exists='overlay') as writer:
         ny_data.to_excel(writer, sheet_name=arknavn, index=False, header=False, startrow=startrow)
 
+# -- Retrieve model-info --
+def retrieveModel(modelName: str) -> Tuple[str, str]:
+    """
+    Retrieves saved KV_Cache and digest from csv file
+    """
+    df = pd.read_csv(r'Benchmarks_PAI\models.csv')
+    
+    match = df[df['model_name'] == modelName]
 
-# Run the test
-if __name__ == "__main__":
-    purpose, prompts = initPurpose(purp='coding')
-
+    if not match.empty:
+        digest = match.iloc[0]['digest_nr']
+        kv_cache = match.iloc[0]['kv_cache']
+        return digest, kv_cache
+    else:
+        raise NameError(f"Did not find model: {modelName}")
+    
+def initNewExcel():
+    """
+    Initiates blank excel with headers
+    """
     df = pd.DataFrame({
         'Model': [],
+        'Digest': [],
+        'KV Cache Type': [],
         'Prompt nr':[],
         'Total Duration[ms]': [],
         'Load Duration[ms]':[],
@@ -255,27 +219,27 @@ if __name__ == "__main__":
 
     avg_df = pd.DataFrame({
         'Model':[],
+        'Digest': [],
+        'KV Cache Type': [],
         'Average time (experienced)[s]': [],
         'Average tokens/s':[],
         'Average Time (API)[s]': [],
         'Inteded purpose': []
     })
 
+    with pd.ExcelWriter('Benchmarks.xlsx') as writer:
+        df.to_excel(writer, index=False, sheet_name='Sheet1')
+        avg_df.to_excel(writer, index=False, sheet_name='Sheet2')
+
+
+
+# Run the test
+if __name__ == "__main__":
+    purpose, prompts = initPurpose(purp='coding')
+
     # Uncomment to initiate new excel:
-    #with pd.ExcelWriter('Benchmarks.xlsx') as writer:
-     #   df.to_excel(writer, index=False, sheet_name='Sheet1')
-     #   avg_df.to_excel(writer, index=False, sheet_name='Sheet2')
+    #initNewExcel()
 
     # Test and write to file
+    asyncio.run(test_llm_performance(prompts, purpose, model='nhn-large:latest'))
     
-    avg_time, avg_token_ps, avg_api_time, model = asyncio.run(test_llm_performance(prompts, purpose))
-    ny_data = pd.DataFrame({
-        'Model': [model],
-        'Average time': [round(avg_time,4)], 
-        'Average tokens/s': [round(avg_token_ps,4)], 
-        'Average Time (API)': [round(avg_api_time, 4)],
-        'Inteded purpose': [purpose]
-        })
-
-    write_to_xcl(ny_data=ny_data, file_name='Benchmarks.xlsx', sheet='Sheet2')
->>>>>>> 286e8920a232104c811c1990896b1987d542008c
