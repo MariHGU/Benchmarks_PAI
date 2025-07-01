@@ -140,7 +140,7 @@ async def test_llm_performance(prompts: list, purpose: str) -> str:
 
 # Ny data du vil legge til
 
-def write_to_xcl(ny_data, file_name, sheet):
+def write_to_xcl(ny_data, file_name:str, sheet:str):
     """
         Writes data to an excisting excel file as specified in file_name and sheet number.
     """
