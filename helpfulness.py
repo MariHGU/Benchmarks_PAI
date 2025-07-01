@@ -1,9 +1,11 @@
+import os
 from deepeval.metrics import GEval
 from deepeval.test_case import LLMTestCase, LLMTestCaseParams
+from ollama import Client, ChatResponse
 import utils
 
 
-def test_helpfulness(model: str= "nhn-small:latest", prompts_file: str = "prompts/summarization_prompts.txt") -> list[tuple]:
+def test_helpfulness(model: str= "nhn-small:latest", prompts_file: str = "prompts/helpfulness_prompts.txt") -> list[tuple]:
 
     Logger = utils.CustomLogger()
     Logger.info("Init eval model...")
@@ -43,10 +45,10 @@ def test_helpfulness(model: str= "nhn-small:latest", prompts_file: str = "prompt
             actual_output=response,
         )
         Logger.info("Measuring...")
-        helpfulness_score = helpfulness_metric.evaluate(test_case)
+        helpfulness_score = helpfulness_metric.measure(test_case)
 
-        Logger.info("Score for prompt %d: %s", i + 1, helpfulness_score.score)
-        Logger.info("Reason: %s", helpfulness_score.reason)
+        Logger.info("Score for prompt %d: %s", i + 1, helpfulness_score)
+        Logger.info("Reason: %s", helpfulness_metric.reason)
 
         helpfulness_scores.append((helpfulness_score, helpfulness_metric.reason))
 
@@ -54,3 +56,12 @@ def test_helpfulness(model: str= "nhn-small:latest", prompts_file: str = "prompt
     return helpfulness_scores
 
 
+if __name__ == "__main__":
+    # Example usage
+    model = "nhn-small:latest"
+    prompts_file = "prompts/summarization_prompts.txt"
+
+    results = test_helpfulness(model=model, prompts_file=prompts_file)
+    
+    for score, reason in results:
+        print(f"Score: {score}, Reason: {reason}")
