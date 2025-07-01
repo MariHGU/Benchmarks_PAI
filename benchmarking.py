@@ -1,5 +1,6 @@
 import os
 import time
+from typing import List, Tuple
 import pandas as pd
 import asyncio
 from ollama import AsyncClient
@@ -7,7 +8,7 @@ from ollama import ChatResponse
 from openpyxl import load_workbook
 
 # -- Initialize the client with appropriate host and authorization token --
-def get_api_key(file_path='.api_key'):
+def get_api_key(file_path='.api_key') -> str:
     try:
         with open(file_path, 'r') as f:
             api_key = f.read().strip()
@@ -28,7 +29,7 @@ client = AsyncClient(
 )
 
 # -- Function to call LLM-api --
-async def call_llm_api(prompt):
+async def call_llm_api(prompt: str) -> str:
     try:
         response: ChatResponse = await client.chat(
             model='nhn-small:latest', 
@@ -59,7 +60,7 @@ async def call_llm_api(prompt):
         print(f"An error occurred while calling the API: {e}")
         return None
 
-def read_prompts(file_path):
+def read_prompts(file_path: str) -> str:
     """ 
         Read prompts from seperate files
     """
@@ -67,7 +68,7 @@ def read_prompts(file_path):
         return [line.strip() for line in file.readlines()]
 
 # -- List of prompts to test the model --
-def initPurpose(purp):
+def initPurpose(purp: str) -> Tuple[str, List[str]]:
     """
     Sets purpose for LLM test
     Either 'text' or 'code'
@@ -81,7 +82,7 @@ def initPurpose(purp):
 
 
 # -- Test LLM performance --
-async def test_llm_performance(prompts, purpose):
+async def test_llm_performance(prompts: list, purpose: str) -> str:
     """
     Performs the actual testing of the model, and writes individual prompt-performance to excel file.
 
