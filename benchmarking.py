@@ -1,3 +1,4 @@
+import os
 import time
 import pandas as pd
 import asyncio
@@ -5,7 +6,7 @@ from ollama import AsyncClient
 from ollama import ChatResponse
 from openpyxl import load_workbook
 
-# Initialize the client with appropriate host and authorization token
+# -- Initialize the client with appropriate host and authorization token --
 def get_api_key(file_path='.api_key'):
     try:
         with open(file_path, 'r') as f:
@@ -15,10 +16,7 @@ def get_api_key(file_path='.api_key'):
         print(f"API key file not found: {file_path}")
         raise
 
-# Get the API key from a file outside the git repo
-#api_key_file = r'C:\Users\mgusdal\OneDrive - Norsk helsenett SF\Skrivebord\Benchmarkin_PAI\.api_key'
-
-import os
+# -- Get the API key from a file outside the git repo --
 api_key_file = os.path.join(os.getcwd(), ".api_key")
 api_key = get_api_key(api_key_file)
 
@@ -29,7 +27,7 @@ client = AsyncClient(
     }
 )
 
-# Function to call LLM-api
+# -- Function to call LLM-api --
 async def call_llm_api(prompt):
     try:
         response: ChatResponse = await client.chat(
@@ -46,8 +44,8 @@ async def call_llm_api(prompt):
 
         # Extract and return the message content from the response
         if hasattr(response, 'message') and hasattr(response.message, 'content'):
-            response_ps = response.eval_count / (response.eval_duration / 1e9)
-            prompt_ps = response.prompt_eval_count / (response.prompt_eval_duration / 1e9)
+            response_ps = response.eval_count / (response.eval_duration / 1e9)              # Converting to seconds
+            prompt_ps = response.prompt_eval_count / (response.prompt_eval_duration / 1e9)  # Converting to seconds
 
             return response.message.content, response.model, response.total_duration, response.load_duration, response.prompt_eval_count, response.prompt_eval_duration, prompt_ps, response.eval_count, response.eval_duration, response_ps
         else:
@@ -68,11 +66,22 @@ def read_prompts(file_path):
     with open(file_path, 'r', encoding='utf-8') as file:
         return [line.strip() for line in file.readlines()]
 
-# List of prompts to test the model
-prompts = read_prompts('Benchmarks_PAI/prompts/text_prompts.txt') # Change to coding_prompts or text_prompts depending on intended test
+# -- List of prompts to test the model --
+def initPurpose(purp):
+    """
+    Sets purpose for LLM test
+    Either 'text' or 'code'
+    """
+    if not (purp == 'text' or purp == 'coding'):
+        raise ValueError('Invalid purpose. \n Purpose has to be either "coding" or "text".')
+    else:
+        purpose = purp
+        prompts = read_prompts('Benchmarks_PAI/prompts/'+ purp + '_prompts.txt')
+        return purpose, prompts
 
-# Test LLM performance
-async def test_llm_performance(prompts, num_tests=len(prompts)):
+
+# -- Test LLM performance --
+async def test_llm_performance(prompts, purpose):
     """
     Performs the actual testing of the model, and writes individual prompt-performance to excel file.
 
@@ -82,6 +91,7 @@ async def test_llm_performance(prompts, num_tests=len(prompts)):
     total_time = 0
     total_response_tokens_ps = 0
     total_api_time = 0
+    num_tests = len(prompts)
 
     for i in range(num_tests):
         prompt = prompts[i]
@@ -104,14 +114,15 @@ async def test_llm_performance(prompts, num_tests=len(prompts)):
             ny_data = pd.DataFrame({
                 'Model': [model],
                 'Prompt nr':[i] , 
-                'Total Duration': [totalt_duration/1e6], 
-                'Load Duration':[load_duration/1e6], 
+                'Total Duration': [round(totalt_duration/1e6, 4)], 
+                'Load Duration':[round(load_duration/1e6, 4)], 
                 'Promt Eval Count':[prompt_token], 
-                'Prompt eval duration':[prompt_eval_duration/1e6], 
-                'Prompt eval rate':[prompt_ps],  
+                'Prompt eval duration':[round(prompt_eval_duration/1e6, 4)], 
+                'Prompt eval rate':[round(prompt_ps, 4)],  
                 'Eval Count':[response_token], 
-                'Eval duration':[response_eval_duration/1e6], 
-                'Eval rate':[response_ps]
+                'Eval duration':[round(response_eval_duration/1e6, 4)], 
+                'Eval rate':[round(response_ps, 4)],
+                'Intended Purpose': [purpose]
                 })
             write_to_xcl(ny_data=ny_data, file_name='Benchmarks.xlsx', sheet='Sheet1')
 
@@ -151,7 +162,8 @@ def write_to_xcl(ny_data, file_name, sheet):
 
 # Run the test
 if __name__ == "__main__":
-    # Uncomment to initiate new excel:
+    purpose, prompts = initPurpose(purp='coding')
+
     df = pd.DataFrame({
         'Model': [],
         'Prompt nr':[],
@@ -162,27 +174,32 @@ if __name__ == "__main__":
         'Prompt eval rate':[],
         'Eval Count':[],
         'Eval duration[ms]':[],
-        'Eval rate':[]
+        'Eval rate':[],
+        'Inteded purpose': []
     })
 
     avg_df = pd.DataFrame({
         'Model':[],
         'Average time (experienced)[s]': [],
         'Average tokens/s':[],
-        'Average Time (API)[s]': []
+        'Average Time (API)[s]': [],
+        'Inteded purpose': []
     })
 
-    with pd.ExcelWriter('Benchmarks.xlsx') as writer:
-        df.to_excel(writer, index=False, sheet_name='Sheet1')
-        avg_df.to_excel(writer, index=False, sheet_name='Sheet2')
+    # Uncomment to initiate new excel:
+    #with pd.ExcelWriter('Benchmarks.xlsx') as writer:
+     #   df.to_excel(writer, index=False, sheet_name='Sheet1')
+     #   avg_df.to_excel(writer, index=False, sheet_name='Sheet2')
 
     # Test and write to file
-    avg_time, avg_token_ps, avg_api_time, model = asyncio.run(test_llm_performance(prompts))
+    
+    avg_time, avg_token_ps, avg_api_time, model = asyncio.run(test_llm_performance(prompts, purpose))
     ny_data = pd.DataFrame({
         'Model': [model],
         'Average time': [round(avg_time,4)], 
         'Average tokens/s': [round(avg_token_ps,4)], 
-        'Average Time (API)': [round(avg_api_time, 4)]
+        'Average Time (API)': [round(avg_api_time, 4)],
+        'Inteded purpose': [purpose]
         })
 
     write_to_xcl(ny_data=ny_data, file_name='Benchmarks.xlsx', sheet='Sheet2')
