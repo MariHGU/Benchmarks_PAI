@@ -167,9 +167,11 @@ def write_to_xcl(ny_data, file_name:str, sheet:str):
         Writes data to an excisting excel file as specified in file_name and sheet number.
     """
     # Last eksisterende arbeidsbok
-    filnavn = file_name
+    folder = Path.cwd().parent
+    filepath = folder / file_name
+
     arknavn = sheet
-    workbook = load_workbook(filnavn)
+    workbook = load_workbook(filepath)
 
     if arknavn in workbook.sheetnames:
         sheet = workbook[arknavn]
@@ -179,7 +181,7 @@ def write_to_xcl(ny_data, file_name:str, sheet:str):
         startrow = 0
 
     # Bruk ExcelWriter i append-modus uten å sette writer.book
-    with pd.ExcelWriter(filnavn, engine='openpyxl', mode='a', if_sheet_exists='overlay') as writer:
+    with pd.ExcelWriter(filepath, engine='openpyxl', mode='a', if_sheet_exists='overlay') as writer:
         ny_data.to_excel(writer, sheet_name=arknavn, index=False, header=False, startrow=startrow)
 
 # -- Retrieve model-info --
@@ -228,7 +230,12 @@ def initNewExcel():
         'Inteded purpose': []
     })
 
-    with pd.ExcelWriter('Benchmarks.xlsx') as writer:
+    # Create excel outside of git repo
+    folder = Path.cwd().parent
+
+    filepath = folder/"Benchmarks.xlsx"
+
+    with pd.ExcelWriter(filepath) as writer:
         df.to_excel(writer, index=False, sheet_name='Sheet1')
         avg_df.to_excel(writer, index=False, sheet_name='Sheet2')
 
@@ -236,7 +243,7 @@ def initNewExcel():
 
 # Run the test
 if __name__ == "__main__":
-    purpose, prompts = initPurpose(purp='coding')
+    purpose, prompts = initPurpose(purp='text')
 
     # Uncomment to initiate new excel:
     #initNewExcel()
