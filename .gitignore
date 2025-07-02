@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Ignorere virtuelle miljøer
 
 myenv/
@@ -5,3 +6,8 @@ myenv/
 .api_key.txt
 .groq_api_key.txt
 test.py
+=======
+# Ignorere virtuelle miljøer
+
+myenv/
+>>>>>>> benching
