@@ -1,10 +1,10 @@
 import os
 import time
-from typing import List, Tuple
-import pandas as pd
 import asyncio
-from ollama import AsyncClient
-from ollama import ChatResponse
+import pandas as pd
+from pathlib import Path
+from typing import List, Tuple
+from ollama import AsyncClient, ChatResponse
 from openpyxl import load_workbook
 
 # -- Initialize the client with appropriate host and authorization token --
@@ -18,7 +18,8 @@ def get_api_key(file_path='.api_key') -> str:
         raise
 
 # -- Get the API key from a file outside the git repo --
-api_key_file = os.path.join(os.getcwd(), ".api_key")
+#api_key_file = os.path.join(os.getcwd(), ".api_key")
+api_key_file = Path.cwd().parent / ".api_key"
 api_key = get_api_key(api_key_file)
 
 client = AsyncClient(
@@ -78,7 +79,7 @@ def initPurpose(purp: str) -> Tuple[str, List[str]]:
         raise ValueError('Invalid purpose. \n Purpose has to be either "coding" or "text".')
     else:
         purpose = purp
-        prompts = read_prompts('Benchmarks_PAI/prompts/'+ purp + '_prompts.txt')
+        prompts = read_prompts('prompts/'+ purp + '_prompts.txt')
         return purpose, prompts
 
 
@@ -166,9 +167,11 @@ def write_to_xcl(ny_data, file_name:str, sheet:str):
         Writes data to an excisting excel file as specified in file_name and sheet number.
     """
     # Last eksisterende arbeidsbok
-    filnavn = file_name
+    folder = Path.cwd().parent
+    filepath = folder / file_name
+
     arknavn = sheet
-    workbook = load_workbook(filnavn)
+    workbook = load_workbook(filepath)
 
     if arknavn in workbook.sheetnames:
         sheet = workbook[arknavn]
@@ -178,7 +181,7 @@ def write_to_xcl(ny_data, file_name:str, sheet:str):
         startrow = 0
 
     # Bruk ExcelWriter i append-modus uten å sette writer.book
-    with pd.ExcelWriter(filnavn, engine='openpyxl', mode='a', if_sheet_exists='overlay') as writer:
+    with pd.ExcelWriter(filepath, engine='openpyxl', mode='a', if_sheet_exists='overlay') as writer:
         ny_data.to_excel(writer, sheet_name=arknavn, index=False, header=False, startrow=startrow)
 
 # -- Retrieve model-info --
@@ -186,7 +189,7 @@ def retrieveModel(modelName: str) -> Tuple[str, str]:
     """
     Retrieves saved KV_Cache and digest from csv file
     """
-    df = pd.read_csv(r'Benchmarks_PAI\models.csv')
+    df = pd.read_csv(r'models.csv')
     
     match = df[df['model_name'] == modelName]
 
@@ -227,7 +230,12 @@ def initNewExcel():
         'Inteded purpose': []
     })
 
-    with pd.ExcelWriter('Benchmarks.xlsx') as writer:
+    # Create excel outside of git repo
+    folder = Path.cwd().parent
+
+    filepath = folder/"Benchmarks.xlsx"
+
+    with pd.ExcelWriter(filepath) as writer:
         df.to_excel(writer, index=False, sheet_name='Sheet1')
         avg_df.to_excel(writer, index=False, sheet_name='Sheet2')
 
@@ -235,7 +243,7 @@ def initNewExcel():
 
 # Run the test
 if __name__ == "__main__":
-    purpose, prompts = initPurpose(purp='coding')
+    purpose, prompts = initPurpose(purp='text')
 
     # Uncomment to initiate new excel:
     #initNewExcel()
