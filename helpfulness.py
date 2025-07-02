@@ -5,14 +5,26 @@ from ollama import Client, ChatResponse
 import utils
 
 
-def test_helpfulness(model: str= "nhn-small:latest", prompts_file: str = "prompts/helpfulness_prompts.txt") -> list[tuple]:
+def test_helpfulness(
+        model: str= "nhn-small:latest", 
+        prompts_file: str = "prompts/helpfulness_prompts.txt",
+        ) -> list[tuple]:
+    
+    """    Test whether the model's output is giving a correct and helpful type of response to the given prompt.
+
+    Args:
+        model (str): The model to use for evaluation.
+        prompts_file (str): The file containing prompts for evaluation.
+    Returns:
+        list[tuple]: A list of tuples containing the helpfulness score and reason for each prompt.
+    """
 
     Logger = utils.CustomLogger()
-    Logger.info("Init eval model...")
+    Logger.info("Init eval model")
     
     JudgeLLM = utils.GroqModel()
 
-    Logger.info("Init model...")
+    Logger.info("Init model")
 
     api_key_file = ".api_key.txt"
     LLM = utils.OllamaLocalModel(
@@ -21,7 +33,7 @@ def test_helpfulness(model: str= "nhn-small:latest", prompts_file: str = "prompt
         api_key_file=api_key_file
     )
 
-    Logger.info("Preparing metric...")
+    Logger.info("Preparing metric")
 
     helpfulness_metric = GEval(
         name="Helpfulness",
@@ -29,6 +41,9 @@ def test_helpfulness(model: str= "nhn-small:latest", prompts_file: str = "prompt
         evaluation_params = [LLMTestCaseParams.INPUT, LLMTestCaseParams.ACTUAL_OUTPUT],
         model=JudgeLLM
     )
+
+    Logger.info("Successful")
+    Logger.info("Loading prompts from file...")
 
     with open(prompts_file, "r") as f:
         prompts = [line.strip() for line in f if line.strip()]
@@ -39,7 +54,7 @@ def test_helpfulness(model: str= "nhn-small:latest", prompts_file: str = "prompt
         Logger.info("Generating response for prompt %d", i + 1)
         response = LLM.generate(prompt)
 
-        Logger.info("Creating test case...")
+        Logger.info("Creating test case")
         test_case = LLMTestCase(
             input=prompt,
             actual_output=response,

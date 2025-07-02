@@ -8,15 +8,26 @@ import utils
 def test_prompt_alignment(
         model: str = "nhn-small:latest", 
         prompts_file: str = "prompts/alignment_prompts.txt",
-        prompt_instructions: list[str] = [""]    
+        prompt_instructions: list[str] = [""],
     ) -> list[tuple]:
 
+    """    Test the prompt alignment model with a given prompt.
+
+    Args:
+        model (str): The model to use for alignment.
+        prompts_file (str): The file containing prompts for alignment.
+        prompt_instructions (list[str]): Instructions for the prompt alignment metric.
+    Returns:
+        list[tuple]: A list of tuples containing the alignment score and reason for each prompt.
+    """
+
+
     Logger = utils.CustomLogger()
-    Logger.info("Init eval model...")
+    Logger.info("Init eval model")
 
     JudgeLLM = utils.GroqModel()
 
-    Logger.info("Init model...")
+    Logger.info("Init model")
     
     api_key_file = ".api_key.txt"
     LLM = utils.OllamaLocalModel(
@@ -33,6 +44,9 @@ def test_prompt_alignment(
     include_reason=True
     )
 
+    Logger.info("Successful")
+    Logger.info("Loading prompts from file...")
+
     with open(prompts_file, "r") as f:
         prompts = [line.strip() for line in f if line.strip()]
 
@@ -42,7 +56,7 @@ def test_prompt_alignment(
         Logger.info("Generating response for prompt %d", i + 1)
         response = LLM.generate(prompt)
 
-        Logger.info("Creating test case...")
+        Logger.info("Creating test case")
         test_case = LLMTestCase(
             input=prompt,
             actual_output=response,

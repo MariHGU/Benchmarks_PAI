@@ -1,4 +1,4 @@
-import json, logging, os, requests
+import json, logging, os, requests, time
 from deepeval.models import DeepEvalBaseLLM, OllamaModel
 from ollama import Client, AsyncClient
 from ollama import ChatResponse
@@ -6,6 +6,8 @@ from groq import Groq, AsyncGroq
 from openpyxl import load_workbook
 import pandas as pd
 
+JUDGE_SEED = 42
+JUDGE_TEMPERATURE = 0.7
 
 def load_api_key(path: str = ".api_key.txt") -> str:
     """
@@ -34,7 +36,8 @@ class OllamaLocalModel(OllamaModel):
             self, 
             model: str = "gemma3n:e4b-it-q8_0", 
             base_url: str = "https://beta.chat.nhn.no/ollama",
-            api_key_file: str = ".api_key.txt"):
+            api_key_file: str = ".api_key.txt",
+            ):
         super().__init__(model=model, base_url=base_url)
         self.api_key_file = api_key_file
         self.client = Client(host=self.base_url)
@@ -69,8 +72,15 @@ class GroqModel(DeepEvalBaseLLM):
         model_name (str): The name of the Groq model to use.
     
     """
-    def __init__(self, model_name: str = "llama-3.3-70b-versatile", async_mode: bool = False):
+    def __init__(self, 
+                 model_name: str = "llama-3.3-70b-versatile", 
+                 async_mode: bool = False, 
+                 seed: int = JUDGE_SEED,
+                 temperature: float = JUDGE_TEMPERATURE,
+                 ):
         super().__init__(model_name=model_name)
+        self.seed = seed
+        self.temperature = temperature
 
     def load_model(self, async_mode: bool = False) -> Groq:
         api_key = load_api_key(path=".groq_api_key.txt")
@@ -82,10 +92,12 @@ class GroqModel(DeepEvalBaseLLM):
     def generate(self, prompt: str) -> str:
         groq_client = self.load_model(async_mode=False)
         response = groq_client.chat.completions.create(
-            messages=[
-                {"role": "user", 
-                 "content": prompt}
-            ],
+            messages= [{
+                "role": "user", 
+                "content": prompt,
+            }],
+            seed= self.seed,
+            temperature= self.temperature,
             model=self.model_name,
         )
         return response.choices[0].message.content
@@ -93,10 +105,12 @@ class GroqModel(DeepEvalBaseLLM):
     async def a_generate(self, prompt: str) -> str:
         groq_client = self.load_model(async_mode=True)
         response = await groq_client.chat.completions.create(
-            messages=[
-                {"role": "user", 
-                "content": prompt}
-            ],
+            messages= [{
+                "role": "user", 
+                "content": prompt,
+            }],
+            seed= self.seed,
+            temperature= self.temperature,
             model=self.model_name,
         )
         return response.choices[0].message.content
@@ -111,7 +125,7 @@ class CustomRelativeFormatter(logging.Formatter):
     ChatGPT-4o generated code:
     A custom logging formatter that formats the time of the log record
     """
-    
+
     def formatTime(self, record, datefmt=None):
         # relativeCreated is in milliseconds
         total_seconds = record.relativeCreated / 1000
@@ -140,6 +154,7 @@ class CustomLogger(logging.Logger):
         formatter = CustomRelativeFormatter('[%(asctime)s]: %(message)s')
         handler.setFormatter(formatter)
         self.addHandler(handler)
+        print(time.strftime("[%d/%m %H:%M:%S]", time.localtime()), ": Logger initialized")
 
 
 def write_to_xlsx(new_data: pd.DataFrame, file_name: str, sheet: str) -> None:
