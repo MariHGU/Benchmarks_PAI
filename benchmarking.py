@@ -1,10 +1,10 @@
 import os
 import time
-from typing import List, Tuple
-import pandas as pd
 import asyncio
-from ollama import AsyncClient
-from ollama import ChatResponse
+import pandas as pd
+from pathlib import Path
+from typing import List, Tuple
+from ollama import AsyncClient, ChatResponse
 from openpyxl import load_workbook
 
 # -- Initialize the client with appropriate host and authorization token --
@@ -18,7 +18,8 @@ def get_api_key(file_path='.api_key') -> str:
         raise
 
 # -- Get the API key from a file outside the git repo --
-api_key_file = os.path.join(os.getcwd(), ".api_key")
+#api_key_file = os.path.join(os.getcwd(), ".api_key")
+api_key_file = Path.cwd().parent / ".api_key"
 api_key = get_api_key(api_key_file)
 
 client = AsyncClient(
@@ -78,7 +79,7 @@ def initPurpose(purp: str) -> Tuple[str, List[str]]:
         raise ValueError('Invalid purpose. \n Purpose has to be either "coding" or "text".')
     else:
         purpose = purp
-        prompts = read_prompts('Benchmarks_PAI/prompts/'+ purp + '_prompts.txt')
+        prompts = read_prompts('prompts/'+ purp + '_prompts.txt')
         return purpose, prompts
 
 
@@ -186,7 +187,7 @@ def retrieveModel(modelName: str) -> Tuple[str, str]:
     """
     Retrieves saved KV_Cache and digest from csv file
     """
-    df = pd.read_csv(r'Benchmarks_PAI\models.csv')
+    df = pd.read_csv(r'models.csv')
     
     match = df[df['model_name'] == modelName]
 
