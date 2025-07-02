@@ -33,15 +33,15 @@ def test_prompt_alignment(
     LLM = utils.OllamaLocalModel(
         model=model,
         base_url="https://beta.chat.nhn.no/ollama",
-        api_key_file=api_key_file
+        api_key_file=api_key_file 
     )
 
     Logger.info("Preparing metric...")
 
-    prompt_alignment_metric = PromptAlignmentMetric(
-        prompt_instructions=["Reply in all uppercase", "Reply", "Respond with a summary"],
-    model=JudgeLLM,
-    include_reason=True
+    prompt_alignment_metric= PromptAlignmentMetric(
+        prompt_instructions= prompt_instructions,
+        model=JudgeLLM,
+        include_reason=True,
     )
 
     Logger.info("Successful")
@@ -77,7 +77,7 @@ if __name__ == "__main__":
     model = "nhn-small:latest"
     prompts_file = "prompts/summarization_prompts.txt"
     
-    results = test_prompt_alignment(model=model, prompts_file=prompts_file)
+    results = test_prompt_alignment(model=model, prompts_file=prompts_file, prompt_instructions=["Reply in all uppercase", "Reply", "Respond with a summary"])
     
     for score, reason in results:
         print(f"Score: {score}, Reason: {reason}")
