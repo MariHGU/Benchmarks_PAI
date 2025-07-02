@@ -1,8 +1,8 @@
 model_name,digest_nr,kv_cache
-nhn-small:latest, 123456, q8_0
-nhn-large:latest, 123456789, q8_0
-magistral:24b-small-2506-q8_0, ,Q8_0
-gemma3:27b,a418f5838eaf, Q4_K_M
+nhn-small:latest,8530fca74a2a94c72cfce5f251f13610a5cbfea787fc036d1ec7b54a28d94527,q8_0
+nhn-large:latest,7eedb0a718e7909c121557858cd4d1ec6da6d6a9c6c394300e3244a005028bbf,q8_0
+magistral:24b-small-2506-q8_0,02423f83f1a1 ,Q8_0
+gemma3:27b,a418f5838eaf,Q4_K_M
 devstral:24b-small-2505-q8_0,c18053977578,Q8_0
 devstral:24b-small-2505-fp16,00d8e20b5637,F16
 qwen3:1.7b-fp16,e9354f6174db,F16
