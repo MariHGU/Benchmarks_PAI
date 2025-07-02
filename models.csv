@@ -1,12 +1,12 @@
 model_name,digest_nr,kv_cache
-nhn-small:latest, 123456, q8_0
-nhn-large:latest, 123456789, q8_0
-magistral:24b-small-2506-q8_0, ,Q8_0
-gemma3:27b,a418f5838eaf, Q4_K_M
-devstral:24b-small-2505-q8_0,c18053977578,Q8_0
+nhn-small:latest,8530fca74a2a94c72cfce5f251f13610a5cbfea787fc036d1ec7b54a28d94527,q8_0
+nhn-large:latest,7eedb0a718e7909c121557858cd4d1ec6da6d6a9c6c394300e3244a005028bbf,q8_0
+magistral:24b-small-2506-q8_0,02423f83f1a1005603df505bccd64aad70882c5e96d1dc7d90a558796124dffa ,Q8_0
+gemma3:27b,a418f5838eaf,Q4_K_M
+devstral:24b-small-2505-q8_0,c1805397757857450316d79379466d8a60ff7f64a4645f0e75dad036b882e8af,Q8_0
 devstral:24b-small-2505-fp16,00d8e20b5637,F16
-qwen3:1.7b-fp16,e9354f6174db,F16
-qwen3:1.7b-q8_0,29b6a7a420a4,Q8_0
+qwen3:1.7b-fp16,e9354f6174db6aa7af338e75b9087e3f4364c255ff96eb20c1805a2f786ed763,F16
+qwen3:1.7b-q8_0,29b6a7a420a42b7d58a17334049721746c35aec6084209ceed327e78a124d15f,Q8_0
 codeqwen:chat,df352abf55b1,Q4_0
 deepseek-r1:32b-qwen-distill-fp16,20ed0f80363b,F16
 dolphin3:8b-llama3.1-fp16,b0941c6f3226,F16
