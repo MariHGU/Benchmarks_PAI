@@ -3,11 +3,14 @@ from deepeval.metrics import GEval
 from deepeval.test_case import LLMTestCase, LLMTestCaseParams
 from ollama import Client, ChatResponse
 import utils
+from utils import MODEL, JUDGE_MODEL, JUDGE_SEED, JUDGE_TEMPERATURE
 
 
 def test_helpfulness(
-        model: str= "nhn-small:latest", 
+        model: str= MODEL, 
         prompts_file: str = "prompts/helpfulness_prompts.txt",
+        write_results: bool = True,
+        result_file: str = "results.xlsx",
         ) -> list[tuple]:
     
     """    Test whether the model's output is giving a correct and helpful type of response to the given prompt.
@@ -22,7 +25,14 @@ def test_helpfulness(
     Logger = utils.CustomLogger()
     Logger.info("Init eval model")
     
-    JudgeLLM = utils.GroqModel()
+    # JudgeLLM = utils.GroqModel()
+    JudgeLLM = utils.OllamaLocalModel(
+        model=JUDGE_MODEL,
+        base_url="https://beta.chat.nhn.no/ollama",
+        api_key_file=".api_key.txt",
+        seed=JUDGE_SEED,
+        temperature=JUDGE_TEMPERATURE
+    )
 
     Logger.info("Init model")
 
@@ -65,6 +75,19 @@ def test_helpfulness(
         Logger.info("Score for prompt %d: %s", i + 1, helpfulness_score)
         Logger.info("Reason: %s", helpfulness_metric.reason)
 
+        if write_results:
+            Logger.info("Writing result to file...")
+
+            utils.log_results(
+                type_of_test="Helpfulness",
+                model_name=model,
+                results=[(helpfulness_score, helpfulness_metric.reason)],
+                file_name=result_file,
+                prompt_id=i,
+                judge_params=(JudgeLLM.get_model_name(), JudgeLLM.get_seed(), JudgeLLM.get_temperature()),
+            )
+
+
         helpfulness_scores.append((helpfulness_score, helpfulness_metric.reason))
 
 
@@ -78,5 +101,10 @@ if __name__ == "__main__":
 
     results = test_helpfulness(model=model, prompts_file=prompts_file)
     
-    for score, reason in results:
-        print(f"Score: {score}, Reason: {reason}")
+    # utils.log_results(
+    #     type_of_test="helpfulness",
+    #     model_name=model,
+    #     results=results,
+    #     file_name="results.xlsx",
+    #     judge_params=(JUDGE_MODEL, JUDGE_SEED, JUDGE_TEMPERATURE),
+    # )

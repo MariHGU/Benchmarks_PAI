@@ -5,10 +5,11 @@ from deepeval.metrics import SummarizationMetric
 from deepeval.test_case import LLMTestCase
 from ollama import Client, ChatResponse
 import utils
+from utils import MODEL, JUDGE_MODEL, JUDGE_SEED, JUDGE_TEMPERATURE
 
 
 def test_summarization(
-        model: str= "nhn-small:latest", 
+        model: str= MODEL, 
         api_key_file: str = ".api_key.txt",
         prompts_file: str = "prompts/summarization_prompts.txt",
         write_results: bool = True,
@@ -24,17 +25,16 @@ def test_summarization(
     Returns:
         tuple: A tuple containing the score and reason from the metric evaluation.
     """
-    return [(0.8, "Some svada reason"), (0.9, "Another svada reason"), (0.85, "Yet another svada reason")]
     Logger = utils.CustomLogger()
     Logger.info("Init eval model")
     
     # JudgeLLM = utils.GroqModel()
     JudgeLLM = utils.OllamaLocalModel(
-        model="nhn-small:latest",
+        model=JUDGE_MODEL,
         base_url="https://beta.chat.nhn.no/ollama",
         api_key_file=".api_key.txt",
-        seed=utils.JUDGE_SEED,
-        temperature=utils.JUDGE_TEMPERATURE
+        seed=JUDGE_SEED,
+        temperature=JUDGE_TEMPERATURE
     )
 
     Logger.info("Init model")
@@ -118,16 +118,16 @@ def test_summarization(
 
 if __name__ == "__main__":
     # Example usage
-    model = "qwen3:1.7b-fp16"
+    model = "nhn-small:latest"
 
     prompts_file = "prompts/summarization_prompts.txt"
     
     results = test_summarization(model=model, prompts_file=prompts_file)
     
-    utils.log_results(
-        type_of_test="Summarization",
-        model_name=model,
-        results=results,
-        file_name="results.xlsx",
-        judge_params=("nhn-small:latest", utils.JUDGE_SEED, utils.JUDGE_TEMPERATURE),
-    )
+    # utils.log_results(
+    #     type_of_test="summarization",
+    #     model_name=model,
+    #     results=results,
+    #     file_name="results.xlsx",
+    #     judge_params=(JUDGE_MODEL, JUDGE_SEED, JUDGE_TEMPERATURE),
+    # )
