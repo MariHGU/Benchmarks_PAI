@@ -88,9 +88,13 @@ async def test_llm_performance(prompts: list, purpose: str, model: str) -> str:
     """
     Performs the actual testing of the model, and writes individual prompt-performance to excel file.
 
-    Input: The prompts you wish to perform the test on
+    Input: The prompts you wish to perform the test on.
     Output: The model used, the average experienced time, average api time(time retrieved from api-call) aswell as average number of generated tokens per second.
     """
+    if purpose == 'coding':
+        with open("llm_response.txt", "w", encoding="utf-8") as f:
+            f.write("Init new file\n")
+
     total_time = 0
     total_response_tokens_ps = 0
     total_api_time = 0
@@ -133,7 +137,10 @@ async def test_llm_performance(prompts: list, purpose: str, model: str) -> str:
                 'Eval rate':[round(response_ps, 4)],
                 'Intended Purpose': [purpose]
                 })
-            write_to_xcl(ny_data=ny_data, file_name='Benchmarks.xlsx', sheet='Sheet1')
+            #write_to_xcl(ny_data=ny_data, file_name='Benchmarks.xlsx', sheet='Sheet1')
+            if purpose == 'coding':
+                with open("llm_response.txt", "a", encoding="utf-8") as f:
+                    f.write("Init new file\n")
 
         else:
             print(f"Test #{i+1}: Prompt='{prompt}' No response received. Time={elapsed_time:.4f}s")
@@ -155,7 +162,7 @@ async def test_llm_performance(prompts: list, purpose: str, model: str) -> str:
         'Inteded purpose': [purpose]
         })
 
-    write_to_xcl(ny_data=ny_data, file_name='Benchmarks.xlsx', sheet='Sheet2')
+    #write_to_xcl(ny_data=ny_data, file_name='Benchmarks.xlsx', sheet='Sheet2')
 
     print('Test completed')
 
@@ -243,11 +250,11 @@ def initNewExcel():
 
 # Run the test
 if __name__ == "__main__":
-    purpose, prompts = initPurpose(purp='text')
+    purpose, prompts = initPurpose(purp='coding')
 
     # Uncomment to initiate new excel:
     #initNewExcel()
 
     # Test and write to file
-    asyncio.run(test_llm_performance(prompts, purpose, model='nhn-large:latest'))
+    asyncio.run(test_llm_performance(prompts, purpose, model='nhn-small:latest'))
     

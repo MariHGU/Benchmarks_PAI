@@ -6,6 +6,7 @@ myenv/
 .api_key.txt
 .groq_api_key.txt
 test.py
+output/
 =======
 # Ignorere virtuelle miljøer
 
