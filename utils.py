@@ -8,6 +8,7 @@ from openpyxl import load_workbook
 import pandas as pd
 from pydantic import BaseModel
 
+MODEL = "nhn-small:latest"
 JUDGE_SEED = 42
 JUDGE_TEMPERATURE = 0.7
 JUDGE_MODEL = "llama-3.3-70b-versatile"
@@ -73,7 +74,7 @@ class OllamaLocalModel(OllamaModel):
         return load_api_key()
     
     def get_model_name(self) -> str:
-        return self.model
+        return self.model_name
     
     def generate(
         self, prompt: str, schema: Optional[BaseModel] = None
@@ -285,16 +286,18 @@ def write_to_xlsx(df: pd.DataFrame, file_name: str, sheet_name: str) -> None:
             df_header.to_excel(excel_writer, sheet_name=sheet_name, index=False)
     workbook = load_workbook(file_name)
 
+    header = False
     if sheet_name in workbook.sheetnames:
         sheet = workbook[sheet_name]
         startrow = sheet.max_row
     else:
         sheet = workbook.create_sheet(sheet_name)
         startrow = 0
+        header = True
 
     # Use ExcelWriter in append mode without setting writer.book
     with pd.ExcelWriter(file_name, engine='openpyxl', mode='a', if_sheet_exists='overlay') as writer:
-        df.to_excel(writer, sheet_name=sheet_name, index=False, header=False, startrow=startrow)
+        df.to_excel(writer, sheet_name=sheet_name, index=False, header=header, startrow=startrow)
 
     
 def log_results(
@@ -321,13 +324,13 @@ def log_results(
     if type_of_test.strip().lower() not in ["summarization", "prompt alignment", "alignment", "helpfulness"]:
         match type_of_test.strip().lower()[0]:
             case "s":
-                sheet_name,  raise_ = "Summarization", False if input("Are you testing summarization? [Y/n]").lower() == "y" else type_of_test, True
+                sheet_name, raise_ = ("Summarization", False) if input("Are you testing summarization? [Y/n]").lower() == "y" else (type_of_test, True)
             case "p":
-                sheet_name, raise_ = "PromptAlignment", False if input("Are you testing prompt alignment? [Y/n]").lower() == "y" else type_of_test, True
+                sheet_name, raise_ = ("PromptAlignment", False) if input("Are you testing prompt alignment? [Y/n]").lower() == "y" else (type_of_test, True)
             case "a":
-                sheet_name, raise_ = "PromptAlignment", False if input("Are you testing prompt alignment? [Y/n]").lower() == "y" else type_of_test, True
+                sheet_name, raise_ = ("PromptAlignment", False) if input("Are you testing prompt alignment? [Y/n]").lower() == "y" else (type_of_test, True)
             case "h":
-                sheet_name, raise_ = "Helpfulness", False if input("Are you testing helpfuless? [Y/n]").lower() == "y" else type_of_test, True
+                sheet_name, raise_ = ("Helpfulness", False) if input("Are you testing helpfuless? [Y/n]").lower() == "y" else (type_of_test, True)
             case _:
                 raise_ = True
         if raise_:
@@ -348,7 +351,7 @@ def log_results(
         if prompt_id is not None:
             prompt_ref = prompt_id
         else:
-            prompt_ref = prompt_no + 1
+            prompt_ref = prompt_no
 
         df_result = pd.DataFrame({
             "Model": [model_name],
@@ -361,8 +364,6 @@ def log_results(
             "Score": [score],
             "Reason": [reason]
         })
-        print("Sheet name:", sheet_name)
-        print("File name:", file_name)
 
         write_to_xlsx(
             df=df_result, 
