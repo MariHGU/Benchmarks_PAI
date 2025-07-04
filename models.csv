@@ -14,3 +14,7 @@ dolphin3:8b-llama3.1-q8_0,e3310b61ffdb,Q8_0
 mixtral:v0.1,e8479ee1cb51,Q4_0
 mixtral:8x7b,a3b6bef0f836,Q4_0
 mixtral:8x7b-instruct-v0.1-q8_0,4b4321b5a853,Q8_0
+hermes3:8b,4f6b83f30b62,Q4_0
+hermes3:70b,60ef54cd913f,Q4_0
+hermes3:70b-llama3.1-fp16,e95c7ce02c58,F16
+hermes3:70b-llama3.1-q8_0,72f0aa5b30bb,Q8_0
