@@ -8,10 +8,13 @@ from openpyxl import load_workbook
 import pandas as pd
 from pydantic import BaseModel
 
+
 MODEL = "nhn-small:latest"
 JUDGE_SEED = 42
 JUDGE_TEMPERATURE = 0.7
-JUDGE_MODEL = "llama-3.3-70b-versatile"
+JUDGE_MODEL = "nhn-small:latest" # OLLAMA MODEL
+# JUDGE_MODEL = "llama-3.3-70b-versatile" # GROQ MODEL
+
 
 def load_api_key(path: str = ".api_key.txt") -> str:
     """
@@ -47,9 +50,10 @@ class OllamaLocalModel(OllamaModel):
             seed: int = None,
             temperature: float = None,
             ):
+        self.model_name_ = model
         super().__init__(model=model, base_url=base_url)
         self.api_key_file = api_key_file
-        self.client = Client(host=self.base_url)
+        # self.client = Client(host=self.base_url)
         self.seed = seed
         self.temperature = temperature
 
@@ -72,9 +76,6 @@ class OllamaLocalModel(OllamaModel):
         
     def get_api_key(self) -> str:
         return load_api_key()
-    
-    def get_model_name(self) -> str:
-        return self.model_name
     
     def generate(
         self, prompt: str, schema: Optional[BaseModel] = None
@@ -119,8 +120,9 @@ class OllamaLocalModel(OllamaModel):
             ),
             0,
         )
+
     def get_model_name(self) -> str:
-        return self.model
+        return self.model_name_
 
     def get_seed(self) -> int:
         return self.seed
@@ -336,7 +338,7 @@ def log_results(
         if raise_:
             raise ValueError("type_of_test must be one of 'summarization', 'prompt alignment', or 'helpfulness'")
     else:
-        if type_of_test.strip().lower() == "alignment":
+        if type_of_test.strip().lower() in ["prompt alignment", "alignment"]:
             sheet_name = "PromptAlignment"
         else:
             sheet_name = type_of_test.strip().title()
