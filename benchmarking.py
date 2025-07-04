@@ -243,11 +243,18 @@ def initNewExcel():
 
 # Run the test
 if __name__ == "__main__":
-    purpose, prompts = initPurpose(purp='text')
 
     # Uncomment to initiate new excel:
     #initNewExcel()
 
+    modelName = 'dolphin3:8b-llama3.1-q8_0'
     # Test and write to file
-    asyncio.run(test_llm_performance(prompts, purpose, model='nhn-large:latest'))
+    for i in range(2):
+        if i == 0:
+            purpose, prompts = initPurpose(purp='coding')
+            asyncio.run(test_llm_performance(prompts, purpose, model=modelName))
+        if i == 1:
+            purpose, prompts = initPurpose(purp='text')
+            asyncio.run(test_llm_performance(prompts, purpose, model=modelName))
+
     
