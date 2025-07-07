@@ -8,6 +8,127 @@ import utils
 from utils import MODEL, JUDGE_MODEL, JUDGE_SEED, JUDGE_TEMPERATURE
 
 
+def generate_summaries(
+        model: str = MODEL, 
+        prompts_file: str = "prompts/summarization_prompts.txt",
+        api_key_file: str = ".api_key.txt",
+        save_file: str = "summaries.csv",
+    ) -> None:
+    """Generate summaries for a set of prompts using the specified model.
+
+    Args:
+        model (str): The model to use for summarization.
+        prompts_file (str): The file containing prompts for summarization.
+    
+    Returns:
+        List[Tuple[str, str]]: A list of tuples containing the prompt and its corresponding summary.
+    """
+    Logger = utils.CustomLogger()
+    Logger.info("Init model")
+
+    LLM = utils.OllamaLocalModel(
+        model=model,
+        base_url="https://beta.chat.nhn.no/ollama",
+        api_key_file=api_key_file
+    )
+
+    Logger.info("Loading prompts from file...")
+
+    with open(prompts_file, "r") as f:
+        prompts = [line.strip() for line in f if line.strip()]
+
+    for i, prompt in enumerate(prompts):
+        Logger.info("Generating summary for %d. prompt", i + 1)
+        response = LLM.generate(prompt)
+        utils.write_response_to_csv(
+            model_name=model,
+            prompt=prompt,
+            response=response[0],
+            file_name=save_file
+        )
+    Logger.info("All summaries generated successfully.")
+
+
+def eval_summaries( 
+        api_key_file: str = ".api_key.txt",
+        write_results: bool = True,
+        result_file: str = "results.xlsx",
+        load_file: str = "summaries.csv",
+    ) -> List[Tuple[float, str]]:
+    """Evaluate the generated summaries using a judge model.
+    Args:
+        api_key_file (str): The file containing the API key for the judge model.
+        write_results (bool): Whether to write the results to a file.
+        result_file (str): The file to write the results to.
+    Returns:
+        List[Tuple[float, str]]: A list of tuples containing the score and reason for each summary.
+
+    """
+    Logger = utils.CustomLogger()
+    Logger.info("Init eval model")
+
+    JudgeLLM = utils.OllamaLocalModel(
+        model=JUDGE_MODEL,
+        base_url="https://beta.chat.nhn.no/ollama",
+        api_key_file=api_key_file,
+        seed=JUDGE_SEED,
+        temperature=JUDGE_TEMPERATURE,
+    )
+
+    Logger.info("Preparing metric")
+    summarization_metric = SummarizationMetric(
+        threshold=0.5,
+        model=JudgeLLM
+    )
+
+    Logger.info("Successful")
+    Logger.info("Loading summaries from CSV file...")
+
+    summaries_df = pd.read_csv(load_file)
+
+    summarization_scores = []
+    for i, row in summaries_df.iterrows():
+        prompt = row['prompt']
+        summary = row['response']
+        
+        # print("----------------------------")
+        # print(f"Prompt {i + 1}: {prompt}")
+        # print("_____________")
+        # print(f"Summary {i + 1}: {summary}")
+        # print("----------------------------")
+
+        Logger.info("Creating test case for %d. prompt", i + 1)
+        test_case = LLMTestCase(
+            input=prompt,
+            actual_output=summary
+        )
+
+        Logger.info("Measuring...")
+        try:
+            summarization_score = summarization_metric.measure(test_case)
+        except ValueError as ve:
+            Logger.error("Error measuring summarization for prompt %d: %s", i + 1, ve)
+            summarization_score = -1.0  # Assign a default score in case of error
+
+        Logger.info("Measurement complete. Score: %s", summarization_score)
+
+        if write_results:
+            Logger.info("Writing result to file...")
+            utils.log_results(
+                type_of_test="Summarization",
+                model_name=row['model'],
+                results=[(summarization_score, summarization_metric.reason)],
+                file_name=result_file,
+                prompt_id=i,
+                judge_params=(JudgeLLM.get_model_name(), JudgeLLM.get_seed(), JudgeLLM.get_temperature()),
+            )
+
+        summarization_scores.append((summarization_score, summarization_metric.reason))
+
+    Logger.info("All summaries evaluated successfully.")
+    return summarization_scores
+
+
 def test_summarization(
         model: str= MODEL, 
         api_key_file: str = ".api_key.txt",
@@ -121,8 +242,13 @@ if __name__ == "__main__":
     model = "nhn-small:latest"
 
     prompts_file = "prompts/summarization_prompts.txt"
-    
-    results = test_summarization(model=model, prompts_file=prompts_file)
+
+    # Generate summaries
+    # generate_summaries(model=model, prompts_file=prompts_file, save_file="summaries.csv")
+    # Evaluate summaries
+    results = eval_summaries(api_key_file=".api_key.txt", write_results=True, result_file="results.xlsx", load_file="summaries.csv")
+
+    # results = test_summarization(model=model, prompts_file=prompts_file)
     
     # utils.log_results(
     #     type_of_test="summarization",
