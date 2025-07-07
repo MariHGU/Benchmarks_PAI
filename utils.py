@@ -1,9 +1,13 @@
 import logging, os, time
+from enum import IntEnum
 from typing import Tuple, List
 from openpyxl import load_workbook
 import pandas as pd
 
-
+class TestType(IntEnum):
+    SUMMARIZATION = 1
+    PROMPT_ALIGNMENT = 2
+    HELPFULNESS = 3
 
 class CustomRelativeFormatter(logging.Formatter):
     """
