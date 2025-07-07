@@ -66,8 +66,10 @@ def read_prompts(file_path: str) -> str:
     """ 
         Read prompts from seperate files
     """
+
     with open(file_path, 'r', encoding='utf-8') as file:
         return [line.strip() for line in file.readlines()]
+    
 
 # -- List of prompts to test the model --
 def initPurpose(purp: str) -> Tuple[str, List[str]]:
@@ -88,9 +90,13 @@ async def test_llm_performance(prompts: list, purpose: str, model: str) -> str:
     """
     Performs the actual testing of the model, and writes individual prompt-performance to excel file.
 
-    Input: The prompts you wish to perform the test on
+    Input: The prompts you wish to perform the test on.
     Output: The model used, the average experienced time, average api time(time retrieved from api-call) aswell as average number of generated tokens per second.
     """
+    if purpose == 'coding':
+        with open("llm_response.txt", "w", encoding="utf-8") as f:
+            f.write(model)
+
     total_time = 0
     total_response_tokens_ps = 0
     total_api_time = 0
@@ -133,7 +139,10 @@ async def test_llm_performance(prompts: list, purpose: str, model: str) -> str:
                 'Eval rate':[round(response_ps, 4)],
                 'Intended Purpose': [purpose]
                 })
-            write_to_xcl(ny_data=ny_data, file_name='Benchmarks.xlsx', sheet='Sheet1')
+            #write_to_xcl(ny_data=ny_data, file_name='Benchmarks.xlsx', sheet='Sheet1')
+            if purpose == 'coding':
+                with open("llm_response.txt", "a", encoding="utf-8") as f:
+                    f.write(response)
 
         else:
             print(f"Test #{i+1}: Prompt='{prompt}' No response received. Time={elapsed_time:.4f}s")
@@ -155,7 +164,7 @@ async def test_llm_performance(prompts: list, purpose: str, model: str) -> str:
         'Inteded purpose': [purpose]
         })
 
-    write_to_xcl(ny_data=ny_data, file_name='Benchmarks.xlsx', sheet='Sheet2')
+    #write_to_xcl(ny_data=ny_data, file_name='Benchmarks.xlsx', sheet='Sheet2')
 
     print('Test completed')
 
@@ -243,18 +252,14 @@ def initNewExcel():
 
 # Run the test
 if __name__ == "__main__":
+    purps = ['coding', 'text']
+
 
     # Uncomment to initiate new excel:
     #initNewExcel()
 
-    modelName = 'dolphin3:8b-llama3.1-q8_0'
     # Test and write to file
-    for i in range(2):
-        if i == 0:
-            purpose, prompts = initPurpose(purp='coding')
-            asyncio.run(test_llm_performance(prompts, purpose, model=modelName))
-        if i == 1:
-            purpose, prompts = initPurpose(purp='text')
-            asyncio.run(test_llm_performance(prompts, purpose, model=modelName))
-
+    for purp in purps:
+        purpose, prompts = initPurpose(purp=purp)
+        asyncio.run(test_llm_performance(prompts, purpose, model='nhn-small:latest'))
     
