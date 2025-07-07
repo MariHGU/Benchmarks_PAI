@@ -1,4 +1,4 @@
-Hei! Dette er en test.
+nhn-small:v2
  For changing a column name in MySQL Community Server 5.5.27, you should use this SQL expression:
 
 ```sql

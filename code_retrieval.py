@@ -42,17 +42,23 @@ def extract_all_code_blocks(response_text: str):
     return matches
 
 
-def save_code_blocks(code_blocks: list, base_filename:str="snippet", folder:str="output"):
+def save_code_blocks(code_blocks: list, model: str):
     """
     Saves every block of code as a seperate .{lang}-file to specified folder.
     """
+    base_filename = "code_snippet"
+
+    Path("output").mkdir(parents=True, exist_ok=True)
+    model_folder = model.replace(':', '-').strip('\n')
+
+    folder = Path("output") / model_folder
     Path(folder).mkdir(parents=True, exist_ok=True)
 
     for i, (lang, code) in enumerate(code_blocks, start=1):
 
         ext = LANG_EXTENSION_MAP.get(lang.lower(), "txt")   # Defaults to .txt file
 
-        if not lang or lang.lower() not in LANG_EXTENSION_MAP:
+        if (lang.lower() not in LANG_EXTENSION_MAP) and lang != '':
             unknown_lang.add(lang)                          # Store unknown languages to add to dictionary if necessary
         filename = Path(folder) / f"{base_filename}_{i}.{ext}"
 
@@ -60,18 +66,30 @@ def save_code_blocks(code_blocks: list, base_filename:str="snippet", folder:str=
             f.write(code.strip())
         print(f"Lagret: {filename}")
 
+def read_output():
+    """
+        Retrieves output and model from llm_output
+    """
+    with open("llm_response.txt", "r", encoding="utf-8") as f:
+        llm_output = f.read()
+        f.seek(0)
+        model = f.readline()
+
+    return llm_output, model
 
 # Muligens gjør om denne til en funksjon som kan kalles fra benchmarking?
 if __name__ == "__main__":
-    with open("llm_response.txt", "r", encoding="utf-8") as f:
-        llm_output = f.read()
+
+    llm_output, model = read_output()
 
     blocks = extract_all_code_blocks(llm_output)
     
     if blocks:
-        save_code_blocks(blocks, base_filename="code_snippet")
+        save_code_blocks(blocks, model=model)
     else:
         print("Ingen kodeblokker funnet.")
 
-    print(unknown_lang)
+    if (len(unknown_lang) > 0):
+        print(f'The following unknown languages where found: {unknown_lang}')
+        print("Consider adding to language dictionary, or handle manually.")
 
