@@ -49,16 +49,19 @@ def save_code_blocks(code_blocks: list, base_filename:str="snippet", folder:str=
     Path(folder).mkdir(parents=True, exist_ok=True)
 
     for i, (lang, code) in enumerate(code_blocks, start=1):
-        ext = LANG_EXTENSION_MAP.get(lang.lower(), "txt")
+
+        ext = LANG_EXTENSION_MAP.get(lang.lower(), "txt")   # Defaults to .txt file
+
         if not lang or lang.lower() not in LANG_EXTENSION_MAP:
-            unknown_lang.add(lang)
+            unknown_lang.add(lang)                          # Store unknown languages to add to dictionary if necessary
         filename = Path(folder) / f"{base_filename}_{i}.{ext}"
+
         with open(filename, "w", encoding="utf-8") as f:
             f.write(code.strip())
         print(f"Lagret: {filename}")
 
 
-
+# Muligens gjør om denne til en funksjon som kan kalles fra benchmarking?
 if __name__ == "__main__":
     with open("llm_response.txt", "r", encoding="utf-8") as f:
         llm_output = f.read()
