@@ -6,6 +6,7 @@ from ollama import ChatResponse
 from groq import Groq, AsyncGroq
 from pydantic import BaseModel
 
+BASE_URL = "https://beta.chat.nhn.no/ollama"
 MODEL = "devstral:24b-small-2505-q8_0"
 JUDGE_SEED = 42
 JUDGE_TEMPERATURE = 0.7
@@ -40,16 +41,13 @@ class OllamaLocalModel(OllamaModel):
     """
     def __init__(
             self, 
-            model: str = "gemma3n:e4b-it-q8_0", 
-            base_url: str = "https://beta.chat.nhn.no/ollama",
-            api_key_file: str = ".api_key.txt",
+            model: str = MODEL, 
+            base_url: str = BASE_URL,
             seed: int = None,
             temperature: float = None,
             ):
         self.model_name_ = model
         super().__init__(model=model, base_url=base_url)
-        self.api_key_file = api_key_file
-        # self.client = Client(host=self.base_url)
         self.seed = seed
         self.temperature = temperature
 

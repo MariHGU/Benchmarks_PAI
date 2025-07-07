@@ -1,27 +1,27 @@
-from summarizing import generate_summaries, eval_summaries
+from use_case_metrics import generate_responses, eval_responses
 from utils import TestType
 import utils
 import hashlib, time
 
 
 if __name__ == "__main__":
-    generate_summaries(
+    generate_responses(
         test_type=TestType.SUMMARIZATION,
         model="nhn-small:latest"
     )
-    generate_summaries(
+    generate_responses(
         test_type=TestType.PROMPT_ALIGNMENT,
         model="nhn-small:latest"
     )
-    generate_summaries(
+    generate_responses(
         test_type=TestType.HELPFULNESS,
         model="nhn-small:latest"
     )
 
 
-    summaries = eval_summaries(test_type=TestType.SUMMARIZATION)
-    alignment = eval_summaries(test_type=TestType.PROMPT_ALIGNMENT)
-    helpfulness = eval_summaries(test_type=TestType.HELPFULNESS)
+    summaries = eval_responses(test_type=TestType.SUMMARIZATION)
+    alignment = eval_responses(test_type=TestType.PROMPT_ALIGNMENT)
+    helpfulness = eval_responses(test_type=TestType.HELPFULNESS)
 
 
 
@@ -48,7 +48,7 @@ if __name__ == "__main__":
 #     # JudgeLLM = GroqModel()
 #     JudgeLLM = OllamaLocalModel(
 #         model=JUDGE_MODEL,
-#         base_url="https://beta.chat.nhn.no/ollama",
+#         base_url=BASE_URL,
 #         api_key_file=".api_key.txt",
 #         seed=JUDGE_SEED,
 #         temperature=JUDGE_TEMPERATURE
@@ -58,7 +58,7 @@ if __name__ == "__main__":
 
 #     LLM = OllamaLocalModel(
 #         model=model,
-#         base_url="https://beta.chat.nhn.no/ollama",
+#         base_url=BASE_URL,
 #         api_key_file=api_key_file
 #     )
 

@@ -23,7 +23,7 @@ api_key_file = Path.cwd().parent / ".api_key"
 api_key = get_api_key(api_key_file)
 
 client = AsyncClient(
-    host="https://beta.chat.nhn.no/ollama",
+    host=BASE_URL,
     headers={
         'Authorization': f'{api_key}'
     }
