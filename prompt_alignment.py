@@ -3,7 +3,8 @@ from deepeval.metrics import PromptAlignmentMetric
 from deepeval.test_case import LLMTestCase, LLMTestCaseParams
 from ollama import Client, ChatResponse
 import utils
-from utils import MODEL, JUDGE_MODEL, JUDGE_SEED, JUDGE_TEMPERATURE
+from llms import OllamaLocalModel, GroqModel
+from llms import MODEL, JUDGE_MODEL, JUDGE_SEED, JUDGE_TEMPERATURE
 
 
 def test_prompt_alignment(
@@ -28,8 +29,8 @@ def test_prompt_alignment(
     Logger = utils.CustomLogger()
     Logger.info("Init eval model")
 
-    # JudgeLLM = utils.GroqModel()
-    JudgeLLM = utils.OllamaLocalModel(
+    # JudgeLLM = GroqModel()
+    JudgeLLM = OllamaLocalModel(
         model=JUDGE_MODEL,
         base_url="https://beta.chat.nhn.no/ollama",
         api_key_file=".api_key.txt",
@@ -40,7 +41,7 @@ def test_prompt_alignment(
     Logger.info("Init model")
     
     api_key_file = ".api_key.txt"
-    LLM = utils.OllamaLocalModel(
+    LLM = OllamaLocalModel(
         model=model,
         base_url="https://beta.chat.nhn.no/ollama",
         api_key_file=api_key_file 
@@ -80,7 +81,7 @@ def test_prompt_alignment(
         if write_results:
             Logger.info("Writing result to file...")
 
-            utils.log_results(
+            utils.save_eval_results_to_xlsx(
                 type_of_test="Prompt Alignment",
                 model_name=model,
                 results=[(alignment_score, prompt_alignment_metric.reason)],
@@ -111,7 +112,7 @@ if __name__ == "__main__":
                         result_file="results.xlsx"
                         )
     
-    # utils.log_results(
+    # utils.save_eval_results_to_xlsx(
     #     type_of_test="prompt alignment",
     #     model_name=model,
     #     results=results,

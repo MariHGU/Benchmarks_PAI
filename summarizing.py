@@ -5,7 +5,8 @@ from deepeval.metrics import SummarizationMetric
 from deepeval.test_case import LLMTestCase
 from ollama import Client, ChatResponse
 import utils
-from utils import MODEL, JUDGE_MODEL, JUDGE_SEED, JUDGE_TEMPERATURE
+from llms import GroqModel, OllamaLocalModel
+from llms import MODEL, JUDGE_MODEL, JUDGE_SEED, JUDGE_TEMPERATURE
 
 
 def generate_summaries(
@@ -19,14 +20,16 @@ def generate_summaries(
     Args:
         model (str): The model to use for summarization.
         prompts_file (str): The file containing prompts for summarization.
+        api_key_file (str): The file containing the API key for the model.
+        save_file (str): The file to save the generated summaries to.
     
     Returns:
-        List[Tuple[str, str]]: A list of tuples containing the prompt and its corresponding summary.
+        None: The function saves the generated summaries to a CSV file.
     """
     Logger = utils.CustomLogger()
     Logger.info("Init model")
 
-    LLM = utils.OllamaLocalModel(
+    LLM = OllamaLocalModel(
         model=model,
         base_url="https://beta.chat.nhn.no/ollama",
         api_key_file=api_key_file
@@ -61,13 +64,14 @@ def eval_summaries(
         write_results (bool): Whether to write the results to a file.
         result_file (str): The file to write the results to.
     Returns:
-        List[Tuple[float, str]]: A list of tuples containing the score and reason for each summary.
-
+        List[Tuple[float, str]]: A list of tuples:
+            float: The summarization score.
+            str: The reasoning for the score explained by the judge model.
     """
     Logger = utils.CustomLogger()
     Logger.info("Init eval model")
 
-    JudgeLLM = utils.OllamaLocalModel(
+    JudgeLLM = OllamaLocalModel(
         model=JUDGE_MODEL,
         base_url="https://beta.chat.nhn.no/ollama",
         api_key_file=api_key_file,
@@ -114,7 +118,7 @@ def eval_summaries(
 
         if write_results:
             Logger.info("Writing result to file...")
-            utils.log_results(
+            utils.save_eval_results_to_xlsx(
                 type_of_test="Summarization",
                 model_name=row['model'],
                 results=[(summarization_score, summarization_metric.reason)],
@@ -129,7 +133,7 @@ def eval_summaries(
     return summarization_scores
 
 
-def test_summarization(
+# def test_summarization(
         model: str= MODEL, 
         api_key_file: str = ".api_key.txt",
         prompts_file: str = "prompts/summarization_prompts.txt",
@@ -149,8 +153,8 @@ def test_summarization(
     Logger = utils.CustomLogger()
     Logger.info("Init eval model")
     
-    # JudgeLLM = utils.GroqModel()
-    JudgeLLM = utils.OllamaLocalModel(
+    # JudgeLLM = GroqModel()
+    JudgeLLM = OllamaLocalModel(
         model=JUDGE_MODEL,
         base_url="https://beta.chat.nhn.no/ollama",
         api_key_file=".api_key.txt",
@@ -160,20 +164,11 @@ def test_summarization(
 
     Logger.info("Init model")
 
-    LLM = utils.OllamaLocalModel(
+    LLM = OllamaLocalModel(
         model=model,
         base_url="https://beta.chat.nhn.no/ollama",
         api_key_file=api_key_file
     )
-
-    # # Initialize the client with appropriate host and authorization token
-    # api_key = load_api_key()
-    # client = Client(
-    #     host="https://beta.chat.nhn.no/ollama",
-    #     headers={
-    #         'Authorization': 'Bearer ' + api_key,
-    #     }
-    # )
 
     Logger.info("Successful")
     Logger.info("Loading prompts from file...")
@@ -220,7 +215,7 @@ def test_summarization(
         if write_results:
             Logger.info("Writing result to file...")
 
-            utils.log_results(
+            utils.save_eval_results_to_xlsx(
                 type_of_test="Summarization",
                 model_name=model,
                 results=[(summarization_score, summarization_metric.reason)],
@@ -250,7 +245,7 @@ if __name__ == "__main__":
 
     # results = test_summarization(model=model, prompts_file=prompts_file)
     
-    # utils.log_results(
+    # utils.save_eval_results_to_xlsx(
     #     type_of_test="summarization",
     #     model_name=model,
     #     results=results,

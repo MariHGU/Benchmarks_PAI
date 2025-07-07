@@ -3,7 +3,8 @@ from deepeval.metrics import GEval
 from deepeval.test_case import LLMTestCase, LLMTestCaseParams
 from ollama import Client, ChatResponse
 import utils
-from utils import MODEL, JUDGE_MODEL, JUDGE_SEED, JUDGE_TEMPERATURE
+from llms import OllamaLocalModel, GroqModel
+from llms import MODEL, JUDGE_MODEL, JUDGE_SEED, JUDGE_TEMPERATURE
 
 
 def test_helpfulness(
@@ -25,8 +26,8 @@ def test_helpfulness(
     Logger = utils.CustomLogger()
     Logger.info("Init eval model")
     
-    # JudgeLLM = utils.GroqModel()
-    JudgeLLM = utils.OllamaLocalModel(
+    # JudgeLLM = GroqModel()
+    JudgeLLM = OllamaLocalModel(
         model=JUDGE_MODEL,
         base_url="https://beta.chat.nhn.no/ollama",
         api_key_file=".api_key.txt",
@@ -37,7 +38,7 @@ def test_helpfulness(
     Logger.info("Init model")
 
     api_key_file = ".api_key.txt"
-    LLM = utils.OllamaLocalModel(
+    LLM = OllamaLocalModel(
         model=model,
         base_url="https://beta.chat.nhn.no/ollama",
         api_key_file=api_key_file
@@ -78,7 +79,7 @@ def test_helpfulness(
         if write_results:
             Logger.info("Writing result to file...")
 
-            utils.log_results(
+            utils.save_eval_results_to_xlsx(
                 type_of_test="Helpfulness",
                 model_name=model,
                 results=[(helpfulness_score, helpfulness_metric.reason)],
@@ -101,7 +102,7 @@ if __name__ == "__main__":
 
     results = test_helpfulness(model=model, prompts_file=prompts_file)
     
-    # utils.log_results(
+    # utils.save_eval_results_to_xlsx(
     #     type_of_test="helpfulness",
     #     model_name=model,
     #     results=results,

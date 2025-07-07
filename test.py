@@ -1,7 +1,7 @@
 from summarizing import test_summarization
 from helpfulness import test_helpfulness
 from prompt_alignment import test_prompt_alignment
-from utils import MODEL, JUDGE_MODEL, JUDGE_SEED, JUDGE_TEMPERATURE
+from llms import MODEL, JUDGE_MODEL, JUDGE_SEED, JUDGE_TEMPERATURE
 
 
 if __name__ == "__main__":

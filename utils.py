@@ -1,196 +1,8 @@
-import json, logging, os, requests, time
-from typing import Tuple, List, Dict, Optional, Union
-from deepeval.models import DeepEvalBaseLLM, OllamaModel
-from ollama import Client, AsyncClient
-from ollama import ChatResponse
-from groq import Groq, AsyncGroq
+import logging, os, time
+from typing import Tuple, List
 from openpyxl import load_workbook
 import pandas as pd
-from pydantic import BaseModel
 
-
-MODEL = "nhn-small:latest"
-JUDGE_SEED = 42
-JUDGE_TEMPERATURE = 0.7
-JUDGE_MODEL = "nhn-large:latest" # OLLAMA MODEL
-# JUDGE_MODEL = "llama-3.3-70b-versatile" # GROQ MODEL
-
-
-def load_api_key(path: str = ".api_key.txt") -> str:
-    """
-    Load the API key from a specified file.
-    
-    Args:
-        path (str): The file path to the API key. Defaults to ".api_key.txt".
-    Returns:
-        str: The API key read from the file.
-    """
-    if not os.path.exists(path):
-        raise FileNotFoundError(f"API key file not found: {path}")
-
-    with open(path, "r") as f:
-        return f.read().strip()
-
-class OllamaLocalModel(OllamaModel):
-    """
-    A class to interact with Ollama's local models.
-    This class extends OllamaModel to provide methods for generating text
-    using Ollama's API with an API key for authentication.
-    
-    Attributes:
-        model (str): The name of the Ollama model to use.
-        base_url (str): The base URL for the Ollama API.
-        api_key_file (str): The file path to the API key.
-    """
-    def __init__(
-            self, 
-            model: str = "gemma3n:e4b-it-q8_0", 
-            base_url: str = "https://beta.chat.nhn.no/ollama",
-            api_key_file: str = ".api_key.txt",
-            seed: int = None,
-            temperature: float = None,
-            ):
-        self.model_name_ = model
-        super().__init__(model=model, base_url=base_url)
-        self.api_key_file = api_key_file
-        # self.client = Client(host=self.base_url)
-        self.seed = seed
-        self.temperature = temperature
-
-    def load_model(self,  async_mode: bool = False) -> Client:
-        api_key = self.get_api_key()
-        if not async_mode:
-            return  Client(
-                host=self.base_url,
-                headers={
-                    'Authorization': 'Bearer ' + api_key,
-                }
-            )
-        else:
-            return AsyncClient(
-                host=self.base_url,
-                headers={
-                    'Authorization': 'Bearer ' + api_key,
-                }
-            )
-        
-    def get_api_key(self) -> str:
-        return load_api_key()
-    
-    def generate(
-        self, prompt: str, schema: Optional[BaseModel] = None
-    ) -> Tuple[Union[str, Dict], float]:
-        chat_model = self.load_model()
-        response: ChatResponse = chat_model.chat(
-            model=self.model_name,
-            messages=[{"role": "user", "content": prompt}],
-            format=schema.model_json_schema() if schema else None,
-            options={
-                "temperature": self.temperature,
-                "seed": self.seed
-                     },
-        )
-        return (
-            (
-                schema.model_validate_json(response.message.content)
-                if schema
-                else response.message.content
-            ),
-            0,
-        )
-
-    async def a_generate(
-        self, prompt: str, schema: Optional[BaseModel] = None
-    ) -> Tuple[str, float]:
-        chat_model = self.load_model(async_mode=True)
-        response: ChatResponse = await chat_model.chat(
-            model=self.model_name,
-            messages=[{"role": "user", "content": prompt}],
-            format=schema.model_json_schema() if schema else None,
-            options={
-                "temperature": self.temperature,
-                "seed": self.seed
-                     },
-        )
-        return (
-            (
-                schema.model_validate_json(response.message.content)
-                if schema
-                else response.message.content
-            ),
-            0,
-        )
-
-    def get_model_name(self) -> str:
-        return self.model_name_
-
-    def get_seed(self) -> int:
-        return self.seed
-    
-    def get_temperature(self) -> float:
-        return self.temperature
-
-
-class GroqModel(DeepEvalBaseLLM):
-    """A class to interact with Groq's LLMs.
-    This class extends DeepEvalBaseLLM to provide methods for generating text
-    using Groq's API.
-    
-    Attributes:
-        model_name (str): The name of the Groq model to use.
-    
-    """
-    def __init__(self, 
-                 model_name: str = JUDGE_MODEL, 
-                 async_mode: bool = False, 
-                 seed: int = JUDGE_SEED,
-                 temperature: float = JUDGE_TEMPERATURE,
-                 ):
-        super().__init__(model_name=model_name)
-        self.seed = seed
-        self.temperature = temperature
-
-    def load_model(self, async_mode: bool = False) -> Groq:
-        api_key = load_api_key(path=".groq_api_key.txt")
-        if not async_mode:
-            return Groq(api_key = api_key)
-        else:
-            return AsyncGroq(api_key = api_key)
-        
-    def generate(self, prompt: str) -> str:
-        groq_client = self.load_model(async_mode=False)
-        response = groq_client.chat.completions.create(
-            messages= [{
-                "role": "user", 
-                "content": prompt,
-            }],
-            seed= self.seed,
-            temperature= self.temperature,
-            model=self.model_name,
-        )
-        return response.choices[0].message.content
-    
-    async def a_generate(self, prompt: str) -> str:
-        groq_client = self.load_model(async_mode=True)
-        response = await groq_client.chat.completions.create(
-            messages= [{
-                "role": "user", 
-                "content": prompt,
-            }],
-            seed= self.seed,
-            temperature= self.temperature,
-            model=self.model_name,
-        )
-        return response.choices[0].message.content
-    
-    def get_model_name(self) -> str:
-        return self.model_name
-    
-    def get_seed(self) -> int:
-        return self.seed
-    
-    def get_temperature(self) -> float:
-        return self.temperature
 
 
 class CustomRelativeFormatter(logging.Formatter):
@@ -228,7 +40,6 @@ class CustomLogger(logging.Logger):
         handler.setFormatter(formatter)
         self.addHandler(handler)
         print(time.strftime("[%d/%m %H:%M:%S]", time.localtime()), ": Logger initialized")
-
 
 
 def retrieve_model_info(model_name: str = None, csv_file: str = "models.csv") -> Tuple[str, str]:
@@ -351,7 +162,7 @@ def write_to_xlsx(df: pd.DataFrame, file_name: str, sheet_name: str) -> None:
         df.to_excel(writer, sheet_name=sheet_name, index=False, header=header, startrow=startrow)
 
     
-def log_results(
+def save_eval_results_to_xlsx(
         type_of_test: str,
         model_name: str,
         results: List[tuple],
@@ -365,7 +176,7 @@ def log_results(
         results (List[tuple]): A list of tuples containing the score and reason for each prompt.
         file_name (str): The name of the file to save the results.
     Returns:
-        None
+        None: This function does not return anything. It writes the results to an Excel file.
     """
     if not file_name.endswith('.xlsx'):
         raise ValueError("File name is not an .xlsx file")
