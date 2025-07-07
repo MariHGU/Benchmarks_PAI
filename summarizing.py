@@ -46,8 +46,7 @@ def test_summarization(
     Logger.info("Successful")
     Logger.info("Loading prompts from file...")
 
-    with open(prompts_file, "r") as f:
-        prompts = [line.strip() for line in f if line.strip()]
+    prompts = utils.read_prompts(file_path=prompts_file)
     
     summarization_scores = []
 
