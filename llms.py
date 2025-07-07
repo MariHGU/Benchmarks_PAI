@@ -6,7 +6,7 @@ from ollama import ChatResponse
 from groq import Groq, AsyncGroq
 from pydantic import BaseModel
 
-MODEL = "nhn-small:latest"
+MODEL = "devstral:24b-small-2505-q8_0"
 JUDGE_SEED = 42
 JUDGE_TEMPERATURE = 0.7
 JUDGE_MODEL = "nhn-large:latest" # OLLAMA MODEL
