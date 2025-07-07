@@ -1,8 +1,11 @@
 import logging, os, time
+from datetime import datetime
+from hashlib import sha1
 from enum import IntEnum
 from typing import Tuple, List
 from openpyxl import load_workbook
 import pandas as pd
+from llms import JUDGE_MODEL, JUDGE_SEED, JUDGE_TEMPERATURE
 
 class TestType(IntEnum):
     SUMMARIZATION = 1
@@ -46,6 +49,20 @@ class CustomLogger(logging.Logger):
         print(time.strftime("[%d/%m %H:%M:%S]", time.localtime()), ": Logger initialized")
 
 
+def create_time_hash() -> str:
+    """
+    Create a time-based hash string.
+    
+    Returns:
+        str: A string representing the current time in the format 'YYYYMMDD_HHMMSS'.
+    """
+    h = sha1()
+    h.update(datetime.now().strftime("%Y%m%d%H%M%S%f").encode('utf-8'))
+    time_hash = h.hexdigest()
+
+    return time_hash
+
+
 def retrieve_model_info(model_name: str = None, csv_file: str = "models.csv") -> Tuple[str, str]:
     """
     Retrieve model digest number and kv cache size from the model instance.
@@ -74,7 +91,13 @@ def retrieve_model_info(model_name: str = None, csv_file: str = "models.csv") ->
         raise NameError(f"Did not find model: {model_name}")
     
 
-def write_response_to_csv(model_name: str, prompt: str, response: str, file_name: str) -> None:
+def write_response_to_csv(model_name: str, 
+                          prompt: str, 
+                          response: str, 
+                          file_name: str,
+                          time_hash: str,
+                          append: bool = True
+                          ) -> None:
     """
         Write a prompt and its response to a CSV file.
     Args:
@@ -95,7 +118,8 @@ def write_response_to_csv(model_name: str, prompt: str, response: str, file_name
         df_header = pd.DataFrame({
             "model": [],
             "prompt": [],
-            "response": []
+            "response": [],
+            "hash": []
         })
         df_header.to_csv(file_name, index=False)
 
@@ -103,9 +127,13 @@ def write_response_to_csv(model_name: str, prompt: str, response: str, file_name
     df = pd.DataFrame({
         "model": [model_name],
         "prompt": [prompt],
-        "response": [response]
+        "response": [response],
+        "hash": [time_hash]
     })
-    df.to_csv(file_name, mode='a', header=False, index=False)
+    if append:
+        df.to_csv(file_name, mode='a', header=False, index=False)
+    else:
+        df.to_csv(file_name, mode='w', header=True, index=False)
 
 
 def read_responses_from_csv(file_name: str) -> pd.DataFrame:
@@ -147,7 +175,8 @@ def write_to_xlsx(df: pd.DataFrame, file_name: str, sheet_name: str) -> None:
                 "Judge Seed": [],
                 "Judge Temperature": [],
                 "Score": [],
-                "Reason": []
+                "Reason": [],
+                "Hash": []
             })
             df_header.to_excel(excel_writer, sheet_name=sheet_name, index=False)
     workbook = load_workbook(file_name)
@@ -167,12 +196,13 @@ def write_to_xlsx(df: pd.DataFrame, file_name: str, sheet_name: str) -> None:
 
     
 def save_eval_results_to_xlsx(
-        type_of_test: str,
+        type_of_test: TestType,
         model_name: str,
         results: List[tuple],
         file_name: str,
         prompt_id: int = None,
         judge_params: Tuple[str, int, float] = (JUDGE_MODEL, JUDGE_SEED, JUDGE_TEMPERATURE),
+        time_hash: str = ""
         ) -> None:
     """Log the summarization results to .xlsx file.
     Args:
@@ -184,30 +214,19 @@ def save_eval_results_to_xlsx(
     """
     if not file_name.endswith('.xlsx'):
         raise ValueError("File name is not an .xlsx file")
-    if not isinstance(type_of_test, str):
-        raise TypeError("type_of_test must be a string")
+    if not isinstance(type_of_test, TestType):
+        raise TypeError("type_of_test must be a TestType enum")
     
-    if type_of_test.strip().lower() not in ["summarization", "prompt alignment", "alignment", "helpfulness"]:
-        match type_of_test.strip().lower()[0]:
-            case "s":
-                sheet_name, raise_ = ("Summarization", False) if input("Are you testing summarization? [Y/n]").lower() == "y" else (type_of_test, True)
-            case "p":
-                sheet_name, raise_ = ("PromptAlignment", False) if input("Are you testing prompt alignment? [Y/n]").lower() == "y" else (type_of_test, True)
-            case "a":
-                sheet_name, raise_ = ("PromptAlignment", False) if input("Are you testing prompt alignment? [Y/n]").lower() == "y" else (type_of_test, True)
-            case "h":
-                sheet_name, raise_ = ("Helpfulness", False) if input("Are you testing helpfuless? [Y/n]").lower() == "y" else (type_of_test, True)
-            case _:
-                raise_ = True
-        if raise_:
-            raise ValueError("type_of_test must be one of 'summarization', 'prompt alignment', or 'helpfulness'")
-    else:
-        if type_of_test.strip().lower() in ["prompt alignment", "alignment"]:
-            sheet_name = "PromptAlignment"
-        else:
-            sheet_name = type_of_test.strip().title()
-    sheet_name += "Results"
-    
+    match type_of_test:
+        case TestType.SUMMARIZATION:
+            sheet_name = "SummarizationResults"
+        case TestType.PROMPT_ALIGNMENT:
+            sheet_name = "PromptAlignmentResults"
+        case TestType.HELPFULNESS:
+            sheet_name = "HelpfulnessResults"
+        case _:
+            raise ValueError("Invalid test type provided. Use TestType.SUMMARIZATION, TestType.PROMPT_ALIGNMENT, or TestType.HELPFULNESS.")
+
     digest, kv_cache = retrieve_model_info(model_name=model_name)
 
     judge_model_name, judge_seed, judge_temp = judge_params
@@ -228,7 +247,8 @@ def save_eval_results_to_xlsx(
             "Judge Seed": [judge_seed],
             "Judge Temperature": [judge_temp],
             "Score": [score],
-            "Reason": [reason]
+            "Reason": [reason],
+            "Hash": [time_hash]
         })
 
         write_to_xlsx(

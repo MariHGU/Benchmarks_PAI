@@ -1,19 +1,19 @@
 import os
 import pandas as pd
 from typing import List, Tuple
-from deepeval.metrics import SummarizationMetric
-from deepeval.test_case import LLMTestCase
+from deepeval.metrics import SummarizationMetric, GEval, PromptAlignmentMetric
+from deepeval.test_case import LLMTestCase, LLMTestCaseParams
 from ollama import Client, ChatResponse
 import utils
+from utils import TestType
 from llms import GroqModel, OllamaLocalModel
 from llms import MODEL, JUDGE_MODEL, JUDGE_SEED, JUDGE_TEMPERATURE
 
 
 def generate_summaries(
-        model: str = MODEL, 
-        prompts_file: str = "prompts/summarization_prompts.txt",
-        api_key_file: str = ".api_key.txt",
-        save_file: str = "summaries.csv",
+        test_type: TestType,
+        model: str = MODEL,
+        api_key_file: str = ".api_key.txt"
     ) -> None:
     """Generate summaries for a set of prompts using the specified model.
 
@@ -26,6 +26,7 @@ def generate_summaries(
     Returns:
         None: The function saves the generated summaries to a CSV file.
     """
+
     Logger = utils.CustomLogger()
     Logger.info("Init model")
 
@@ -37,29 +38,55 @@ def generate_summaries(
 
     Logger.info("Loading prompts from file...")
 
+    match test_type:
+        case TestType.SUMMARIZATION:
+            prompts_file = "prompts/summarization_prompts.txt"
+            save_file = "responses/summaries.csv"
+        case TestType.PROMPT_ALIGNMENT:
+            prompts_file = "prompts/alignment_prompts.txt"
+            save_file = "responses/alignment_responses.csv"
+        case TestType.HELPFULNESS:
+            prompts_file = "prompts/helpfulness_prompts.txt"
+            save_file = "responses/helpfulness_responses.csv"
+        case _:
+            raise ValueError("Invalid test type provided. Use TestType.SUMMARIZATION, TestType.PROMPT_ALIGNMENT, or TestType.HELPFULNESS.")
+    
+    prompts_file = "prompts/summarization_prompts.txt"
+
     with open(prompts_file, "r") as f:
         prompts = [line.strip() for line in f if line.strip()]
 
     for i, prompt in enumerate(prompts):
-        Logger.info("Generating summary for %d. prompt", i + 1)
+        Logger.info("Generating response for %d. prompt", i + 1)
         response = LLM.generate(prompt)
+        time_hash = utils.create_time_hash()
         utils.write_response_to_csv(
             model_name=model,
             prompt=prompt,
             response=response[0],
-            file_name=save_file
+            file_name=save_file,
+            time_hash=time_hash,
+            append=i
+        )
+        utils.write_response_to_csv(
+            model_name=model,
+            prompt=prompt,
+            response=response[0],
+            file_name=save_file.replace(".csv", "_archive.csv"),
+            time_hash=time_hash
         )
     Logger.info("All summaries generated successfully.")
 
 
 def eval_summaries( 
+        test_type: TestType,
         api_key_file: str = ".api_key.txt",
         write_results: bool = True,
-        result_file: str = "results.xlsx",
-        load_file: str = "summaries.csv",
+        result_file: str = "results.xlsx"
     ) -> List[Tuple[float, str]]:
     """Evaluate the generated summaries using a judge model.
     Args:
+        test_type (TestType): The type of test to perform [].
         api_key_file (str): The file containing the API key for the judge model.
         write_results (bool): Whether to write the results to a file.
         result_file (str): The file to write the results to.
@@ -70,7 +97,6 @@ def eval_summaries(
     """
     Logger = utils.CustomLogger()
     Logger.info("Init eval model")
-
     JudgeLLM = OllamaLocalModel(
         model=JUDGE_MODEL,
         base_url="https://beta.chat.nhn.no/ollama",
@@ -79,157 +105,79 @@ def eval_summaries(
         temperature=JUDGE_TEMPERATURE,
     )
 
-    Logger.info("Preparing metric")
-    summarization_metric = SummarizationMetric(
-        threshold=0.5,
-        model=JudgeLLM
+    match test_type:
+        case TestType.SUMMARIZATION:
+            load_file = "responses/summaries.csv"
+            Logger.info("Preparing metric")
+            metric = SummarizationMetric(
+                threshold=0.5,
+                model=JudgeLLM
     )
+        case TestType.PROMPT_ALIGNMENT:
+            load_file = "responses/alignment_responses.csv"
 
-    Logger.info("Successful")
-    Logger.info("Loading summaries from CSV file...")
+        case TestType.HELPFULNESS:
+            load_file = "responses/helpfulness_responses.csv"
+            Logger.info("Preparing metric")
+            metric = GEval(
+                name="Helpfulness",
+                criteria = "Determine whether the `actual output` is helpful in answering the `input`.",
+                evaluation_params = [LLMTestCaseParams.INPUT, LLMTestCaseParams.ACTUAL_OUTPUT],
+                model=JudgeLLM
+            )
 
-    summaries_df = pd.read_csv(load_file)
+        case _:
+            raise ValueError("Invalid test type provided. Use TestType.SUMMARIZATION, TestType.PROMPT_ALIGNMENT, or TestType.HELPFULNESS.")
 
-    summarization_scores = []
-    for i, row in summaries_df.iterrows():
+    Logger.info("Loading responses from CSV file...")
+
+    responses_df = pd.read_csv(load_file)
+
+    scores = []
+    for i, row in responses_df.iterrows():
         prompt = row['prompt']
-        summary = row['response']
-        
-        # print("----------------------------")
-        # print(f"Prompt {i + 1}: {prompt}")
-        # print("_____________")
-        # print(f"Summary {i + 1}: {summary}")
-        # print("----------------------------")
+        response = row['response']
+        if test_type == TestType.PROMPT_ALIGNMENT:
+            Logger.info("Preparing metric for prompt alignment with instructions")
+            prompt_instructions = row['prompt_instructions'].split(';') if 'prompt_instructions' in row else [""]
+            metric = PromptAlignmentMetric(
+                prompt_instructions=prompt_instructions,
+                model=JudgeLLM,
+                include_reason=True,
+            )
+  
 
         Logger.info("Creating test case for %d. prompt", i + 1)
         test_case = LLMTestCase(
             input=prompt,
-            actual_output=summary
+            actual_output=response
         )
 
         Logger.info("Measuring...")
         try:
-            summarization_score = summarization_metric.measure(test_case)
+            score = metric.measure(test_case)
         except ValueError as ve:
-            Logger.error("Error measuring summarization for prompt %d: %s", i + 1, ve)
-            summarization_score = -1.0  # Assign a default score in case of error
+            Logger.error("Error measuring for prompt %d: %s", i + 1, ve)
+            score = -1.0  # Assign a default score in case of error
 
-        Logger.info("Measurement complete. Score: %s", summarization_score)
+        Logger.info("Measurement complete. Score: %s", score)
 
         if write_results:
             Logger.info("Writing result to file...")
             utils.save_eval_results_to_xlsx(
-                type_of_test="Summarization",
+                type_of_test=test_type,
                 model_name=row['model'],
-                results=[(summarization_score, summarization_metric.reason)],
+                results=[(score, metric.reason)],
                 file_name=result_file,
                 prompt_id=i,
                 judge_params=(JudgeLLM.get_model_name(), JudgeLLM.get_seed(), JudgeLLM.get_temperature()),
+                time_hash=row['hash']
             )
 
-        summarization_scores.append((summarization_score, summarization_metric.reason))
+        scores.append((score, metric.reason))
 
-    Logger.info("All summaries evaluated successfully.")
-    return summarization_scores
-
-
-# def test_summarization(
-    #     model: str= MODEL, 
-    #     api_key_file: str = ".api_key.txt",
-    #     prompts_file: str = "prompts/summarization_prompts.txt",
-    #     write_results: bool = True,
-    #     result_file: str = "results.xlsx",
-    #     ) -> List[tuple]:
-    
-    # """    Test the summarization model with a given prompt.
-    
-    # Args:
-    #     model (str): The model to use for summarization.
-    #     prompts_file (str): The file containing prompts for summarization.
-    
-    # Returns:
-    #     tuple: A tuple containing the score and reason from the metric evaluation.
-    # """
-    # Logger = utils.CustomLogger()
-    # Logger.info("Init eval model")
-    
-    # # JudgeLLM = GroqModel()
-    # JudgeLLM = OllamaLocalModel(
-    #     model=JUDGE_MODEL,
-    #     base_url="https://beta.chat.nhn.no/ollama",
-    #     api_key_file=".api_key.txt",
-    #     seed=JUDGE_SEED,
-    #     temperature=JUDGE_TEMPERATURE
-    # )
-
-    # Logger.info("Init model")
-
-    # LLM = OllamaLocalModel(
-    #     model=model,
-    #     base_url="https://beta.chat.nhn.no/ollama",
-    #     api_key_file=api_key_file
-    # )
-
-    # Logger.info("Successful")
-    # Logger.info("Loading prompts from file...")
-
-    # with open(prompts_file, "r") as f:
-    #     prompts = [line.strip() for line in f if line.strip()]
-    
-    # summarization_scores = []
-
-    # for i, prompt in enumerate(prompts):
-    #     Logger.info("Generating response for %d. prompt", i + 1)
-    #     response = LLM.generate(prompt)
-
-    #     # actual_output = client.chat(
-    #     #     model="gemma3n:e4b-it-q8_0",
-    #     #     messages=[
-    #     #         {
-    #     #             "role": "user",
-    #     #             "content": input,
-    #     #         }
-    #     #     ],
-    #     #     stream=False,
-    #     # ).message.content
-
-    #     Logger.info("Creating test case")
-
-    #     test_case = LLMTestCase(
-    #         input=prompt,
-    #         actual_output=response,
-    #     )
-
-    #     Logger.info("Preparing metric")
-
-    #     summarization_metric = SummarizationMetric(
-    #         threshold=0.5,
-    #         model=JudgeLLM
-    #     )
-
-    #     Logger.info("Measuring...")
-
-    #     summarization_score = summarization_metric.measure(test_case)
-    #     Logger.info("Measurement complete. Score: %s", summarization_score)
-
-    #     if write_results:
-    #         Logger.info("Writing result to file...")
-
-    #         utils.save_eval_results_to_xlsx(
-    #             type_of_test="Summarization",
-    #             model_name=model,
-    #             results=[(summarization_score, summarization_metric.reason)],
-    #             file_name=result_file,
-    #             prompt_id=i,
-    #             judge_params=(JudgeLLM.get_model_name(), JudgeLLM.get_seed(), JudgeLLM.get_temperature()),
-    #         )
-
-    #     summarization_scores.append((summarization_score, summarization_metric.reason))
-
-    # return summarization_scores
-
-
-
+    Logger.info("All responses evaluated.")
+    return scores
 
 
 if __name__ == "__main__":
@@ -241,7 +189,7 @@ if __name__ == "__main__":
     # Generate summaries
     # generate_summaries(model=model, prompts_file=prompts_file, save_file="summaries.csv")
     # Evaluate summaries
-    results = eval_summaries(api_key_file=".api_key.txt", write_results=True, result_file="results.xlsx", load_file="summaries.csv")
+    
 
     # results = test_summarization(model=model, prompts_file=prompts_file)
     
