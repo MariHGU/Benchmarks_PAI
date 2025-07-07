@@ -12,7 +12,7 @@ from pydantic import BaseModel
 MODEL = "nhn-small:latest"
 JUDGE_SEED = 42
 JUDGE_TEMPERATURE = 0.7
-JUDGE_MODEL = "nhn-small:latest" # OLLAMA MODEL
+JUDGE_MODEL = "nhn-large:latest" # OLLAMA MODEL
 # JUDGE_MODEL = "llama-3.3-70b-versatile" # GROQ MODEL
 
 
@@ -193,7 +193,6 @@ class GroqModel(DeepEvalBaseLLM):
         return self.temperature
 
 
-
 class CustomRelativeFormatter(logging.Formatter):
     """
     ChatGPT-4o generated code:
@@ -259,6 +258,56 @@ def retrieve_model_info(model_name: str = None, csv_file: str = "models.csv") ->
     else:
         raise NameError(f"Did not find model: {model_name}")
     
+
+def write_response_to_csv(model_name: str, prompt: str, response: str, file_name: str) -> None:
+    """
+        Write a prompt and its response to a CSV file.
+    Args:
+        prompt (str): The prompt to write to the CSV file.
+        response (str): The response to write to the CSV file.
+    Returns:
+        None
+    """
+
+    if not isinstance(prompt, str):
+        raise TypeError("prompt must be a string")
+    if not isinstance(response, str):
+        raise TypeError("response must be a string")
+    if not file_name.endswith('.csv'):
+        raise ValueError("file_name must be a .csv file")
+    if not os.path.exists(file_name):
+        # Create a new CSV file with headers if it does not exist
+        df_header = pd.DataFrame({
+            "model": [],
+            "prompt": [],
+            "response": []
+        })
+        df_header.to_csv(file_name, index=False)
+
+    # Append the prompt and response to the CSV file
+    df = pd.DataFrame({
+        "model": [model_name],
+        "prompt": [prompt],
+        "response": [response]
+    })
+    df.to_csv(file_name, mode='a', header=False, index=False)
+
+
+def read_responses_from_csv(file_name: str) -> pd.DataFrame:
+    """
+    Read responses from a CSV file and return them as a DataFrame.
+    
+    Args:
+        file_name (str): The name of the CSV file to read from. Defaults to "responses.csv".
+    Returns:
+        pd.DataFrame: A DataFrame containing the prompts and their corresponding responses.
+    """
+    if not os.path.exists(file_name):
+        raise FileNotFoundError(f"CSV file not found: {file_name}")
+    
+    df = pd.read_csv(file_name)
+    return df
+
 
 def write_to_xlsx(df: pd.DataFrame, file_name: str, sheet_name: str) -> None:
     """
