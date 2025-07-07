@@ -18,6 +18,7 @@ debug.log
 
 # Ignore results and output files
 results.xlsx
+output/
 
 # Ignore temporary files
 test.py
