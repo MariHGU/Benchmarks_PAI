@@ -111,7 +111,7 @@ async def test_llm_performance(prompts: list, purpose: str, model: str) -> str:
         start_time = time.time()
 
         # Call LLM-api
-        response, totalt_duration, load_duration, prompt_token, prompt_eval_duration, prompt_ps, response_token, response_eval_duration, response_ps,  = await call_llm_api(prompt, model=model)
+        response, totalt_duration, load_duration, prompt_token, prompt_eval_duration, prompt_ps, response_token, response_eval_duration, response_ps  = await call_llm_api(prompt, model=model)
 
         end_time = time.time()
         elapsed_time = end_time - start_time
@@ -139,10 +139,11 @@ async def test_llm_performance(prompts: list, purpose: str, model: str) -> str:
                 'Eval rate':[round(response_ps, 4)],
                 'Intended Purpose': [purpose]
                 })
-            #write_to_xcl(ny_data=ny_data, file_name='Benchmarks.xlsx', sheet='Sheet1')
-            if purpose == 'coding':
-                with open("llm_response.txt", "a", encoding="utf-8") as f:
-                    f.write(response)
+            write_to_xcl(ny_data=ny_data, file_name='Benchmarks.xlsx', sheet='Sheet1')
+            #  -- Uncomment for coding output --
+            # if purpose == 'coding':
+            #     with open("llm_response.txt", "a", encoding="utf-8") as f:
+            #         f.write(response)
 
         else:
             print(f"Test #{i+1}: Prompt='{prompt}' No response received. Time={elapsed_time:.4f}s")
@@ -164,7 +165,7 @@ async def test_llm_performance(prompts: list, purpose: str, model: str) -> str:
         'Inteded purpose': [purpose]
         })
 
-    #write_to_xcl(ny_data=ny_data, file_name='Benchmarks.xlsx', sheet='Sheet2')
+    write_to_xcl(ny_data=ny_data, file_name='Benchmarks.xlsx', sheet='Sheet2')
 
     print('Test completed')
 
