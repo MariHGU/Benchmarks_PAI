@@ -1,3 +1,3 @@
 [sqlfluff]
-dialect = ansi
+dialect = mysql
 exclude_rules = LT*, CP*, RF*, AM*, ST*, AL*, CV*
