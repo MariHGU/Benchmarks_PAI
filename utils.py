@@ -91,12 +91,14 @@ def retrieve_model_info(model_name: str = None, csv_file: str = "models.csv") ->
         raise NameError(f"Did not find model: {model_name}")
     
 
-def write_response_to_csv(model_name: str, 
+def write_response_to_csv(model_name: str,
+                          prompt_id: int, 
                           prompt: str, 
                           response: str, 
                           file_name: str,
                           time_hash: str,
-                          append: bool = True
+                          append: bool = True,
+                          prompt_instructions: str = None
                           ) -> None:
     """
         Write a prompt and its response to a CSV file.
@@ -117,19 +119,25 @@ def write_response_to_csv(model_name: str,
         # Create a new CSV file with headers if it does not exist
         df_header = pd.DataFrame({
             "model": [],
+            "prompt id": [],
             "prompt": [],
             "response": [],
             "hash": []
         })
+        if prompt_instructions:
+            df_header["prompt instructions"] = []
         df_header.to_csv(file_name, index=False)
 
     # Append the prompt and response to the CSV file
     df = pd.DataFrame({
         "model": [model_name],
+        "prompt id": [prompt_id],
         "prompt": [prompt],
         "response": [response],
         "hash": [time_hash]
     })
+    if prompt_instructions:
+        df["prompt instructions"] = prompt_instructions
     if append:
         df.to_csv(file_name, mode='a', header=False, index=False)
     else:

@@ -1,4 +1,5 @@
 import os
+from tqdm import tqdm
 import pandas as pd
 from typing import List, Tuple
 from deepeval.metrics import SummarizationMetric, GEval, PromptAlignmentMetric
@@ -12,13 +13,18 @@ from llms import MODEL, JUDGE_MODEL, JUDGE_SEED, JUDGE_TEMPERATURE
 
 def generate_responses(
         test_type: TestType,
-        model: str = MODEL
+        model: str = MODEL,
+        n_responses: int = 1,
     ) -> None:
     """Generate summaries for a set of prompts using the specified model.
 
     Args:
         test_type (TestType): The type of test to perform, which determines the prompts and save file.
+            - TestType.SUMMARIZATION: Generates responses for summarization prompts.
+            - TestType.PROMPT_ALIGNMENT: Generates responses for checking prompt alignment.
+            - TestType.HELPFULNESS: Generates responses for evaluating helpfulness - the actual output should be helpful in answering the input.
         model (str): Name of the model to use for generating summaries.
+        n_responses (int): Number of responses to generate for each prompt.
     
     Returns:
         None: The function saves the generated summaries to a CSV file.
@@ -48,35 +54,53 @@ def generate_responses(
         prompts = [line.strip() for line in f if line.strip()]
 
     for i, prompt in enumerate(prompts):
-        Logger.info("Generating response for %d. prompt", i + 1)
-        response = LLM.generate(prompt)
-        time_hash = utils.create_time_hash()
-        utils.write_response_to_csv(
-            model_name=model,
-            prompt=prompt,
-            response=response[0],
-            file_name=save_file,
-            time_hash=time_hash,
-            append=i # Remove all old responses when starting a new test
-        )
-        utils.write_response_to_csv(
-            model_name=model,
-            prompt=prompt,
-            response=response[0],
-            file_name=save_file.replace(".csv", "_archive.csv"),
-            time_hash=time_hash
-        )
-    Logger.info("All summaries generated successfully.")
+        Logger.info("Generating %d response(s) for %d. prompt" %(n_responses, i + 1))
+        if test_type == TestType.PROMPT_ALIGNMENT:
+            # For prompt alignment, we need to include the prompt instructions
+            prompt_sections = prompt.split("<|INSTRUCTIONS|>")
+            if len(prompt_sections) != 2:
+                raise ValueError("prompt/prompt_instructions split failed: expected 2 sections, got {}".format(len(prompt_sections)))
+
+            prompt, prompt_instructions = prompt_sections
+            prompt_instructions = prompt_instructions.strip()
+        else:
+            prompt_instructions = None
+        for _ in tqdm(range(n_responses)):
+            response = LLM.generate(prompt)
+            time_hash = utils.create_time_hash()
+
+            utils.write_response_to_csv(
+                model_name=model,
+                prompt=prompt,
+                response=response[0],
+                file_name=save_file,
+                time_hash=time_hash,
+                append=i, # Remove all old responses when starting a new test
+                prompt_instructions=prompt_instructions
+            )
+            utils.write_response_to_csv(
+                model_name=model,
+                prompt=prompt,
+                response=response[0],
+                file_name=save_file.replace(".csv", "_archive.csv"),
+                time_hash=time_hash,
+                prompt_instructions=prompt_instructions
+            )
+    Logger.info("All generations successful.")
 
 
 def eval_responses( 
         test_type: TestType,
         write_results: bool = True,
-        result_file: str = "results.xlsx"
+        result_file: str = "results.xlsx",
+        eval_archived: bool = False,
     ) -> List[Tuple[float, str]]:
     """Evaluate the generated summaries using a judge model.
     Args:
-        test_type (TestType): The type of test to perform [].
+        test_type (TestType): The type of test to perform:
+            - TestType.SUMMARIZATION: Evaluates ability to summarize text, and how well the summary captures the main points.
+            - TestType.PROMPT_ALIGNMENT: Evaluates how well the model follows the prompt instructions
+            - TestType.HELPFULNESS: Evaluates whether the actual output is helpful in answering the input.
         write_results (bool): Whether to write the results to a file.
         result_file (str): The file to write the results to.
     Returns:
@@ -116,17 +140,21 @@ def eval_responses(
         case _:
             raise ValueError("Invalid test type provided. Use TestType.SUMMARIZATION, TestType.PROMPT_ALIGNMENT, or TestType.HELPFULNESS.")
 
+
+    if eval_archived:
+        load_file = load_file.replace(".csv", "_archive.csv")
     Logger.info("Loading responses from CSV file...")
 
     responses_df = pd.read_csv(load_file)
 
     scores = []
-    for i, row in responses_df.iterrows():
+    for i, row in tqdm(responses_df.iterrows()):
         prompt = row['prompt']
         response = row['response']
         if test_type == TestType.PROMPT_ALIGNMENT:
             Logger.info("Preparing metric for prompt alignment with instructions")
-            prompt_instructions = row['prompt_instructions'].split(';') if 'prompt_instructions' in row else [""]
+            prompt_instructions = row['prompt instructions'].split(';') if ';' in row['prompt instructions'] else [row['prompt instructions']]
+            print("Prompt instructions:", prompt_instructions)
             metric = PromptAlignmentMetric(
                 prompt_instructions=prompt_instructions,
                 model=JudgeLLM,

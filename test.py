@@ -5,22 +5,31 @@ import hashlib, time
 
 
 if __name__ == "__main__":
-    generate_responses(
-        test_type=TestType.SUMMARIZATION,
-        model="nhn-small:latest"
-    )
-    generate_responses(
-        test_type=TestType.PROMPT_ALIGNMENT,
-        model="nhn-small:latest"
-    )
-    generate_responses(
-        test_type=TestType.HELPFULNESS,
-        model="nhn-small:latest"
-    )
+
+    # for model in ["nhn-small:latest", 
+    #               "devstral:24b-small-2505-q8_0", 
+    #               "magistral:24b-small-2506-q8_0", 
+    #               "dolphin3:8b-llama3.1-q8_0"
+    #               ]:
+    #     generate_responses(
+    #         test_type=TestType.PROMPT_ALIGNMENT,
+    #         model=model,
+    #         n_responses=3,
+    #     )
+    #     generate_responses(
+    #         test_type=TestType.SUMMARIZATION,
+    #         model=model,
+    #         n_responses=3
+    #     )
+    #     generate_responses(
+    #         test_type=TestType.HELPFULNESS,
+    #         model=model,
+    #         n_responses=3
+    #     )
 
 
+    # alignment = eval_responses(test_type=TestType.PROMPT_ALIGNMENT, eval_archived=True)
     summaries = eval_responses(test_type=TestType.SUMMARIZATION)
-    alignment = eval_responses(test_type=TestType.PROMPT_ALIGNMENT)
     helpfulness = eval_responses(test_type=TestType.HELPFULNESS)
 
 

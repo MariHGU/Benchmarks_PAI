@@ -10,7 +10,7 @@ BASE_URL = "https://beta.chat.nhn.no/ollama"
 MODEL = "devstral:24b-small-2505-q8_0"
 JUDGE_SEED = 42
 JUDGE_TEMPERATURE = 0.7
-JUDGE_MODEL = "nhn-large:latest" # OLLAMA MODEL
+JUDGE_MODEL = "deepseek-r1:32b-qwen-distill-fp16" # OLLAMA MODEL
 # JUDGE_MODEL = "llama-3.3-70b-versatile" # GROQ MODEL
 
 def load_api_key(path: str = ".api_key.txt") -> str:
