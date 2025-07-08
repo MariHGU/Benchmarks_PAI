@@ -1,14 +1,22 @@
-<<<<<<< HEAD
-# Ignorere virtuelle miljøer
-
+# Ignore Python virtual environments
 myenv/
 .venv/
+
+# Ignore DeepEval results
+.deepeval
+
+# Ignore log files
+*.log
+# Ignore Python cache files
+__pycache__/
+
+# Ignore api keys and sensitive files
 .api_key.txt
 .groq_api_key.txt
-test.py
-output/
-=======
-# Ignorere virtuelle miljøer
 
-myenv/
->>>>>>> benching
+# Ignore results and output files
+results.xlsx
+output/
+
+# Ignore temporary files
+test.py
