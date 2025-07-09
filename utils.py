@@ -5,7 +5,7 @@ from enum import IntEnum
 from typing import Tuple, List
 from openpyxl import load_workbook
 import pandas as pd
-from llms import JUDGE_MODEL, JUDGE_SEED, JUDGE_TEMPERATURE
+from llms import JUDGE_MODEL, JUDGE_SEED, JUDGE_TEMPERATURE, JUDGE_TOP_K
 
 class TestType(IntEnum):
     SUMMARIZATION = 1
@@ -182,6 +182,7 @@ def write_to_xlsx(df: pd.DataFrame, file_name: str, sheet_name: str) -> None:
                 "Judge Model": [],
                 "Judge Seed": [],
                 "Judge Temperature": [],
+                "Judge Top K": [],
                 "Score": [],
                 "Reason": [],
                 "Hash": []
@@ -209,7 +210,7 @@ def save_eval_results_to_xlsx(
         results: List[tuple],
         file_name: str,
         prompt_id: int = None,
-        judge_params: Tuple[str, int, float] = (JUDGE_MODEL, JUDGE_SEED, JUDGE_TEMPERATURE),
+        judge_params: Tuple[str, int, float, int] = (JUDGE_MODEL, JUDGE_SEED, JUDGE_TEMPERATURE, JUDGE_TOP_K),
         time_hash: str = ""
         ) -> None:
     """Log the summarization results to .xlsx file.
@@ -237,7 +238,7 @@ def save_eval_results_to_xlsx(
 
     digest, kv_cache = retrieve_model_info(model_name=model_name)
 
-    judge_model_name, judge_seed, judge_temp = judge_params
+    judge_model_name, judge_seed, judge_temp, judge_top_k = judge_params
 
 
     for prompt_no, (score, reason) in enumerate(results):
@@ -254,6 +255,7 @@ def save_eval_results_to_xlsx(
             "Judge Model": [judge_model_name],
             "Judge Seed": [judge_seed],
             "Judge Temperature": [judge_temp],
+            "Judge Top K": [judge_top_k],
             "Score": [score],
             "Reason": [reason],
             "Hash": [time_hash]

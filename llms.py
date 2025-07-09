@@ -8,9 +8,10 @@ from pydantic import BaseModel
 
 BASE_URL = "https://beta.chat.nhn.no/ollama"
 MODEL = "devstral:24b-small-2505-q8_0"
-JUDGE_SEED = 42
-JUDGE_TEMPERATURE = 0.7
 JUDGE_MODEL = "deepseek-r1:32b-qwen-distill-fp16" # OLLAMA MODEL
+JUDGE_SEED = 42
+JUDGE_TEMPERATURE = 0.2
+JUDGE_TOP_K = 10
 # JUDGE_MODEL = "llama-3.3-70b-versatile" # GROQ MODEL
 
 def load_api_key(path: str = ".api_key.txt") -> str:
@@ -45,11 +46,13 @@ class OllamaLocalModel(OllamaModel):
             base_url: str = BASE_URL,
             seed: int = None,
             temperature: float = None,
+            top_k: int = None,
             ):
         self.model_name_ = model
         super().__init__(model=model, base_url=base_url)
         self.seed = seed
         self.temperature = temperature
+        self.top_k = top_k
 
     def load_model(self,  async_mode: bool = False) -> Client:
         api_key = self.get_api_key()
@@ -81,7 +84,8 @@ class OllamaLocalModel(OllamaModel):
             format=schema.model_json_schema() if schema else None,
             options={
                 "temperature": self.temperature,
-                "seed": self.seed
+                "seed": self.seed,
+                "top_k": self.top_k
                      },
         )
         return (
@@ -103,7 +107,8 @@ class OllamaLocalModel(OllamaModel):
             format=schema.model_json_schema() if schema else None,
             options={
                 "temperature": self.temperature,
-                "seed": self.seed
+                "seed": self.seed,
+                "top_k": self.top_k
                      },
         )
         return (
@@ -115,6 +120,27 @@ class OllamaLocalModel(OllamaModel):
             0,
         )
 
+    async def a_generate_raw_response(
+        self, prompt: str,
+        top_logprobs: int = 10,
+    ) -> Tuple[str, float]:
+        try:
+            chat_model = self.load_model(async_mode=True)
+            response: ChatResponse = await chat_model.chat(
+                model=self.model_name,
+                messages=[{"role": "user", "content": prompt}],
+                options={
+                    "temperature": self.temperature,
+                    "seed": self.seed,
+                    "log_probs": True,
+                    "top_logprobs": top_logprobs,
+                        },
+            )
+            return (response, 0)
+        except Exception as e:
+            print(f"Error in OllamaLocalModel.a_generate_raw_response: {e}")
+            return (None, 0)
+
     def get_model_name(self) -> str:
         return self.model_name_
 
@@ -123,6 +149,9 @@ class OllamaLocalModel(OllamaModel):
     
     def get_temperature(self) -> float:
         return self.temperature
+    
+    def get_top_k(self) -> int:
+        return self.top_k
 
 class GroqModel(DeepEvalBaseLLM):
     """A class to interact with Groq's LLMs.
