@@ -163,13 +163,13 @@ def check_ts_validation(modelFolder: str, LangFiles: list) -> bool:
 
     for file in tsFiles:
         result = subprocess.run(
-            [f'tsc', 'output/{modelFolder}/{file}'],
+            [f'tsc', f'output/{modelFolder}/{file}', '--noEmit'],
             capture_output=True,
-            text = True
+            text = True,
+            shell=True
         )
         if result.returncode != 0:
             files_with_error.add(file)
-
     return True if len(files_with_error)>0 else False
 
 def check_html_validation(modelFolder: str, LangFiles: list) -> bool:
@@ -200,7 +200,75 @@ def check_css_validation(modelFolder: str, LangFiles: list) -> bool:
         if result.returncode != 0:
             files_with_error.add(file)
 
-    return True if len(files_with_error)>0 else False       
+    return True if len(files_with_error)>0 else False  
+
+def check_c_validation(modelFolder: str, LangFiles: str) -> bool:
+    cFiles = LangFiles['c']['files']
+    files_with_error = set()
+
+    for file in cFiles:
+        result = subprocess.run(
+            ['gcc','-fsyntax-only', f'output/{modelFolder}/{file}'],
+            shell=True,
+            capture_output=True,
+            text=True
+        )
+        if result.returncode != 0:
+            files_with_error.add(file)
+
+    return True if len(files_with_error)>0 else False  
+
+def check_cs_validation(modelFolder: str, LangFiles: str) -> bool:
+    csFiles = LangFiles['cs']['files']
+    files_with_error = set()
+
+    for file in csFiles:
+        result = subprocess.run(
+            ['csval', f'output/{modelFolder}/{file}'],
+            shell=True,
+            capture_output=True,
+            text=True
+        )
+        if result.returncode != 0:
+            files_with_error.add(file)
+            print(result.stderr)
+            print(result.stdout)
+
+    return True if len(files_with_error)>0 else False  
+
+def check_go_validation(modelFolder: str, LangFiles: list) -> bool:
+    goFiles = LangFiles['go']['files']
+    files_with_error = set()
+
+    for file in goFiles:
+        result = subprocess.run(
+            ['go', 'build','-o','NUL',f'output/{modelFolder}/{file}'],
+            shell=True,
+            capture_output=True,
+            text=True
+        )
+        if result.returncode != 0:
+            files_with_error.add(file)
+
+    return True if len(files_with_error)>0 else False  
+
+def check_ruby_validation(modelFolder: str, LangFiles: list) -> bool:
+    rbFiles = LangFiles['rb']['files']
+    files_with_error = set()
+
+    for file in rbFiles:
+        result = subprocess.run(
+            ['ruby', '-c',f'output/{modelFolder}/{file}'],
+            shell=True,
+            capture_output=True,
+            text=True
+        )
+        if result.returncode != 0:
+            files_with_error.add(file)
+
+    return True if len(files_with_error)>0 else False  
+
+
 
 langFuncs = {
     "py": check_python_Validation,
@@ -213,6 +281,10 @@ langFuncs = {
     "json": check_json_validation,
     "java": check_java_Validation,
     "cpp": check_cpp_Validation,
+    "rb": check_ruby_validation,
+    "go": check_go_validation,
+    "c": check_c_validation,
+    "cs": check_cs_validation
 }
 
 def checkCode(modelFrame: str):
