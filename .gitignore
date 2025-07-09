@@ -9,6 +9,8 @@ myenv/
 *.log
 # Ignore Python cache files
 __pycache__/
+# Ignore debug log files
+debug.log
 
 # Ignore api keys and sensitive files
 .api_key.txt
@@ -17,6 +19,7 @@ __pycache__/
 # Ignore results and output files
 results.xlsx
 output/
+responses/
 
 # Ignore temporary files
 test.py
