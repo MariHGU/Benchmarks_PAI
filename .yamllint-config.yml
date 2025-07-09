@@ -1,0 +1,14 @@
+extends: relaxed
+
+rules:
+  document-start: disable
+  new-lines: disable
+  line-length: disable
+  trailing-spaces: disable
+  indentation: enable
+  comments: disable
+  truthy: disable
+  empty-lines: disable
+  hyphens: disable
+  colons: disable
+  brackets: disable

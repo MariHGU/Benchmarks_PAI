@@ -3,6 +3,7 @@ import subprocess
 import json
 from pathlib import Path
 from code_retrieval import LANG_EXTENSION_MAP
+from lxml import etree
 
 
 def createLangLists(modelFolder: str) -> dict:
@@ -184,6 +185,7 @@ def check_html_validation(modelFolder: str, LangFiles: list) -> bool:
         )
         if result.returncode != 0:
             files_with_error.add(file)
+
     return True if len(files_with_error)>0 else False
 
 def check_css_validation(modelFolder: str, LangFiles: list) -> bool:
@@ -231,8 +233,6 @@ def check_cs_validation(modelFolder: str, LangFiles: str) -> bool:
         )
         if result.returncode != 0:
             files_with_error.add(file)
-            print(result.stderr)
-            print(result.stdout)
 
     return True if len(files_with_error)>0 else False  
 
@@ -268,6 +268,82 @@ def check_ruby_validation(modelFolder: str, LangFiles: list) -> bool:
 
     return True if len(files_with_error)>0 else False  
 
+def check_yaml_validation(modelFolder: str, LangFiles: list) -> bool:
+    ymlFiles = LangFiles['yml']['files']
+    files_with_error = set()
+
+    for file in ymlFiles:
+        result = subprocess.run(
+            ['py','-m','yamllint','-c','.yamllint-config.yml', f'output/{modelFolder}/{file}'],
+            capture_output=True,
+            text= True
+        )
+        if result.returncode != 0:
+            files_with_error.add(file)
+            
+    return True if len(files_with_error)>0 else False
+
+def check_xml_validation(modelFolder: str, LangFiles: list) -> bool:
+    xmlFiles = LangFiles['xml']['files']
+    files_with_error = set()
+
+    for file in xmlFiles:
+        result = subprocess.run(
+            ['xmllint', f'output/{modelFolder}/{file}'],
+            capture_output=True,
+            text= True
+        )
+        if result.returncode != 0:
+            files_with_error.add(file)
+            
+    return True if len(files_with_error)>0 else False
+
+def check_xsl_validation(modelFolder: str, LangFiles: list) -> bool:
+    xslFiles = LangFiles['xsl']['files']
+    files_with_error = set()
+
+    for file in xslFiles:
+        try:
+            xsl_doc = etree.parse(f'output/{modelFolder}/{file}')
+            transform = etree.XSLT(xsl_doc)
+        except:
+            files_with_error.add(file)
+            
+    return True if len(files_with_error)>0 else False
+
+def check_xslt_validation(modelFolder: str, LangFiles: list) -> bool:
+    xslFiles = LangFiles['xslt']['files']
+    files_with_error = set()
+
+    for file in xslFiles:
+        try:
+            xslt_doc = etree.parse(f'output/{modelFolder}/{file}')
+            transform = etree.XSLT(xslt_doc)
+        except:
+            files_with_error.add(file)
+            
+    return True if len(files_with_error)>0 else False
+
+def check_kt_validation(modelFolder: str, LangFiles: list) -> bool:
+    ktFiles = LangFiles['kt']['files']
+    files_with_error = set()
+    subprocess.run(
+        'if not exists .tmp_compile mkdir .tmp_compile',
+        shell=True
+    )
+
+    for file in ktFiles:
+        result = subprocess.run(
+            f'kotlinc output/{modelFolder}/{file} -d .tmp_compile',
+            capture_output=True,
+            text=True,
+            shell=True
+        )
+        if result.returncode != 0:
+            files_with_error.add(file)
+            subprocess.run("rmdir /s /q .tmp_compile", shell=True)
+            
+    return True if len(files_with_error)>0 else False
 
 
 langFuncs = {
@@ -284,7 +360,12 @@ langFuncs = {
     "rb": check_ruby_validation,
     "go": check_go_validation,
     "c": check_c_validation,
-    "cs": check_cs_validation
+    "cs": check_cs_validation,
+    "yml": check_yaml_validation,
+    "xml": check_xml_validation,
+    "xsl": check_xsl_validation,
+    "xslt": check_xslt_validation,
+    "kt": check_kt_validation
 }
 
 def checkCode(modelFrame: str):
@@ -310,6 +391,6 @@ def checkCode(modelFrame: str):
 
 if __name__ =='__main__':
     for model in models:
-        print(model)
+        print(f'Currently testing: {model}\n ... \n')
         
         checkCode(modelFrame=model)
