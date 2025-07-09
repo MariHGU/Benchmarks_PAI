@@ -12,7 +12,7 @@ results in ./results_<date>
 
 #region global variables
 
-max_n = 20 #maximum number of test runs before generating a report
+max_n = 2 #maximum number of test runs before generating a report
 end_at = (7, 30) #(hour, minute) to stop testing and generate report
 
 #endregion
@@ -41,7 +41,10 @@ def init_db():
     """
     date_str = str(date.today().strftime('%d_%m_%Y'))
     results_date = 'results_' + date_str
-    os.mkdir(results_date)
+    try:
+        os.mkdir(results_date)
+    except:
+        print("Directory exists")
 
     db_path_str = 'results_' + date_str + '/data_' + date_str + '.db'
 
@@ -189,7 +192,7 @@ async def test_llm_performance(prompts: list, purpose: str, model: str) -> str:
         else:
             print(f"Test #{i+1}: Prompt='{prompt}' No response received. Time={experienced_time:.4f}s")
 
-    ny_data = pd.DataFrame({
+    new_data = pd.DataFrame({
         'Model': [model],
         'total_api_time': [total_api_time],
         'total_load_duration': [total_load_duration],
@@ -199,10 +202,15 @@ async def test_llm_performance(prompts: list, purpose: str, model: str) -> str:
         'total_response_eval_duration': [total_prompt_eval_duration]
         })
     
-    print('Test completed')
-    return ny_data
+    return new_data
+
+async def multiple_test_llm_performance(prompts: list, purpose: str, model: list):
 
 
+
+    tests_to_run =[test_llm_performance(prompts=prompts, purpose=purpose, model=coding_model) for coding_model in code_model_names]
+    test_results = await asyncio.gather(*tests_to_run)
+    return test_results
 
 #endregion
 
@@ -225,13 +233,12 @@ async def test_llm_performance(prompts: list, purpose: str, model: str) -> str:
 #region main
 
 if __name__ == "__main__":
-
     api_key = load_api_key('.api_key.txt')
 
     client = AsyncClient(
         host="https://beta.chat.nhn.no/ollama",
         headers={
-            'Authorization': f'{api_key}'
+            'Authorization': f'Bearer {api_key}'
         }
     )   
 
@@ -252,18 +259,14 @@ if __name__ == "__main__":
 
 
     while n < max_n and datetime.now() < end_time:
-        print("The time is" + str(datetime.now()) + "Running experiment replication " + str(n))
 
-        for coding_model in code_model_names:
-            purpose, prompts = initPurpose(purp='coding')
-            coding_time_df = test_llm_performance(prompts=prompts, purpose=purpose, model=coding_model)
-            coding_time_df.to_sql('coding_time', conn, if_exists = 'append', index = False)
-        
-        for text_model in text_model_names:
-            purpose, prompts = initPurpose(purp='text')
-            coding_time_df = test_llm_performance(prompts=prompts, purpose=purpose, model=coding_model)
-            coding_time_df.to_sql('text_time', conn, if_exists = 'append', index = False)
 
+        print("The time is " + str(datetime.now()) + ", Running experiment replication " + str(n))
+
+        purpose, prompts = initPurpose(purp='coding')
+        results = asyncio.run(multiple_test_llm_performance(prompts, purpose, code_model_names))
+        for df in results:
+            df.to_sql('coding_time', conn, if_exists = 'append', index = False)
 
         n += 1
     
