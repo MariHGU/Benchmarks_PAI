@@ -8,7 +8,7 @@ from ollama import Client, ChatResponse
 import utils
 from utils import TestType
 from llms import GroqModel, OllamaLocalModel
-from llms import MODEL, JUDGE_MODEL, JUDGE_SEED, JUDGE_TEMPERATURE
+from llms import MODEL, JUDGE_MODEL, JUDGE_SEED, JUDGE_TEMPERATURE, JUDGE_TOP_K
 
 
 def generate_responses(
@@ -54,7 +54,6 @@ def generate_responses(
         prompts = [line.strip() for line in f if line.strip()]
 
     for i, prompt in enumerate(prompts):
-        Logger.info("Generating %d response(s) for %d. prompt" %(n_responses, i + 1))
         if test_type == TestType.PROMPT_ALIGNMENT:
             # For prompt alignment, we need to include the prompt instructions
             prompt_sections = prompt.split("<|INSTRUCTIONS|>")
@@ -65,7 +64,7 @@ def generate_responses(
             prompt_instructions = prompt_instructions.strip()
         else:
             prompt_instructions = None
-        for _ in tqdm(range(n_responses)):
+        for _ in tqdm(range(n_responses), desc=f"Generating responses for prompt {i}"):
             response = LLM.generate(prompt)
             time_hash = utils.create_time_hash()
 
@@ -94,6 +93,7 @@ def eval_responses(
         write_results: bool = True,
         result_file: str = "results.xlsx",
         eval_archived: bool = False,
+        eval_range: Tuple[int, int] = None,
     ) -> List[Tuple[float, str]]:
     """Evaluate the generated summaries using a judge model.
     Args:
@@ -103,6 +103,8 @@ def eval_responses(
             - TestType.HELPFULNESS: Evaluates whether the actual output is helpful in answering the input.
         write_results (bool): Whether to write the results to a file.
         result_file (str): The file to write the results to.
+        eval_archived (bool): Whether to evaluate all archived responses.
+        eval_range (Tuple[int, int]): A tuple specifying the range of responses to evaluate. Deafults to None, which means all responses will be evaluated.
     Returns:
         List[Tuple[float, str]]: A list of tuples:
             float: The summarization score.
@@ -110,36 +112,17 @@ def eval_responses(
     """
     Logger = utils.CustomLogger()
     Logger.info("Init eval model")
-    JudgeLLM = OllamaLocalModel(
-        model=JUDGE_MODEL,
-        seed=JUDGE_SEED,
-        temperature=JUDGE_TEMPERATURE,
-    )
+
 
     match test_type:
         case TestType.SUMMARIZATION:
             load_file = "responses/summaries.csv"
-            Logger.info("Preparing metric")
-            metric = SummarizationMetric(
-                threshold=0.5,
-                model=JudgeLLM
-    )
         case TestType.PROMPT_ALIGNMENT:
             load_file = "responses/alignment_responses.csv"
-
         case TestType.HELPFULNESS:
             load_file = "responses/helpfulness_responses.csv"
-            Logger.info("Preparing metric")
-            metric = GEval(
-                name="Helpfulness",
-                criteria = "Determine whether the `actual output` is helpful in answering the `input`.",
-                evaluation_params = [LLMTestCaseParams.INPUT, LLMTestCaseParams.ACTUAL_OUTPUT],
-                model=JudgeLLM
-            )
-
         case _:
             raise ValueError("Invalid test type provided. Use TestType.SUMMARIZATION, TestType.PROMPT_ALIGNMENT, or TestType.HELPFULNESS.")
-
 
     if eval_archived:
         load_file = load_file.replace(".csv", "_archive.csv")
@@ -148,21 +131,47 @@ def eval_responses(
     responses_df = pd.read_csv(load_file)
 
     scores = []
-    for i, row in tqdm(responses_df.iterrows()):
+
+    responses = responses_df if not eval_range else responses_df.iloc[eval_range[0]:eval_range[1]]
+
+    for i, row in tqdm(responses.iterrows(), desc="Evaluating responses", total=len(responses)):
+        JudgeLLM = OllamaLocalModel(
+            model=JUDGE_MODEL,
+            seed=JUDGE_SEED,
+            temperature=JUDGE_TEMPERATURE,
+        )
+
+        match test_type:
+            case TestType.SUMMARIZATION:
+                Logger.info("Preparing metric")
+                metric = SummarizationMetric(
+                    threshold=0.5,
+                    model=JudgeLLM
+        )
+            case TestType.PROMPT_ALIGNMENT:
+                Logger.info("Preparing metric for prompt alignment with instructions")
+                prompt_instructions = row['prompt instructions'].split(';') if ';' in row['prompt instructions'] else [row['prompt instructions']]
+                metric = PromptAlignmentMetric(
+                    prompt_instructions=prompt_instructions,
+                    model=JudgeLLM,
+                    include_reason=True,
+                )
+            case TestType.HELPFULNESS:
+                Logger.info("Preparing metric")
+                metric = GEval(
+                    name="Helpfulness",
+                    criteria = "Determine whether the `actual output` is helpful in answering the `input`.",
+                    evaluation_params = [LLMTestCaseParams.INPUT, LLMTestCaseParams.ACTUAL_OUTPUT],
+                    model=JudgeLLM
+                )
+
+            case _:
+                raise ValueError("Invalid test type provided. Use TestType.SUMMARIZATION, TestType.PROMPT_ALIGNMENT, or TestType.HELPFULNESS.")
         prompt = row['prompt']
         response = row['response']
-        if test_type == TestType.PROMPT_ALIGNMENT:
-            Logger.info("Preparing metric for prompt alignment with instructions")
-            prompt_instructions = row['prompt instructions'].split(';') if ';' in row['prompt instructions'] else [row['prompt instructions']]
-            print("Prompt instructions:", prompt_instructions)
-            metric = PromptAlignmentMetric(
-                prompt_instructions=prompt_instructions,
-                model=JudgeLLM,
-                include_reason=True,
-            )
+        prompt_id = row['prompt id']
   
-
-        Logger.info("Creating test case for %d. prompt", i + 1)
+        Logger.info("Creating test case for prompt %d", i)
         test_case = LLMTestCase(
             input=prompt,
             actual_output=response
@@ -172,8 +181,11 @@ def eval_responses(
         try:
             score = metric.measure(test_case)
         except ValueError as ve:
-            Logger.error("Error measuring for prompt %d: %s", i + 1, ve)
+            Logger.error("Error measuring for prompt %d: %s", i, ve)
             score = -1.0  # Assign a default score in case of error
+        except Exception as e:
+            Logger.error("Unexpected error for prompt %d: %s", i, e)
+            score = -1.0
 
         Logger.info("Measurement complete. Score: %s", score)
 
@@ -184,8 +196,8 @@ def eval_responses(
                 model_name=row['model'],
                 results=[(score, metric.reason)],
                 file_name=result_file,
-                prompt_id=i,
-                judge_params=(JudgeLLM.get_model_name(), JudgeLLM.get_seed(), JudgeLLM.get_temperature()),
+                prompt_id=prompt_id,
+                judge_params=(JudgeLLM.get_model_name(), JudgeLLM.get_seed(), JudgeLLM.get_temperature(), JudgeLLM.get_top_k()),
                 time_hash=row['hash']
             )
 
@@ -213,5 +225,5 @@ if __name__ == "__main__":
     #     model_name=model,
     #     results=results,
     #     file_name="results.xlsx",
-    #     judge_params=(JUDGE_MODEL, JUDGE_SEED, JUDGE_TEMPERATURE),
+    #     judge_params=(JUDGE_MODEL, JUDGE_SEED, JUDGE_TEMPERATURE, JUDGE_TOP_K),
     # )

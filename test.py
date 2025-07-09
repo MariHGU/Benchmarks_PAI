@@ -1,7 +1,5 @@
 from use_case_metrics import generate_responses, eval_responses
 from utils import TestType
-import utils
-import hashlib, time
 
 
 if __name__ == "__main__":
@@ -28,9 +26,9 @@ if __name__ == "__main__":
     #     )
 
 
-    # alignment = eval_responses(test_type=TestType.PROMPT_ALIGNMENT, eval_archived=True)
-    summaries = eval_responses(test_type=TestType.SUMMARIZATION)
-    helpfulness = eval_responses(test_type=TestType.HELPFULNESS)
+    alignment = eval_responses(test_type=TestType.PROMPT_ALIGNMENT, eval_archived=True)
+    summaries = eval_responses(test_type=TestType.SUMMARIZATION, eval_archived=True)
+    helpfulness = eval_responses(test_type=TestType.HELPFULNESS, eval_archived=True)
 
 
 
