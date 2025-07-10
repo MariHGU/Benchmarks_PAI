@@ -5,9 +5,9 @@ import pandas as pd
 from pathlib import Path
 from typing import List, Tuple
 from ollama import AsyncClient, ChatResponse
-from openpyxl import load_workbook
 from code_retrieval import retrieveCode
 from code_validation import runCodeValidation
+from utils import retrieve_model_info, TestType, write_to_xlsx, initNewExcel
 
 # -- Initialize the client with appropriate host and authorization token --
 def get_api_key(file_path='.api_key') -> str:
@@ -88,7 +88,7 @@ def initPurpose(purp: str) -> Tuple[str, List[str]]:
 
 
 # -- Test LLM performance --
-async def test_llm_performance(prompts: list, purpose: str, model: str) -> str:
+async def test_llm_performance(prompts: list, purpose: str, test_type: TestType, model: str) -> str:
     """
     Performs the actual testing of the model, and writes individual prompt-performance to excel file.
 
@@ -106,7 +106,8 @@ async def test_llm_performance(prompts: list, purpose: str, model: str) -> str:
 
     num_tests = len(prompts)
 
-    digest, kv_cache = retrieveModel(model)
+    #digest, kv_cache = retrieveModel(model)
+    digest, kv_cache = retrieve_model_info(model_name=model)
 
 
     for i in range(num_tests):
@@ -142,7 +143,9 @@ async def test_llm_performance(prompts: list, purpose: str, model: str) -> str:
                 'Eval rate':[round(response_ps, 4)],
                 'Intended Purpose': [purpose]
                 })
-            #write_to_xcl(ny_data=ny_data, file_name='Benchmarks.xlsx', sheet='Sheet1')
+            #write_to_xcl(ny_data=ny_data, file_name='Benchmarks.xlsx', sheet='Benchmarks')
+            write_to_xlsx(df=ny_data, file_name='test.xlsx', sheet_name='Benchmarks', test_type=test_type)
+
             if purpose == 'coding':
                 with open("llm_response.txt", "a", encoding="utf-8") as f:
                     f.write(response)
@@ -167,102 +170,105 @@ async def test_llm_performance(prompts: list, purpose: str, model: str) -> str:
         'Inteded purpose': [purpose]
         })
 
-    #write_to_xcl(ny_data=ny_data, file_name='Benchmarks.xlsx', sheet='Sheet2')
+    #write_to_xcl(ny_data=ny_data, file_name='Benchmarks.xlsx', sheet='Avg_Benchmarks')
+    write_to_xlsx(df=ny_data, file_name='test.xlsx', sheet_name='Avg_Benchmarks', test_type=test_type)
 
     print('Test completed')
 
 
 # Ny data du vil legge til
 
-def write_to_xcl(ny_data, file_name:str, sheet:str):
-    """
-        Writes data to an excisting excel file as specified in file_name and sheet number.
-    """
-    # Last eksisterende arbeidsbok
-    folder = Path.cwd().parent
-    filepath = folder / file_name
+# def write_to_xcl(ny_data, file_name:str, sheet:str):
+#     """
+#         Writes data to an excisting excel file as specified in file_name and sheet number.
+#     """
+#     # Last eksisterende arbeidsbok
+#     folder = Path.cwd().parent
+#     filepath = folder / file_name
 
-    arknavn = sheet
-    workbook = load_workbook(filepath)
+#     arknavn = sheet
+#     workbook = load_workbook(filepath)
 
-    if arknavn in workbook.sheetnames:
-        sheet = workbook[arknavn]
-        startrow = sheet.max_row
-    else:
-        sheet = workbook.create_sheet(arknavn)
-        startrow = 0
+#     if arknavn in workbook.sheetnames:
+#         sheet = workbook[arknavn]
+#         startrow = sheet.max_row
+#     else:
+#         sheet = workbook.create_sheet(arknavn)
+#         startrow = 0
 
-    # Bruk ExcelWriter i append-modus uten å sette writer.book
-    with pd.ExcelWriter(filepath, engine='openpyxl', mode='a', if_sheet_exists='overlay') as writer:
-        ny_data.to_excel(writer, sheet_name=arknavn, index=False, header=False, startrow=startrow)
+#     # Bruk ExcelWriter i append-modus uten å sette writer.book
+#     with pd.ExcelWriter(filepath, engine='openpyxl', mode='a', if_sheet_exists='overlay') as writer:
+#         ny_data.to_excel(writer, sheet_name=arknavn, index=False, header=False, startrow=startrow)
 
-# -- Retrieve model-info --
-def retrieveModel(modelName: str) -> Tuple[str, str]:
-    """
-    Retrieves saved KV_Cache and digest from csv file
-    """
-    df = pd.read_csv(r'models.csv')
+# # -- Retrieve model-info --
+# def retrieveModel(modelName: str) -> Tuple[str, str]:
+#     """
+#     Retrieves saved KV_Cache and digest from csv file
+#     """
+#     df = pd.read_csv(r'models.csv')
     
-    match = df[df['model_name'] == modelName]
+#     match = df[df['model_name'] == modelName]
 
-    if not match.empty:
-        digest = match.iloc[0]['digest_nr']
-        kv_cache = match.iloc[0]['kv_cache']
-        return digest, kv_cache
-    else:
-        raise NameError(f"Did not find model: {modelName}")
+#     if not match.empty:
+#         digest = match.iloc[0]['digest_nr']
+#         kv_cache = match.iloc[0]['kv_cache']
+#         return digest, kv_cache
+#     else:
+#         raise NameError(f"Did not find model: {modelName}")
     
-def initNewExcel():
-    """
-    Initiates blank excel with headers
-    """
-    df = pd.DataFrame({
-        'Model': [],
-        'Digest': [],
-        'KV Cache Type': [],
-        'Prompt nr':[],
-        'Total Duration[ms]': [],
-        'Load Duration[ms]':[],
-        'Promt Eval Count':[],
-        'Prompt eval duration[ms]':[],
-        'Prompt eval rate':[],
-        'Eval Count':[],
-        'Eval duration[ms]':[],
-        'Eval rate':[],
-        'Inteded purpose': []
-    })
+# def initNewExcel():
+#     """
+#     Initiates blank excel with headers
+#     """
+#     df = pd.DataFrame({
+#         'Model': [],
+#         'Digest': [],
+#         'KV Cache Type': [],
+#         'Prompt nr':[],
+#         'Total Duration[ms]': [],
+#         'Load Duration[ms]':[],
+#         'Promt Eval Count':[],
+#         'Prompt eval duration[ms]':[],
+#         'Prompt eval rate':[],
+#         'Eval Count':[],
+#         'Eval duration[ms]':[],
+#         'Eval rate':[],
+#         'Inteded purpose': []
+#     })
 
-    avg_df = pd.DataFrame({
-        'Model':[],
-        'Digest': [],
-        'KV Cache Type': [],
-        'Average time (experienced)[s]': [],
-        'Average tokens/s':[],
-        'Average Time (API)[s]': [],
-        'Inteded purpose': []
-    })
+#     avg_df = pd.DataFrame({
+#         'Model':[],
+#         'Digest': [],
+#         'KV Cache Type': [],
+#         'Average time (experienced)[s]': [],
+#         'Average tokens/s':[],
+#         'Average Time (API)[s]': [],
+#         'Inteded purpose': []
+#     })
 
-    # Create excel outside of git repo
-    folder = Path.cwd().parent
+#     # Create excel outside of git repo
+#     folder = Path.cwd().parent
 
-    filepath = folder/"Benchmarks.xlsx"
+#     filepath = folder/"Benchmarks.xlsx"
 
-    with pd.ExcelWriter(filepath) as writer:
-        df.to_excel(writer, index=False, sheet_name='Sheet1')
-        avg_df.to_excel(writer, index=False, sheet_name='Sheet2')
+#     with pd.ExcelWriter(filepath) as writer:
+#         df.to_excel(writer, index=False, sheet_name='Sheet1')
+#         avg_df.to_excel(writer, index=False, sheet_name='Sheet2')
 
 async def initBenchmarking(newExcel: bool = False):
     purps = ['coding', 'text']
 
+    test_type = TestType.BENCHMARKING
+
 
     # Uncomment to initiate new excel:
     if newExcel == True:
-        initNewExcel()
+        initNewExcel(test_type=test_type, fileName="test.xlsx")
 
     # Test and write to file
     for purp in purps:
         purpose, prompts = initPurpose(purp=purp)
-        await test_llm_performance(prompts, purpose, model='dolphin3:8b-llama3.1-q8_0')
+        await test_llm_performance(prompts, purpose, test_type,model='nhn-small:latest')
 
 
 # Run the test

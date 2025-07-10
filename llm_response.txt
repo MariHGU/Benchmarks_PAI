@@ -1,327 +1,440 @@
 nhn-small:latest
- For å endre navnet på en kolonne i MySQL-serveren versjon 5.5.27 kan du bruke følgende SQL-uttrykk:
+ Du skal bruke følgende SQL-uttrykk for å endre navnet på en kolonne i MySQL Community Server 5.5.27:
 
 ```sql
-ALTER TABLE table_name CHANGE old_col_name new_col_name col_type;
+ALTER TABLE table_name RENAME COLUMN old_col_name TO new_col_name;
 ```
 
-Her er en forklaring på hvordan dette fungerer:
+Det er viktig å bruke `RENAME COLUMN` for å endre navnet på en eksisterende kolonne. Det som du prøvde var at endre navnet på hele kolonnen, og dette kan ikke gjøres med denne foreslåede SQL-uttrykk.
 
-* `CHANGE` - er kommandot som brukes for å endre kolonne-navn og type.
-* `old_col_name` - er navnet på den eksisterende kolonnen du vil endre.
-* `new_col_name` - er det nye navnet du vil gi kolonnen.
-* `col_type` - er den nye datatypen for kolonnen, og dette kan være noe slik som `varchar`, `int`, `date`, osv. Hvis du ikke ønsker å endre datatypen kan du skrive `old_col_type`.
-
-Dersom du ikke vil endre datatypen, kan du også bruke følgende uttrykk:
+Prøv å kjøre følgende kommando for å endre navnet på kolonnen:
 
 ```sql
-ALTER TABLE table_name CHANGE old_col_name new_col_name old_col_type;
+ALTER TABLE table_name CHANGE old_col_name new_col_name COLUMN new_col_name VARCHAR(255) NOT NULL;
 ```
 
-Hvis det fortar at du har feil, kan det være fordi serveren er instansiert med en sikkerhetsnivå som ikke tillater endringer av kolonnenavn uten å definere ny datatype. I dette tilfallet kan du bruke følgende uttrykk:
+Dette vil endre både tabellstrukturen og dataene i kolonnen. Hvis du ikke ønsker å endre dataene, kan du fjerne `CHANGE` og kjøre følgende kommando:
 
 ```sql
-ALTER TABLE table_name MODIFY COLUMN old_col_name new_col_name old_col_type;
-```
-
-Dette uttrykket vil endre navnet på kolonnen til det nye navnet du har angitt, men ikke endre datatypen. For å løse dette problemet kan du oppdatere din `.bash_profile`-fil slik at den bare legger til katalogen for Conda i ditt `$PATH`, men ikke aktiverer automatisk miljøet. Du kan gjøre dette ved å endre filen på følgende måte:
-
-1. Åpne din `.bash_profile`-fil med en tekstredigeringsprogram som for eksempel Vim eller Nano. Du finner den i din hjemmekatalog (normalt `~/`).
-2. Fjern hele blokken som starter med `# >>> conda initialize <<<`. Det skal se ut slik:
+ALTER TABLE table_name MODIFY old_col_name new_col_name VARCHAR(255) NOT NULL;
+``` For å løse problemet dinne måter er det å sjekke at du har installert `bash`-skriptet som skal konfigurere shellen til å bruke Conda. Det skal være en fil med navnet `conda.sh` i mappen `/Users/geoff/anaconda2/etc/profile.d`. Hvis du ikke finner denne filen, kan du opprette den og legge inn følgende linjer:
 
 ```bash
+#!/bin/bash
+if [ -f "/Users/geoff/anaconda2/etc/profile.d/conda.sh" ]; then
+    . "/Users/geoff/anaconda2/etc/profile.d/conda.sh"
+fi
+unset PATH
 export PATH="/Users/geoff/anaconda2/bin:$PATH"
 ```
 
-3. Lagre filen og lukk tekstredigeringsprogrammet.
-4. Åpne en ny terminal-sessions for å oppdatere bash-variablene med `source ~/.bash_profile`.
-5. Nå har du katalogen for Conda tilgjengelig i ditt `$PATH`, men det er ikke aktivert et miljø automatisk når du starter en ny terminal-sessions. For å aktivere et miljø, kan du bruke kommandet `conda activate <navn_på_miljøet>`.
+Senere kan du endre denne filen slik at den bare setter `PATH`-variabelen uten å aktivere base-miljøet ved standard. For å gjøre dette kan du endre første linjen i filen til:
 
-Dette skal løse problemet med at du ikke kan aktivere noen Conda-miljøer, mens du samtidig ikke aktiverer miljøet for utgangen når du starter en ny terminal-sessions. Svaret skal skrives på norsk og jeg vil gjøre det i fremtidene. Her er et oversikt over hvordan kodeforslaget fungerer:
-
-1. `check_dataset_balance` funksjonen kontrollerer om alle datasett (identifisert ved filnavnspensummet, som antar å være PLU-nummeret) i utdata-mappen har like mange bilde som den kategori med høyest antall. Funksjonen returnerer en dictionary hvor navn er PLU-nummer og verdien er det mangende antall bilde for å nå den høyeste tellingen. Den returnerer også et booleanverd som sier om alle kategorier har den høyeste tellingen eller ikke.
-2. `augment_cropped_images` funksjonen går gjennom allerede-kroppede bilde i utdata-mappen og genererer augmentasjer (rotasjon, horisontal flip, vertikal flip, og kombinert flip + rotasjon) bare hvis mappen har færre enn 300 PNG-bilde.
-
-Her er noen forslag til økt klarhet i kodeforslaget:
-
-1. Funksjonsnavnene bør være på norsk, f.eks. `balanseDatasett` og `augmenterKroppedeBilde`.
-2. Kommenteer koden for at forklare hva den gjør.
-3. Bruk en mer standardisert stil for å skrive kode - det er viktig med å ha en homogen stil i koden for å gjøre den lettest mulig å lese og forstå.
-4. Konsekvensen av at alle augmentasjoner blir lagt i samme mapp kan være problematisk. Det er en god ide å ha et system for å organisere augmentasjonene så de blir lagt i riktige mappene basert på PLU-nummeret eller andre kategoriseringer.
-5. Funksjonen `augment_cropped_images` skal kontrollere om alle bilde som genereres passerer valideringsregler før de lagres. Dette kan være viktig for å sikre at bildeet er godkjent til bruk i datasettet.
-6. Funksjonen `augment_cropped_images` kan også tjekke om det allerede eksisterer augmentasjoner som skal genereres for å unngå å generere redundante bilde. Dette vil gjøre prosessen mer effisienst og minske lagringskapasitetet.
-7. Det er en god idé å ha et system for å logge hvilke augmentasjoner som blir generert for hvert bilde, slik at det er lett å sikre seg at alle bilde blir behandlet på samme måte. Dette kan også være nyttig for å forbedre modellen ved å analyse de augmentasjoner som giver beste resultater.
-8. Det er en god idé å ha et system for å teste koden med en del av datasettet slik at det er lett å finne ut hvorfor noen bilde ikke blir behandlet riktig. Dette kan også være nyttig for å finne og løse feil i koden.
-9. Det er en god idé å ha et system for å oppdatere datasettet automatisk når det blir nye bilde lagt til, slik at datasettet alltid er oppdatert med nytt materiale. Dette vil gjøre koden mer effektiv og mindre manuell arbeid vil være påkravet for å holde datasettet oppdatert. The error message indicates that the Docker daemon is already running and there is a permission issue when trying to connect to it.
-
-To resolve the problem, you can try the following steps:
-
-1. Stop the Docker daemon by running `sudo systemctl stop docker` and then verify its status with `sudo systemctl status docker`.
-
-2. Remove any existing Docker containers, images, and networks by running the commands below:
 ```bash
-sudo docker rm -f $(sudo docker ps -aq)
-sudo docker rmi -f $(sudo docker images -q)
-sudo docker network prune -f
+#!/bin/bash
+if [ "$CONDA_PREFIX" != "/Users/geoff/anaconda2" ]; then
+    if [ -f "/Users/geoff/anaconda2/etc/profile.d/conda.sh" ]; then
+        . "/Users/geoff/anaconda2/etc/profile.d/conda.sh"
+    fi
+    unset PATH
+    export PATH="/Users/geoff/anaconda2/bin:$PATH"
+fi
 ```
 
-3. Remove the Docker socket file and restart the service:
-```bash
-sudo rm /var/run/docker.sock
-sudo systemctl restart docker
+Dette vil si at skriptet blir kjørt bare hvis du ikke allerede har aktivert en Conda-miljø. Dette vil også sikre at de øvrige Conda-kommandoene fungerer som de burde.
+
+Hvis du støter på noen problemer med å legge til denne filen, kan du kjøre kommandet `conda init bash` for å generere en standardfil og bruke den som utgangspunkt. Så kan du endre filen slik at den passer deg i dette tilfelle. Svar på norsk:
+
+Jeg har laget en forbedring av koden så henne vil balansere datasettet slik at hver fil fra ordboken har omkring 300 bilder. Jeg har også endret `augment_cropped_images` funksjonen slik den tar inn ordboken og legg til augmentede bilder til de nødvendige PLU koder.
+
+```python
+import os
+from PIL import Image
+from collections import defaultdict
+
+# === KONFIGURASJONSVERDIER ===
+NUM_FOLDERS = None  # Sett til None for å behandle alle mapper eller en bestemt antall (f.eks., 5)
+NUM_FILES_PER_FOLDER = None  # Sett til None for å behandle alle cropped bilder per mappe eller en bestemt antall (f.eks., 5)
+OUTPUT_PATH = 'out_data/'
+
+def check_dataset_balance(output_path=OUTPUT_PATH):
+    """Sjekker om hver kategori (identifisert ved filnavnet prefix, antas å være PLU nummeret) i utgangspunktet har samme antall bilder som kategorien med det største antallet.
+    Returnerer: missing_dict (dict): En dictionary der keys er PLU nummer og values er antallet av bilder som mangler for å nå den maksimale tellingen. is_balanced (bool): True hvis alle kategorier har den maksimale tellingen, False annen gang.
+    """
+    # Finn alle PNG filer i utgangspunktet
+    all_files = [f for f in os.listdir(output_path) if f.endswith('.png')]
+    # Telle bildene per kategori (antar at kategorien er den første delen av filnavnet før underscore)
+    category_counts = defaultdict(int)
+    for filename in all_files:
+        dele = filename.split('_')
+        hvis dele:
+            kategori = dele[0]
+            category_counts[kategori] += 1
+    if not category_counts:
+        print("Ingen bilder funnet i utgangspunktet.")
+        return {}, True  # Finn hvor mange bilder som mangler for å nå den største tellingen per kategori
+
+    # Finne den maksimale antall bildene bland kategoriene
+    max_count = max(category_counts.values())
+
+    # Bygger opp en dictionary med de manglende bildene per kategori
+    missing_dict = {}
+    is_balanced = True
+    for kategori, tellingen in sorted(category_counts.items()):
+        mangler = max_count - tellingen
+        missing_dict[kategori] = mangler
+        hvis mangler > 0:
+            is_balanced = False
+    return missing_dict, is_balanced
+
+def augment_cropped_images(output_path='out_data/', num_folders=None, num_files_per_folder=None):
+    """Går gjennom allerede-kroppet bilder i utgangspunktet og genererer augmentasjoner (rotasjoner, horisontal flip, vertikal flip, og en kombinasjon av flip + rotasjon) hvis mappe har færre enn 300 PNG-bilder.
+    """
+    alle_elementer = os.listdir(output_path)
+    mapper = [f for f i alle_elementer hvis os.path.isdir(os.path.join(output_path, f))]  # Limitér antall mapper hvis det er spesifisert
+    hvis num_folders er ikke None:
+        mapper = mapper[:num_folders]
+    for mappe i mapper:
+        mappe_sti = os.path.join(output_path, mappe)  # Rekenner det totale antallet PNG-bildene i mappen
+        total_png_files = [f for f i os.listdir(mappe_sti) hvis f.endswith('.png')]
+        hvis len(total_png_files) > 300:
+            print(f"Krypper mappen '{mappe}' fordi den allerede har {len(total_png_files)} bilder.")
+            fortsett
+
+        # Finn alle kroppet bilder (filer som slutter med '_cropped.png')
+        cropped_files = [f for f i os.listdir(mappe_sti) hvis f.endswith('_cropped.png')]
+        hvis num_files_per_folder er ikke None:
+            cropped_files = cropped_filene[:num_files_per_folder]
+        for cropped_file i cropped_files:
+            base_name = cropped_file.replace('_cropped.png', '')
+            bildsti = os.path.join(mappe_sti, cropped_file)
+            try:
+                img = Image.open(bildsti)
+            except Exception as e:
+                print(f"⚠️ Kunne ikke åpne bildet {bildsti}: {e}")
+                fortsett
+
+            # --- Augmentasjoner ---
+            # 1. Rotasjoner (90°, 180°, 270°)
+            for angle i [90, 180, 270]:
+                rotated_img = img.rotate(angle, expand=True)
+                rotated_save_path = os.path.join(mappe_sti, f"{base_name}_cropped_rot{angle}.png")
+                rotated_img.save(rotated_save_path)
+                print(f"✅ Lagret rotasjon {angle}°-bild: {rotated_save_path}")
+            # 2. Horisontal flip
+            flipped_h = img.transpose(Image.FLIP_LEFT_RIGHT)
+            flipped_h_save_path = os.path.join(mappe_sti, f"{base_name}_cropped_flipH.png")
+            flipped_h.save(flipped_h_save_path)
+            print(f"✅ Lagret horisontal flip-bild: {flipped_h_save_path}")
+            # 3. Vertikal flip
+            flipped_v = img.transpose(Image.FLIP_TOP_BOTTOM)
+            flipped_v_save_path = os.path.join(mappe_sti, f"{base_name}_cropped_flipV.png")
+            flipped_v.save(flipped_v_save_path)
+            print(f"✅ Lagret vertikal flip-bild: {flipped_v_save_path}")
+            # 4. Valfritt: Kombinasjon av Horisontal flip og rotasjon (90°)
+            flipped_h_rotated = flipped_h.rotate(90, expand=True)
+            flipped_h_rotated_save_path = os.path.join(mappe_sti, f"{base_name}_cropped_flipH_rot90.png")
+            flipped_h_rotated.save(flipped_h_rotated_save_path)
+            print(f"✅ Lagret horisontal flip + rotasjon 90°-bild: {flipped_h_rotated_save_path}")
 ```
 
-4. Reinstall Docker Compose by running `sudo dnf install -y docker-compose`.
+Denne koden vil balansere datasettet slik at hver fil fra ordboken har omkring 300 bilder, og den vil også legg til augmenterede bilder til de nødvendige PLU koder. Based on the logs you've provided, it seems that your Docker service is running but you're encountering a permission error when trying to use `docker-compose`. The error occurs when attempting to connect to the Docker daemon via Unix socket (`/var/run/docker.sock`).
 
-5. Verify that you have the correct version of Docker Compose installed:
+Here are some steps you can try to resolve this issue:
+
+1. Check if the docker group exists and if your user is a member of it:
+
+   ```bash
+   $ grep docker /etc/group
+   ```
+
+   If the docker group doesn't exist, you need to create it and add your user to it:
+
+   ```bash
+   sudo groupadd docker
+   sudo usermod -aG docker $(whoami)
+   ```
+
+2. Verify that the docker socket file (`/var/run/docker.sock`) has the correct permissions, specifically that it belongs to the docker group and is readable and writable by it:
+
+   ```bash
+   $ ls -l /var/run/docker.sock
+   ```
+
+   If the file doesn't have the right permissions, you can change them like this:
+
+   ```bash
+   sudo chgrp docker /var/run/docker.sock
+   sudo chmod 660 /var/run/docker.sock
+   ```
+
+3. Restart Docker to apply the changes:
+
+   ```bash
+   sudo systemctl restart docker
+   ```
+
+4. After that, try reinstalling `docker-compose` using the following command:
+
+   ```bash
+   sudo pip install --user docker-compose
+   ```
+
+or if you prefer to use packages instead of pip:
+
 ```bash
-docker-compose --version
+sudo dnf install docker-compose -y
 ```
-It should display the version number, e.g., "docker-compose version 1.29.2, build unknown".
 
-6. Finally, run your docker-compose command again with `docker-compose up -d`. To help you with your SQL queries, I'll provide the solutions in English and translate them into Norwegian when necessary.
+5. Once the installation is complete, try running `docker-compose up -d` again and see if the issue persists. To help you with your SQL queries, I'll provide answers in a step-by-step fashion:
 
 1. Finding the most sold order_item and total earnings from that item:
-
 ```sql
-SELECT product_id, SUM(quantity) as total_sold, SUM(unit_price * quantity) as total_earnings
-FROM OrderItems
-JOIN Products ON OrderItems.product_id = Products.product_id
-GROUP BY product_id
-ORDER BY total_sold DESC
+WITH item_sales AS (
+    SELECT product_id, SUM(quantity) as total_quantity
+    FROM OrderItems
+    GROUP BY product_id
+    ORDER BY total_quantity DESC
+    LIMIT 1
+), earnings AS (
+    SELECT product_id, SUM(unit_price * quantity) as total_earnings
+    FROM OrderItems
+    INNER JOIN item_sales ON OrderItems.product_id = item_sales.product_id
+    GROUP BY product_id
+)
+SELECT product_id, total_earnings
+FROM earnings
+ORDER BY total_earnings DESC
 LIMIT 1;
 ```
 
-In Norwegian:
-
+2. Finding the most used payment method for the 5 most sold items:
 ```sql
-SELECT product_id, SUM(kantitet) as total_solgt, SUM(enhetspris * kantitet) as total_inntekter
-FROM OrderItems
-JOIN Produkter ON OrderItems.product_id = Produkter.product_id
-GRUPP BY product_id
-SORT ER BY total_solgt DESK
-LIMIT 1;
+WITH top_5_sold_items AS (
+    SELECT product_id, COUNT(*) as item_count
+    FROM OrderItems
+    GROUP BY product_id
+    ORDER BY item_count DESC
+    LIMIT 5
+), payment_methods AS (
+    SELECT order_id, payment_method
+    FROM Payments
+)
+SELECT pm.payment_method, COUNT(*) as count
+FROM payment_methods pm
+INNER JOIN top_5_sold_items si ON pm.order_id = si.product_id
+GROUP BY pm.payment_method
+ORDER BY count DESC;
 ```
 
-2. Finding the most used payment method for the top 5 sold items:
-
+3. Retrieve the items with highest frequency of purchase for the 5 customers that have made the most orders, and sort them by stock from low to high:
 ```sql
-SELECT p.name, COUNT(o.order_id) as item_count, COUNT(p.payment_id) as payment_count
-FROM OrderItems
-JOIN Orders ON OrderItems.order_id = Orders.order_id
-JOIN Payments ON Orders.order_id = Payments.order_id
-JOIN Products p ON OrderItems.product_id = p.product_id
-GROUP BY p.name
-ORDER BY item_count DESC, payment_count DESC
-LIMIT 5;
-```
-
-In Norwegian:
-
-```sql
-SELECT p.navn, COUNT(o.order_id) as posisjon_solgt, COUNT(p.betalingsid) as betaling_brukt
-FROM OrderItems
-JOIN Bestillinger ON OrderItems.order_id = Bestillinger.order_id
-JOIN Betalinger p ON Bestillinger.order_id = p.order_id
-JOIN Produkter ON OrderItems.product_id = Produkter.product_id
-GRUPP BY p.navn
-SORT ER BY posisjon_solgt DESK, betaling_brukt DESK
-LIMIT 5;
-```
-
-3. Finding the top 5 items purchased by customers with the most orders and sorting them by stock from low to high:
-
-```sql
-WITH customer_order_count AS (
-    SELECT customer_id, COUNT(order_id) as order_count
+WITH top_5_customers AS (
+    SELECT customer_id, COUNT(*) as num_orders
     FROM Orders
     GROUP BY customer_id
-    ORDER BY order_count DESC
+    ORDER BY num_orders DESC
     LIMIT 5
-), item_purchase_count AS (
-    SELECT order_item_id, product_id, SUM(quantity) as total_purchased
-    FROM OrderItems
-    GROUP BY order_item_id, product_id
-)
-SELECT i.product_id, p.name, i.total_purchased, s.stock_qty
-FROM item_purchase_count AS i
-JOIN Products AS p ON i.product_id = p.product_id
-JOIN Stock AS s ON i.product_id = s.product_id
-JOIN customer_order_count AS co ON i.order_item_id IN (
-    SELECT order_id
-    FROM Orders
-    JOIN customer_order_count ON Orders.customer_id = customer_order_count.customer_id
-)
-ORDER BY s.stock_qty ASC;
-```
-
-In Norwegian:
-
-```sql
-WITH kunder_bestillinger AS (
-    SELECT customer_id, COUNT(order_id) as antall_bestillinger
-    FROM Bestillinger
-    GRUPP BY customer_id
-    SORT ER BY antall_bestillinger DESK
-    LIMIT 5
-), posisjons_kaup AS (
-    SELECT order_item_id, product_id, SUM(kantitet) as totalt_kaupt
-    FROM OrderItems
-    GRUPP BY order_item_id, product_id
-), varer_i_lager AS (
+), customer_items AS (
+    SELECT ci.customer_id, oi.product_id, COUNT(*) as item_count
+    FROM top_5_customers tc
+    INNER JOIN Orders o ON tc.customer_id = o.customer_id
+    INNER JOIN OrderItems oi ON o.order_id = oi.order_id
+    GROUP BY ci.customer_id, oi.product_id
+    ORDER BY item_count DESC
+), stock_level AS (
     SELECT product_id, stock_qty
-    FROM Lagring
+    FROM Products
 )
-SELECT i.product_id, p.navn, i.totalt_kaupt, s.stock_qty
-FRIMFRT i JOIN Produkter AS p ON i.product_id = p.product_id
-JOIN varer_i_lager AS s ON i.product_id = s.product_id
-JOIN kunder_bestillinger AS ko ON i.order_item_id IN (
-    SELECT order_id
-    FRIMFRT Bestillinger
-    JOIN kunder_bestillinger ON Bestillinger.customer_id = kunder_bestillinger.customer_id
-)
-SORT ER BY s.stock_qty ASC;
-``` To handle the predictably invalid XML with unexpected nested tags within the `description` tag, you can create a custom `XMLFilter` that extends `SAXFilterImpl`, which allows you to override the `startElement()` and `chars()` methods. This filter will remove any nested tags and replace them with their content, making it valid for parsing using `DocumentBuilder`.
+SELECT ci.product_id, p.stock_qty
+FROM customer_items ci
+INNER JOIN stock_level p ON ci.product_id = p.product_id
+ORDER BY ci.item_count DESC, p.stock_qty ASC;
+``` To handle the situation where your XML contains unexpected elements within a known leaf element like `<description>`, you can create a custom XML parser that extends `org.xml.sax.helpers.DefaultHandler` and overrides the `startElement()` method.
 
-Here's an example implementation of a custom `XMLFilter`:
+In this method, you can check if the current tag is `<description>` and ignore any unexpected nested tags. Here's an example of how to create a custom XML parser for your case:
 
 ```java
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import org.xml.sax.Attributes;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.helpers.DefaultHandler;
-import org.xml.sax.helpers.XMLFilterImpl;
+import org.xml.sax.*;
+import org.xml.sax.helpers.*;
 
-public class CustomXMLFilter extends XMLFilterImpl {
-    private boolean descriptionStarted = false;
-    private StringBuilder descriptionBuilder = new StringBuilder();
-
-    public CustomXMLFilter(ContentHandler delegate) {
-        super(delegate);
-    }
+public class CustomXMLHandler extends DefaultHandler {
+    private boolean inDescription = false;
 
     @Override
-    public void startElement(String uri, String localName, String qName, Attributes attributes) throws org.xml.sax.SAXException {
-        if ("description".equals(qName)) {
-            descriptionStarted = true;
-        } else {
-            if (descriptionStarted && !"THIS-IS-PART-OF-DESCRIPTION".equals(localName)) {
-                throw new RuntimeException("Unexpected tag encountered within description: " + localName);
-            }
-            super.startElement(uri, localName, qName, attributes);
-        }
-    }
-
-    @Override
-    public void characters(char[] ch, int start, int length) throws org.xml.sax.SAXException {
-        if (descriptionStarted) {
-            descriptionBuilder.append(ch, start, length);
-        } else {
-            super.characters(ch, start, length);
-        }
-    }
-
-    @Override
-    public void endElement(String uri, String localName, String qName) throws org.xml.sax.SAXException {
-        if ("description".equals(qName)) {
-            if (descriptionStarted && !descriptionBuilder.toString().isEmpty()) {
-                getContentHandler().characters(descriptionBuilder.toString().toCharArray(), 0, descriptionBuilder.length());
-            }
-            descriptionStarted = false;
-        } else {
-            super.endElement(uri, localName, qName);
+    public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+        if ("description".equalsIgnoreCase(localName)) {
+            inDescription = true;
+        } else if (inDescription && !"THIS-IS-PART-OF-DESCRIPTION".equalsIgnoreCase(localName)) {
+            throw new SAXException("Unexpected element found within description: " + localName);
         }
     }
 }
 ```
 
-With the custom `XMLFilter`, you can parse your XML as follows:
+Now, you can use this custom handler when parsing your XML using `DocumentBuilderFactory`:
 
 ```java
-SAXParserFactory factory = SAXParserFactory.newInstance();
-SAXParser parser = factory.newSAXParser();
-CustomXMLFilter filter = new CustomXMLFilter(new DefaultHandler() {
-    // Handle the parsed XML here...
-});
-parser.parse(xmlInput, filter);
+DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+factory.setNamespaceAware(false);
+DocumentBuilder builder = factory.newDocumentBuilder();
+
+CustomXMLHandler handler = new CustomXMLHandler();
+InputSource is = new InputSource(new StringReader("<xml> ... <description>Example:Description:<THIS-IS-PART-OF-DESCRIPTION></description> ... </xml>"));
+builder.parse(is, handler);
 ```
 
-This approach will remove any unexpected nested tags within the `description` tag and make your XML valid for parsing using `DocumentBuilder`. For resolving the issues you're facing, you'll need to update your project's compileSdkVersion to at least API level 33. Here are the steps to follow:
+In this example, the custom parser will catch any unexpected elements within the `<description>` tag and throw a SAXException. This way, you can handle invalid XML gracefully instead of getting an exception from `DocumentBuilder.parse()`. For the issues you're encountering, it seems that the libraries you are using require a minimum compileSdkVersion of 33. To resolve these errors, you should update your project's `compileSdkVersion` and `targetSdkVersion` to at least version 33 in your app-level build.gradle file:
 
-1. Open your `build.gradle` file (module app) in Android Studio.
+1. First, ensure that you have Android Studio Arctic Fox or later installed, as it comes with the required API level 30 (Android 11) by default. If not, update Android Studio to the latest version.
 
-2. Update the `compileSdkVersion`, `targetSdkVersion`, and `minSdkVersion` values to match the desired SDK levels, for example:
+2. Next, open your `app/build.gradle` file and find the following block:
 
-```groovy
+```gradle
+android {
+    compileSdkVersion 30
+    // ... other configurations ...
+}
+```
+
+Update it to:
+
+```gradle
 android {
     compileSdkVersion 33
-    targetSdkVersion 33
-    minSdkVersion 21
+    // ... other configurations ...
 }
 ```
 
-3. Sync your Gradle project by clicking on the "Sync Now" button in the Gradle tab or by running `./gradlew sync` in terminal/command prompt.
+3. Now, update the `targetSdkVersion` and `minSdkVersion` as well:
 
-4. After syncing, rebuild your project and clean it if any errors persist:
-
-```sh
-./gradlew clean
-./gradlew build
+```gradle
+android {
+    compileSdkVersion 33
+    defaultConfig {
+        targetSdkVersion 33
+        minSdkVersion 21 // You can set a lower minSdkVersion if you want, but make sure it's compatible with the APIs used in your project.
+    }
+    // ... other configurations ...
+}
 ```
 
-If you still encounter issues, make sure that all dependencies are compatible with the updated SDK version. You may need to manually update some libraries or check for newer versions of problematic libraries on Maven Central or JCenter repositories. It seems like your FastAPI server is expecting JSON data in the POST request, but it's not receiving any. In your JavaScript and Python code examples, you are sending plain objects (not JSON), so it might be causing the issue.
+4. After making these changes, synchronize your Gradle files by going to File > Sync Project with Gradle Files or pressing `Ctrl+F9` on Windows/Linux or `Cmd+Shift+F9` on macOS.
 
-To fix this problem, convert the data object to a JSON string before sending the request:
+5. If the errors persist, try cleaning and rebuilding your project by going to Build > Clean Project or Build > Rebuild Project.
 
-In JavaScript:
+After following these steps, your project should be compatible with the libraries you are using, and the errors should be resolved. It seems that your FastAPI server is not recognizing the JSON data sent from JavaScript (Axios) and Python Requests as a valid request body. Let's modify your FastAPI code to accept JSON data:
 
+```python
+from fastapi import FastAPI, Request
+from pydantic import BaseModel
+import json
+
+app = FastAPI()
+
+class User(BaseModel):
+    user: str
+
+@app.post('/')
+async def main(request: Request):
+    raw_data = await request.json()
+    user = User(**raw_data)
+    return user
+```
+
+In this updated code, we import `Request`, `BaseModel` and `json` from FastAPI, and create a `User` Pydantic model to define the expected structure of the JSON data. We then change the function signature to accept a request object, which enables us to access the raw JSON data using `await request.json()`.
+
+Now your JavaScript and Python Requests should work without any issues:
+
+JavaScript (Axios):
 ```javascript
 let axios = require('axios');
 data = { user: 'smith' };
-const jsonData = JSON.stringify(data);
-axios.post('http://localhost:8000', jsonData).then(response => (console.log(response.url))).catch(error => console.log(error));
+axios.post('http://localhost:8000', data, { headers: {'Content-Type': 'application/json' } })
+    .then(response => console.log(response.url))
 ```
 
-In Python:
-
+Python (Requests):
 ```python
 import requests
 import json
-url = 'http://127.0.0.1:8000'
-data = {'user': 'Smith'}
-response = requests.post(url, json=json.dumps(data))
-print(response.text)
-```
 
-With these changes, your API should receive the correct JSON data and respond without error. ```json
-{
-  "order_id": "OR-123456",
+url = 'http://127.0.0.1:8000'
+data = json.dumps({"user": "Smith"})
+headers = {'Content-Type': 'application/json'}
+response = requests.post(url, headers=headers, data=data)
+print(response.text)
+``` {
+  "order_id": "ORD-123456",
   "customer": {
     "name": "John Doe",
     "email": "johndoe@example.com",
-    "address": {
-      "street": "Main Street",
-      "number": "123",
-      "city": "Oslo",
-      "zip_code": "01234"
-    }
+    "phone": "+47 98765432"
   },
   "items": [
     {
-      "product_id": "P-ABC123",
+      "product_id": "PRO-001",
       "name": "Product A",
       "quantity": 2,
-      "price": 99.99
+      "price": 19.99
     },
     {
-      "product_id": "P-DEF456",
+      "product_id": "PRO-002",
       "name": "Product B",
       "quantity": 3,
-      "price": 79.99
+      "price": 29.99
     }
   ],
-  "total": 329.96
+  "total": 119.94
+} I will provide you with a simple function to calculate the sum of an array in each programming language. This function should give you a good starting point for comparing the syntax and structure of the languages.
+
+Ruby:
+```ruby
+def sum_array(arr)
+  arr.reduce(:+)
+end
+```
+
+C#:
+```csharp
+using System;
+using System.Linq;
+
+public class Program
+{
+    public static int SumArray(int[] arr)
+    {
+        return arr.Sum();
+    }
 }
 ```
-This JSON file represents an order receipt with order ID `OR-123456`, customer name John Doe, his email and address, a list of items in the order, and the total cost of the order. The items in the order have their respective product IDs, names, quantities, and prices.
+
+C++:
+```cpp
+#include <iostream>
+#include <vector>
+#include <numeric>
+
+int sum_array(const std::vector<int>& arr)
+{
+    return std::accumulate(arr.begin(), arr.end(), 0);
+}
+```
+
+Go:
+```go
+package main
+import "fmt"
+
+func sumArray(arr []int) int {
+    total := 0
+    for _, v := range arr {
+        total += v
+    }
+    return total
+}
+
+func main() {
+    fmt.Println(sumArray([]int{1, 2, 3, 4}))
+}
+```
