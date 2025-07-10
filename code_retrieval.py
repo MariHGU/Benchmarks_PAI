@@ -1,3 +1,4 @@
+import os
 import re
 from pathlib import Path
 
@@ -77,9 +78,7 @@ def read_output():
 
     return llm_output, model
 
-# Muligens gjør om denne til en funksjon som kan kalles fra benchmarking?
-if __name__ == "__main__":
-
+def retrieveCode():
     llm_output, model = read_output()
 
     blocks = extract_all_code_blocks(llm_output)
@@ -88,8 +87,15 @@ if __name__ == "__main__":
         save_code_blocks(blocks, model=model)
     else:
         print("Ingen kodeblokker funnet.")
+    
+    remove = input("Delete textfile? [y/n]")
+    if remove == 'y':
+        os.remove('llm_response.txt')
 
     if (len(unknown_lang) > 0):
         print(f'The following unknown languages where found: {unknown_lang}')
         print("Consider adding to language dictionary, or handle manually.")
 
+if __name__ == "__main__":
+
+    retrieveCode()
