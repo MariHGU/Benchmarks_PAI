@@ -261,7 +261,7 @@ async def initBenchmarking(newExcel: bool = False):
     # Test and write to file
     for purp in purps:
         purpose, prompts = initPurpose(purp=purp)
-        await test_llm_performance(prompts, purpose, model='nhn-small:latest')
+        await test_llm_performance(prompts, purpose, model='dolphin3:8b-llama3.1-q8_0')
 
 
 # Run the test
