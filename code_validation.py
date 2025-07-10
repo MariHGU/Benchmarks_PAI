@@ -34,8 +34,6 @@ def createLangLists(modelFolder: str) -> dict:
     return languageFiles
 
 
-models = os.listdir('output')
-#print(models)
 
 def check_sql_Validation(modelFolder: str, languageFiles: dict) -> bool:
     """
@@ -328,9 +326,9 @@ def check_kt_validation(modelFolder: str, LangFiles: list) -> bool:
     ktFiles = LangFiles['kt']['files']
     files_with_error = set()
     subprocess.run(
-        'if not exists .tmp_compile mkdir .tmp_compile',
+        'cmd /c "if not exist .tmp_compile mkdir .tmp_compile"', 
         shell=True
-    )
+        )
 
     for file in ktFiles:
         result = subprocess.run(
@@ -369,6 +367,7 @@ langFuncs = {
 }
 
 def checkCode(modelFrame: str):
+        model = modelFrame
         langFiles = createLangLists(modelFolder=model)
 
         for lang, info in langFiles.items():
@@ -388,9 +387,13 @@ def checkCode(modelFrame: str):
         if len(bad_languages)>0:
             print(f'The model: {model} presents code with syntax-errors from the following languages: {bad_languages}')
 
+def runCodeValidation():
+    models = os.listdir('output')
 
-if __name__ =='__main__':
     for model in models:
         print(f'Currently testing: {model}\n ... \n')
         
         checkCode(modelFrame=model)
+
+if __name__ =='__main__':
+    runCodeValidation()

@@ -6,6 +6,8 @@ from pathlib import Path
 from typing import List, Tuple
 from ollama import AsyncClient, ChatResponse
 from openpyxl import load_workbook
+from code_retrieval import retrieveCode
+from code_validation import runCodeValidation
 
 # -- Initialize the client with appropriate host and authorization token --
 def get_api_key(file_path='.api_key') -> str:
@@ -95,7 +97,7 @@ async def test_llm_performance(prompts: list, purpose: str, model: str) -> str:
     """
     if purpose == 'coding':
         with open("llm_response.txt", "w", encoding="utf-8") as f:
-            f.write(model)
+            f.write(f'{model}\n')
 
     total_time = 0
     total_response_tokens_ps = 0
@@ -248,18 +250,29 @@ def initNewExcel():
         df.to_excel(writer, index=False, sheet_name='Sheet1')
         avg_df.to_excel(writer, index=False, sheet_name='Sheet2')
 
-
-
-# Run the test
-if __name__ == "__main__":
+async def initBenchmarking(newExcel: bool = False):
     purps = ['coding', 'text']
 
 
     # Uncomment to initiate new excel:
-    #initNewExcel()
+    if newExcel == True:
+        initNewExcel()
 
     # Test and write to file
     for purp in purps:
         purpose, prompts = initPurpose(purp=purp)
-        asyncio.run(test_llm_performance(prompts, purpose, model='nhn-small:latest'))
+        await test_llm_performance(prompts, purpose, model='nhn-small:latest')
+
+
+# Run the test
+if __name__ == "__main__":
+
+    asyncio.run(initBenchmarking(newExcel=False))
+    retrieveCode()
     
+    validateCode = input('Run code validation? [y/n]: ')
+
+    if validateCode == 'y':
+        #call code validation
+        runCodeValidation()
+        
