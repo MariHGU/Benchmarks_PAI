@@ -1,0 +1,327 @@
+nhn-small:latest
+ For å endre navnet på en kolonne i MySQL-serveren versjon 5.5.27 kan du bruke følgende SQL-uttrykk:
+
+```sql
+ALTER TABLE table_name CHANGE old_col_name new_col_name col_type;
+```
+
+Her er en forklaring på hvordan dette fungerer:
+
+* `CHANGE` - er kommandot som brukes for å endre kolonne-navn og type.
+* `old_col_name` - er navnet på den eksisterende kolonnen du vil endre.
+* `new_col_name` - er det nye navnet du vil gi kolonnen.
+* `col_type` - er den nye datatypen for kolonnen, og dette kan være noe slik som `varchar`, `int`, `date`, osv. Hvis du ikke ønsker å endre datatypen kan du skrive `old_col_type`.
+
+Dersom du ikke vil endre datatypen, kan du også bruke følgende uttrykk:
+
+```sql
+ALTER TABLE table_name CHANGE old_col_name new_col_name old_col_type;
+```
+
+Hvis det fortar at du har feil, kan det være fordi serveren er instansiert med en sikkerhetsnivå som ikke tillater endringer av kolonnenavn uten å definere ny datatype. I dette tilfallet kan du bruke følgende uttrykk:
+
+```sql
+ALTER TABLE table_name MODIFY COLUMN old_col_name new_col_name old_col_type;
+```
+
+Dette uttrykket vil endre navnet på kolonnen til det nye navnet du har angitt, men ikke endre datatypen. For å løse dette problemet kan du oppdatere din `.bash_profile`-fil slik at den bare legger til katalogen for Conda i ditt `$PATH`, men ikke aktiverer automatisk miljøet. Du kan gjøre dette ved å endre filen på følgende måte:
+
+1. Åpne din `.bash_profile`-fil med en tekstredigeringsprogram som for eksempel Vim eller Nano. Du finner den i din hjemmekatalog (normalt `~/`).
+2. Fjern hele blokken som starter med `# >>> conda initialize <<<`. Det skal se ut slik:
+
+```bash
+export PATH="/Users/geoff/anaconda2/bin:$PATH"
+```
+
+3. Lagre filen og lukk tekstredigeringsprogrammet.
+4. Åpne en ny terminal-sessions for å oppdatere bash-variablene med `source ~/.bash_profile`.
+5. Nå har du katalogen for Conda tilgjengelig i ditt `$PATH`, men det er ikke aktivert et miljø automatisk når du starter en ny terminal-sessions. For å aktivere et miljø, kan du bruke kommandet `conda activate <navn_på_miljøet>`.
+
+Dette skal løse problemet med at du ikke kan aktivere noen Conda-miljøer, mens du samtidig ikke aktiverer miljøet for utgangen når du starter en ny terminal-sessions. Svaret skal skrives på norsk og jeg vil gjøre det i fremtidene. Her er et oversikt over hvordan kodeforslaget fungerer:
+
+1. `check_dataset_balance` funksjonen kontrollerer om alle datasett (identifisert ved filnavnspensummet, som antar å være PLU-nummeret) i utdata-mappen har like mange bilde som den kategori med høyest antall. Funksjonen returnerer en dictionary hvor navn er PLU-nummer og verdien er det mangende antall bilde for å nå den høyeste tellingen. Den returnerer også et booleanverd som sier om alle kategorier har den høyeste tellingen eller ikke.
+2. `augment_cropped_images` funksjonen går gjennom allerede-kroppede bilde i utdata-mappen og genererer augmentasjer (rotasjon, horisontal flip, vertikal flip, og kombinert flip + rotasjon) bare hvis mappen har færre enn 300 PNG-bilde.
+
+Her er noen forslag til økt klarhet i kodeforslaget:
+
+1. Funksjonsnavnene bør være på norsk, f.eks. `balanseDatasett` og `augmenterKroppedeBilde`.
+2. Kommenteer koden for at forklare hva den gjør.
+3. Bruk en mer standardisert stil for å skrive kode - det er viktig med å ha en homogen stil i koden for å gjøre den lettest mulig å lese og forstå.
+4. Konsekvensen av at alle augmentasjoner blir lagt i samme mapp kan være problematisk. Det er en god ide å ha et system for å organisere augmentasjonene så de blir lagt i riktige mappene basert på PLU-nummeret eller andre kategoriseringer.
+5. Funksjonen `augment_cropped_images` skal kontrollere om alle bilde som genereres passerer valideringsregler før de lagres. Dette kan være viktig for å sikre at bildeet er godkjent til bruk i datasettet.
+6. Funksjonen `augment_cropped_images` kan også tjekke om det allerede eksisterer augmentasjoner som skal genereres for å unngå å generere redundante bilde. Dette vil gjøre prosessen mer effisienst og minske lagringskapasitetet.
+7. Det er en god idé å ha et system for å logge hvilke augmentasjoner som blir generert for hvert bilde, slik at det er lett å sikre seg at alle bilde blir behandlet på samme måte. Dette kan også være nyttig for å forbedre modellen ved å analyse de augmentasjoner som giver beste resultater.
+8. Det er en god idé å ha et system for å teste koden med en del av datasettet slik at det er lett å finne ut hvorfor noen bilde ikke blir behandlet riktig. Dette kan også være nyttig for å finne og løse feil i koden.
+9. Det er en god idé å ha et system for å oppdatere datasettet automatisk når det blir nye bilde lagt til, slik at datasettet alltid er oppdatert med nytt materiale. Dette vil gjøre koden mer effektiv og mindre manuell arbeid vil være påkravet for å holde datasettet oppdatert. The error message indicates that the Docker daemon is already running and there is a permission issue when trying to connect to it.
+
+To resolve the problem, you can try the following steps:
+
+1. Stop the Docker daemon by running `sudo systemctl stop docker` and then verify its status with `sudo systemctl status docker`.
+
+2. Remove any existing Docker containers, images, and networks by running the commands below:
+```bash
+sudo docker rm -f $(sudo docker ps -aq)
+sudo docker rmi -f $(sudo docker images -q)
+sudo docker network prune -f
+```
+
+3. Remove the Docker socket file and restart the service:
+```bash
+sudo rm /var/run/docker.sock
+sudo systemctl restart docker
+```
+
+4. Reinstall Docker Compose by running `sudo dnf install -y docker-compose`.
+
+5. Verify that you have the correct version of Docker Compose installed:
+```bash
+docker-compose --version
+```
+It should display the version number, e.g., "docker-compose version 1.29.2, build unknown".
+
+6. Finally, run your docker-compose command again with `docker-compose up -d`. To help you with your SQL queries, I'll provide the solutions in English and translate them into Norwegian when necessary.
+
+1. Finding the most sold order_item and total earnings from that item:
+
+```sql
+SELECT product_id, SUM(quantity) as total_sold, SUM(unit_price * quantity) as total_earnings
+FROM OrderItems
+JOIN Products ON OrderItems.product_id = Products.product_id
+GROUP BY product_id
+ORDER BY total_sold DESC
+LIMIT 1;
+```
+
+In Norwegian:
+
+```sql
+SELECT product_id, SUM(kantitet) as total_solgt, SUM(enhetspris * kantitet) as total_inntekter
+FROM OrderItems
+JOIN Produkter ON OrderItems.product_id = Produkter.product_id
+GRUPP BY product_id
+SORT ER BY total_solgt DESK
+LIMIT 1;
+```
+
+2. Finding the most used payment method for the top 5 sold items:
+
+```sql
+SELECT p.name, COUNT(o.order_id) as item_count, COUNT(p.payment_id) as payment_count
+FROM OrderItems
+JOIN Orders ON OrderItems.order_id = Orders.order_id
+JOIN Payments ON Orders.order_id = Payments.order_id
+JOIN Products p ON OrderItems.product_id = p.product_id
+GROUP BY p.name
+ORDER BY item_count DESC, payment_count DESC
+LIMIT 5;
+```
+
+In Norwegian:
+
+```sql
+SELECT p.navn, COUNT(o.order_id) as posisjon_solgt, COUNT(p.betalingsid) as betaling_brukt
+FROM OrderItems
+JOIN Bestillinger ON OrderItems.order_id = Bestillinger.order_id
+JOIN Betalinger p ON Bestillinger.order_id = p.order_id
+JOIN Produkter ON OrderItems.product_id = Produkter.product_id
+GRUPP BY p.navn
+SORT ER BY posisjon_solgt DESK, betaling_brukt DESK
+LIMIT 5;
+```
+
+3. Finding the top 5 items purchased by customers with the most orders and sorting them by stock from low to high:
+
+```sql
+WITH customer_order_count AS (
+    SELECT customer_id, COUNT(order_id) as order_count
+    FROM Orders
+    GROUP BY customer_id
+    ORDER BY order_count DESC
+    LIMIT 5
+), item_purchase_count AS (
+    SELECT order_item_id, product_id, SUM(quantity) as total_purchased
+    FROM OrderItems
+    GROUP BY order_item_id, product_id
+)
+SELECT i.product_id, p.name, i.total_purchased, s.stock_qty
+FROM item_purchase_count AS i
+JOIN Products AS p ON i.product_id = p.product_id
+JOIN Stock AS s ON i.product_id = s.product_id
+JOIN customer_order_count AS co ON i.order_item_id IN (
+    SELECT order_id
+    FROM Orders
+    JOIN customer_order_count ON Orders.customer_id = customer_order_count.customer_id
+)
+ORDER BY s.stock_qty ASC;
+```
+
+In Norwegian:
+
+```sql
+WITH kunder_bestillinger AS (
+    SELECT customer_id, COUNT(order_id) as antall_bestillinger
+    FROM Bestillinger
+    GRUPP BY customer_id
+    SORT ER BY antall_bestillinger DESK
+    LIMIT 5
+), posisjons_kaup AS (
+    SELECT order_item_id, product_id, SUM(kantitet) as totalt_kaupt
+    FROM OrderItems
+    GRUPP BY order_item_id, product_id
+), varer_i_lager AS (
+    SELECT product_id, stock_qty
+    FROM Lagring
+)
+SELECT i.product_id, p.navn, i.totalt_kaupt, s.stock_qty
+FRIMFRT i JOIN Produkter AS p ON i.product_id = p.product_id
+JOIN varer_i_lager AS s ON i.product_id = s.product_id
+JOIN kunder_bestillinger AS ko ON i.order_item_id IN (
+    SELECT order_id
+    FRIMFRT Bestillinger
+    JOIN kunder_bestillinger ON Bestillinger.customer_id = kunder_bestillinger.customer_id
+)
+SORT ER BY s.stock_qty ASC;
+``` To handle the predictably invalid XML with unexpected nested tags within the `description` tag, you can create a custom `XMLFilter` that extends `SAXFilterImpl`, which allows you to override the `startElement()` and `chars()` methods. This filter will remove any nested tags and replace them with their content, making it valid for parsing using `DocumentBuilder`.
+
+Here's an example implementation of a custom `XMLFilter`:
+
+```java
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.helpers.DefaultHandler;
+import org.xml.sax.helpers.XMLFilterImpl;
+
+public class CustomXMLFilter extends XMLFilterImpl {
+    private boolean descriptionStarted = false;
+    private StringBuilder descriptionBuilder = new StringBuilder();
+
+    public CustomXMLFilter(ContentHandler delegate) {
+        super(delegate);
+    }
+
+    @Override
+    public void startElement(String uri, String localName, String qName, Attributes attributes) throws org.xml.sax.SAXException {
+        if ("description".equals(qName)) {
+            descriptionStarted = true;
+        } else {
+            if (descriptionStarted && !"THIS-IS-PART-OF-DESCRIPTION".equals(localName)) {
+                throw new RuntimeException("Unexpected tag encountered within description: " + localName);
+            }
+            super.startElement(uri, localName, qName, attributes);
+        }
+    }
+
+    @Override
+    public void characters(char[] ch, int start, int length) throws org.xml.sax.SAXException {
+        if (descriptionStarted) {
+            descriptionBuilder.append(ch, start, length);
+        } else {
+            super.characters(ch, start, length);
+        }
+    }
+
+    @Override
+    public void endElement(String uri, String localName, String qName) throws org.xml.sax.SAXException {
+        if ("description".equals(qName)) {
+            if (descriptionStarted && !descriptionBuilder.toString().isEmpty()) {
+                getContentHandler().characters(descriptionBuilder.toString().toCharArray(), 0, descriptionBuilder.length());
+            }
+            descriptionStarted = false;
+        } else {
+            super.endElement(uri, localName, qName);
+        }
+    }
+}
+```
+
+With the custom `XMLFilter`, you can parse your XML as follows:
+
+```java
+SAXParserFactory factory = SAXParserFactory.newInstance();
+SAXParser parser = factory.newSAXParser();
+CustomXMLFilter filter = new CustomXMLFilter(new DefaultHandler() {
+    // Handle the parsed XML here...
+});
+parser.parse(xmlInput, filter);
+```
+
+This approach will remove any unexpected nested tags within the `description` tag and make your XML valid for parsing using `DocumentBuilder`. For resolving the issues you're facing, you'll need to update your project's compileSdkVersion to at least API level 33. Here are the steps to follow:
+
+1. Open your `build.gradle` file (module app) in Android Studio.
+
+2. Update the `compileSdkVersion`, `targetSdkVersion`, and `minSdkVersion` values to match the desired SDK levels, for example:
+
+```groovy
+android {
+    compileSdkVersion 33
+    targetSdkVersion 33
+    minSdkVersion 21
+}
+```
+
+3. Sync your Gradle project by clicking on the "Sync Now" button in the Gradle tab or by running `./gradlew sync` in terminal/command prompt.
+
+4. After syncing, rebuild your project and clean it if any errors persist:
+
+```sh
+./gradlew clean
+./gradlew build
+```
+
+If you still encounter issues, make sure that all dependencies are compatible with the updated SDK version. You may need to manually update some libraries or check for newer versions of problematic libraries on Maven Central or JCenter repositories. It seems like your FastAPI server is expecting JSON data in the POST request, but it's not receiving any. In your JavaScript and Python code examples, you are sending plain objects (not JSON), so it might be causing the issue.
+
+To fix this problem, convert the data object to a JSON string before sending the request:
+
+In JavaScript:
+
+```javascript
+let axios = require('axios');
+data = { user: 'smith' };
+const jsonData = JSON.stringify(data);
+axios.post('http://localhost:8000', jsonData).then(response => (console.log(response.url))).catch(error => console.log(error));
+```
+
+In Python:
+
+```python
+import requests
+import json
+url = 'http://127.0.0.1:8000'
+data = {'user': 'Smith'}
+response = requests.post(url, json=json.dumps(data))
+print(response.text)
+```
+
+With these changes, your API should receive the correct JSON data and respond without error. ```json
+{
+  "order_id": "OR-123456",
+  "customer": {
+    "name": "John Doe",
+    "email": "johndoe@example.com",
+    "address": {
+      "street": "Main Street",
+      "number": "123",
+      "city": "Oslo",
+      "zip_code": "01234"
+    }
+  },
+  "items": [
+    {
+      "product_id": "P-ABC123",
+      "name": "Product A",
+      "quantity": 2,
+      "price": 99.99
+    },
+    {
+      "product_id": "P-DEF456",
+      "name": "Product B",
+      "quantity": 3,
+      "price": 79.99
+    }
+  ],
+  "total": 329.96
+}
+```
+This JSON file represents an order receipt with order ID `OR-123456`, customer name John Doe, his email and address, a list of items in the order, and the total cost of the order. The items in the order have their respective product IDs, names, quantities, and prices.
