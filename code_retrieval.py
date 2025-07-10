@@ -7,6 +7,7 @@ LANG_EXTENSION_MAP = {
     "javascript": "js",
     "typescript": "ts",
     "bash": "sh",
+    "sh": "sh",
     "shell": "sh",
     "sql": "sql",
     "html": "html",
@@ -81,6 +82,8 @@ def read_output():
 def retrieveCode():
     llm_output, model = read_output()
 
+    print(f'Retrieving code from the model: {model} \n')
+
     blocks = extract_all_code_blocks(llm_output)
     
     if blocks:
@@ -88,13 +91,14 @@ def retrieveCode():
     else:
         print("Ingen kodeblokker funnet.")
     
-    remove = input("Delete textfile? [y/n]")
+    if (len(unknown_lang) > 0):
+        print(f'\nThe following unknown languages where found: {unknown_lang}')
+        print("Consider adding to language dictionary, or handle manually.\n")
+
+    remove = input("Delete textfile? [y/n]: ")
     if remove == 'y':
         os.remove('llm_response.txt')
 
-    if (len(unknown_lang) > 0):
-        print(f'The following unknown languages where found: {unknown_lang}')
-        print("Consider adding to language dictionary, or handle manually.")
 
 if __name__ == "__main__":
 

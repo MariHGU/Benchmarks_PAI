@@ -1,314 +1,327 @@
-nhn-small:v2
- For changing a column name in MySQL Community Server 5.5.27, you should use this SQL expression:
+nhn-small:latest
+ For å endre navnet på en kolonne i MySQL-serveren versjon 5.5.27 kan du bruke følgende SQL-uttrykk:
 
 ```sql
-ALTER TABLE table_name RENAME COLUMN old_col_name AS new_col_name;
+ALTER TABLE table_name CHANGE old_col_name new_col_name col_type;
 ```
 
-It seems that you have left out the `AS` keyword in your initial attempts. Keep in mind that the MySQL server version may affect the syntax and functionality of certain commands, so it's always essential to consult the appropriate manual for your specific version when needed. For å løse dette problemet kan du endre hvordan Conda blir aktivert ved å bruke en annen fil enn `.bash_profile`. Conda-utviklere anbefaler i regel å bruke `~/.bashrc` i stedet, da dette er den fil som blir kjørt hver gang du oppretter en ny terminal.
+Her er en forklaring på hvordan dette fungerer:
 
-For å endre på denne konfigurasjonen må du først flytte inn den kodeblokk som Conda har lagt til i `.bash_profile` til `~/.bashrc`. Dette kan du gjøre ved å opprette en ny fil ved navnet `~/.bashrc`, og legge in denne koden:
+* `CHANGE` - er kommandot som brukes for å endre kolonne-navn og type.
+* `old_col_name` - er navnet på den eksisterende kolonnen du vil endre.
+* `new_col_name` - er det nye navnet du vil gi kolonnen.
+* `col_type` - er den nye datatypen for kolonnen, og dette kan være noe slik som `varchar`, `int`, `date`, osv. Hvis du ikke ønsker å endre datatypen kan du skrive `old_col_type`.
 
-```bash
-# >>> conda initialize >>>
-# !! Contents within this block are managed by 'conda init' !!
-__conda_setup="$(CONDA_READEVAL_CMD "refs/etc/profile.d/conda.sh")"
-if [ -f "/Users/geoff/.condarc" ]; then
-    __conda_setup "${__conda_setup}" "$(${__conda_setup} config shell --append)"
-fi
-unset __conda_setup
-# <<< conda initialize >>>
-```
-
-Derefter må du endre denne linjen i `~/.bashrc`:
-
-```bash
-if [ -f ~/.bashrc ]; then
-    . ~/.bashrc
-fi
-```
-
-For å få den nye konfigurasjonen til å gå i kraft må du logge ut og inn på terminalen igjen, eller kan du kjøre follende kommando for å kjøre `~/.bashrc`:
-
-```bash
-source ~/.bashrc
-```
-
-Når du har gjort dette, kan du bruke kommandot `conda activate` til å aktivere miljøer. Dersom du vil avdekne denne linjen i `~/.bashrc`, vil Conda ikke automatisk aktivere base-miljøet når du starter en ny terminal. I will respond in English.
-
-To balance the data so that each file from the dictionary has approximately 300 pictures, you can modify your code as follows:
-
-1. First, ensure that the `augment_cropped_images` function only adds augmented images to folders that do not already have more than 300 PNG images. You can update this condition in the function like this:
-
-```python
-if len(total_png_files) > 300:
-    print(f"Skipping folder '{folder}' because it already has {len(total_png_files)} images.")
-continue
-```
-
-2. Next, you can update the `check_dataset_balance` function to return only those categories that are missing pictures to reach a total of 300 images:
-
-```python
-def check_dataset_balance(output_path=OUTPUT_PATH):
-    """... (Same as before) ... """
-    # Find the maximum image count among categories
-    max_count = max(category_counts.values())
-    # Build a dictionary of missing images per category
-    missing_dict = {}
-    is_balanced = True
-    for category, count in sorted(category_counts.items()):
-        if 300 - count > 0:
-            missing = 300 - count
-            missing_dict[category] = missing
-            if missing > 0:
-                is_balanced = False
-    return missing_dict, is_balanced
-```
-
-Now, when you run the script with `NUM_FOLDERS=None` and `NUM_FILES_PER_FOLDER=None`, it will process all folders and add augmented images to the necessary pictures_PLU codes until each folder has around 300 pictures. Keep in mind that this code assumes that you have an existing script or function for generating augmentations (rotations, horizontal flip, vertical flip, etc.) for the images. Det ser ut til at du har en permisjonsproblemer med Docker i Linux. Her er noen muligheter for å løse dette:
-
-1. Forstå permissjonene på /var/run/docker.sock. Du kan gjøre den eier av root ved å kjøre kommandet `sudo chown root:root /var/run/docker.sock`.
-2. Kontroller at Docker er deaktivert før du forsøker å starte den på nytt. Du kan gjøre dette ved å kjøre `sudo systemctl stop docker` og deretter `sudo systemctl disable docker`, hvis du vil ha den deaktiveret permanent ved starten av systemet.
-3. Prøv å starte Docker på nytt ved å kjøre `sudo systemctl start docker` og deretter kontrollere at det er aktivt ved å kjøre `sudo systemctl status docker`.
-4. Kontroller at du har de nødvendige pakker installert ved å kjøre `sudo dnf install -y docker docker-compose`.
-5. Sjekk om Firewall er aktivert og åpnet for Docker, du kan gjøre dette ved å kjøre kommandet `firewall-cmd --list-services` og sørge for at docker er på listen.
-6. Kontroller at du har rettigheter til å kjøre Docker ved å kontrollere hvilke brukere som har access til Docker, du kan gjøre dette ved å kjøre `sudo usermod -aG docker $USER` og deretter logge ut og logge inn på nytt.
-7. Prøv å starte Docker på nytt ved å kjøre `sudo systemctl daemon-reload` og `sudo systemctl restart docker`.
-8. Sjekk om du har en oppdatert versjon av Docker og docker-compose ved å kjøre `docker --version` og `docker-compose --version`, og hvis ikke, prøv å oppdatere dem ved å kjøre `sudo dnf upgrade -y docker docker-compose`.
-9. Prøv å starte Docker på nytt med debuggingsmodus ved å kjøre `sudo dockerd --debug` og se om det er noe feilmeldinger som kan hjelpe deg i å løse problemet.
-10. Hvis alle andre muligheter feiler, prøv å reinstaller Docker og docker-compose ved å fjerne dem med kommandene `sudo dnf remove -y docker docker-compose` og deretter installere dem på nytt ved å kjøre `sudo dnf install -y docker docker-compose`. To help you with your SQL queries, I will use SQL syntax for MySQL. Here are the solutions for your questions:
-
-1. To find the most sold order item and total earnings from that single item, you can use the following query:
+Dersom du ikke vil endre datatypen, kan du også bruke følgende uttrykk:
 
 ```sql
-SELECT product_id AS product, SUM(quantity) AS quantity_sold, SUM(unit_price * quantity) AS total_revenue
+ALTER TABLE table_name CHANGE old_col_name new_col_name old_col_type;
+```
+
+Hvis det fortar at du har feil, kan det være fordi serveren er instansiert med en sikkerhetsnivå som ikke tillater endringer av kolonnenavn uten å definere ny datatype. I dette tilfallet kan du bruke følgende uttrykk:
+
+```sql
+ALTER TABLE table_name MODIFY COLUMN old_col_name new_col_name old_col_type;
+```
+
+Dette uttrykket vil endre navnet på kolonnen til det nye navnet du har angitt, men ikke endre datatypen. For å løse dette problemet kan du oppdatere din `.bash_profile`-fil slik at den bare legger til katalogen for Conda i ditt `$PATH`, men ikke aktiverer automatisk miljøet. Du kan gjøre dette ved å endre filen på følgende måte:
+
+1. Åpne din `.bash_profile`-fil med en tekstredigeringsprogram som for eksempel Vim eller Nano. Du finner den i din hjemmekatalog (normalt `~/`).
+2. Fjern hele blokken som starter med `# >>> conda initialize <<<`. Det skal se ut slik:
+
+```bash
+export PATH="/Users/geoff/anaconda2/bin:$PATH"
+```
+
+3. Lagre filen og lukk tekstredigeringsprogrammet.
+4. Åpne en ny terminal-sessions for å oppdatere bash-variablene med `source ~/.bash_profile`.
+5. Nå har du katalogen for Conda tilgjengelig i ditt `$PATH`, men det er ikke aktivert et miljø automatisk når du starter en ny terminal-sessions. For å aktivere et miljø, kan du bruke kommandet `conda activate <navn_på_miljøet>`.
+
+Dette skal løse problemet med at du ikke kan aktivere noen Conda-miljøer, mens du samtidig ikke aktiverer miljøet for utgangen når du starter en ny terminal-sessions. Svaret skal skrives på norsk og jeg vil gjøre det i fremtidene. Her er et oversikt over hvordan kodeforslaget fungerer:
+
+1. `check_dataset_balance` funksjonen kontrollerer om alle datasett (identifisert ved filnavnspensummet, som antar å være PLU-nummeret) i utdata-mappen har like mange bilde som den kategori med høyest antall. Funksjonen returnerer en dictionary hvor navn er PLU-nummer og verdien er det mangende antall bilde for å nå den høyeste tellingen. Den returnerer også et booleanverd som sier om alle kategorier har den høyeste tellingen eller ikke.
+2. `augment_cropped_images` funksjonen går gjennom allerede-kroppede bilde i utdata-mappen og genererer augmentasjer (rotasjon, horisontal flip, vertikal flip, og kombinert flip + rotasjon) bare hvis mappen har færre enn 300 PNG-bilde.
+
+Her er noen forslag til økt klarhet i kodeforslaget:
+
+1. Funksjonsnavnene bør være på norsk, f.eks. `balanseDatasett` og `augmenterKroppedeBilde`.
+2. Kommenteer koden for at forklare hva den gjør.
+3. Bruk en mer standardisert stil for å skrive kode - det er viktig med å ha en homogen stil i koden for å gjøre den lettest mulig å lese og forstå.
+4. Konsekvensen av at alle augmentasjoner blir lagt i samme mapp kan være problematisk. Det er en god ide å ha et system for å organisere augmentasjonene så de blir lagt i riktige mappene basert på PLU-nummeret eller andre kategoriseringer.
+5. Funksjonen `augment_cropped_images` skal kontrollere om alle bilde som genereres passerer valideringsregler før de lagres. Dette kan være viktig for å sikre at bildeet er godkjent til bruk i datasettet.
+6. Funksjonen `augment_cropped_images` kan også tjekke om det allerede eksisterer augmentasjoner som skal genereres for å unngå å generere redundante bilde. Dette vil gjøre prosessen mer effisienst og minske lagringskapasitetet.
+7. Det er en god idé å ha et system for å logge hvilke augmentasjoner som blir generert for hvert bilde, slik at det er lett å sikre seg at alle bilde blir behandlet på samme måte. Dette kan også være nyttig for å forbedre modellen ved å analyse de augmentasjoner som giver beste resultater.
+8. Det er en god idé å ha et system for å teste koden med en del av datasettet slik at det er lett å finne ut hvorfor noen bilde ikke blir behandlet riktig. Dette kan også være nyttig for å finne og løse feil i koden.
+9. Det er en god idé å ha et system for å oppdatere datasettet automatisk når det blir nye bilde lagt til, slik at datasettet alltid er oppdatert med nytt materiale. Dette vil gjøre koden mer effektiv og mindre manuell arbeid vil være påkravet for å holde datasettet oppdatert. The error message indicates that the Docker daemon is already running and there is a permission issue when trying to connect to it.
+
+To resolve the problem, you can try the following steps:
+
+1. Stop the Docker daemon by running `sudo systemctl stop docker` and then verify its status with `sudo systemctl status docker`.
+
+2. Remove any existing Docker containers, images, and networks by running the commands below:
+```bash
+sudo docker rm -f $(sudo docker ps -aq)
+sudo docker rmi -f $(sudo docker images -q)
+sudo docker network prune -f
+```
+
+3. Remove the Docker socket file and restart the service:
+```bash
+sudo rm /var/run/docker.sock
+sudo systemctl restart docker
+```
+
+4. Reinstall Docker Compose by running `sudo dnf install -y docker-compose`.
+
+5. Verify that you have the correct version of Docker Compose installed:
+```bash
+docker-compose --version
+```
+It should display the version number, e.g., "docker-compose version 1.29.2, build unknown".
+
+6. Finally, run your docker-compose command again with `docker-compose up -d`. To help you with your SQL queries, I'll provide the solutions in English and translate them into Norwegian when necessary.
+
+1. Finding the most sold order_item and total earnings from that item:
+
+```sql
+SELECT product_id, SUM(quantity) as total_sold, SUM(unit_price * quantity) as total_earnings
 FROM OrderItems
 JOIN Products ON OrderItems.product_id = Products.product_id
 GROUP BY product_id
-ORDER BY quantity_sold DESC
+ORDER BY total_sold DESC
 LIMIT 1;
 ```
-This query groups all order items by their associated products, calculates the sum of quantities and total revenue (unit_price * quantity) for each group, orders the results in descending order based on the number of items sold, and limits the result to only the most sold product.
 
-2. To find the most used payment method for the 5 most sold items, you can use the following query:
+In Norwegian:
 
 ```sql
-WITH most_sold_items AS (
-    SELECT product_id AS item, SUM(quantity) AS quantity_sold
-    FROM OrderItems
-    JOIN Products ON OrderItems.product_id = Products.product_id
-    GROUP BY product_id
-    ORDER BY quantity_sold DESC
-    LIMIT 5
-), payments_per_item AS (
-    SELECT order_id, payment_method, product_id FROM Payments
-    JOIN Orders ON Payments.order_id = Orders.order_id
-)
-SELECT payment_method, COUNT(DISTINCT item) as count
-FROM payments_per_item
-JOIN most_sold_items ON payments_per_item.product_id = most_sold_items.item
-GROUP BY payment_method
-ORDER BY count DESC;
+SELECT product_id, SUM(kantitet) as total_solgt, SUM(enhetspris * kantitet) as total_inntekter
+FROM OrderItems
+JOIN Produkter ON OrderItems.product_id = Produkter.product_id
+GRUPP BY product_id
+SORT ER BY total_solgt DESK
+LIMIT 1;
 ```
-This query first finds the 5 most sold items using a common table expression (CTE), then joins the Payments and Orders tables to find the associated payment method for each item in the most sold items list, groups the results by payment method, counts the unique items per payment method, and orders the result in descending order based on the count.
 
-3. To find the 5 customers that have made the most orders, and retrieve the items they purchase the most with sorted stock from low to high, you can use the following query:
+2. Finding the most used payment method for the top 5 sold items:
 
 ```sql
-WITH customer_orders AS (
-    SELECT customer_id, COUNT(order_id) as total_orders
+SELECT p.name, COUNT(o.order_id) as item_count, COUNT(p.payment_id) as payment_count
+FROM OrderItems
+JOIN Orders ON OrderItems.order_id = Orders.order_id
+JOIN Payments ON Orders.order_id = Payments.order_id
+JOIN Products p ON OrderItems.product_id = p.product_id
+GROUP BY p.name
+ORDER BY item_count DESC, payment_count DESC
+LIMIT 5;
+```
+
+In Norwegian:
+
+```sql
+SELECT p.navn, COUNT(o.order_id) as posisjon_solgt, COUNT(p.betalingsid) as betaling_brukt
+FROM OrderItems
+JOIN Bestillinger ON OrderItems.order_id = Bestillinger.order_id
+JOIN Betalinger p ON Bestillinger.order_id = p.order_id
+JOIN Produkter ON OrderItems.product_id = Produkter.product_id
+GRUPP BY p.navn
+SORT ER BY posisjon_solgt DESK, betaling_brukt DESK
+LIMIT 5;
+```
+
+3. Finding the top 5 items purchased by customers with the most orders and sorting them by stock from low to high:
+
+```sql
+WITH customer_order_count AS (
+    SELECT customer_id, COUNT(order_id) as order_count
     FROM Orders
     GROUP BY customer_id
-    ORDER BY total_orders DESC
+    ORDER BY order_count DESC
     LIMIT 5
-), customer_items AS (
-    SELECT oi.customer_id, oi.product_id, SUM(oi.quantity) as quantity
-    FROM OrderItems oi
-    JOIN Orders o ON oi.order_id = o.order_id
-    GROUP BY oi.customer_id, oi.product_id
-), stock_levels AS (
-    SELECT product_id, stock_qty as current_stock FROM Products
+), item_purchase_count AS (
+    SELECT order_item_id, product_id, SUM(quantity) as total_purchased
+    FROM OrderItems
+    GROUP BY order_item_id, product_id
 )
-SELECT c.first_name, c.last_name, i.product_name, i.category, c.item.quantity, s.current_stock
-FROM customer_items c_i
-JOIN Customers c ON c_i.customer_id = c.customer_id
-JOIN Products i ON c_i.product_id = i.product_id
-JOIN stock_levels s ON c_i.product_id = s.product_id
-ORDER BY c_i.quantity DESC, s.current_stock ASC;
+SELECT i.product_id, p.name, i.total_purchased, s.stock_qty
+FROM item_purchase_count AS i
+JOIN Products AS p ON i.product_id = p.product_id
+JOIN Stock AS s ON i.product_id = s.product_id
+JOIN customer_order_count AS co ON i.order_item_id IN (
+    SELECT order_id
+    FROM Orders
+    JOIN customer_order_count ON Orders.customer_id = customer_order_count.customer_id
+)
+ORDER BY s.stock_qty ASC;
 ```
-This query first finds the 5 customers that have made the most orders using a CTE, then joins the CustomerItems table to find the items purchased by each customer in the top 5 customers list, and another join with the StockLevels CTE to get the current stock level for each item. The result is ordered by the quantity of items purchased for each customer and then by the current stock level from low to high. To handle the predictably invalid XML that you've described, you can create a custom `XMLFilter` that extends `SAXFilterImpl`. This filter will check for unexpected tags and replace them with an appropriate entity or simply ignore them. Here's a basic example of how you might implement this:
+
+In Norwegian:
+
+```sql
+WITH kunder_bestillinger AS (
+    SELECT customer_id, COUNT(order_id) as antall_bestillinger
+    FROM Bestillinger
+    GRUPP BY customer_id
+    SORT ER BY antall_bestillinger DESK
+    LIMIT 5
+), posisjons_kaup AS (
+    SELECT order_item_id, product_id, SUM(kantitet) as totalt_kaupt
+    FROM OrderItems
+    GRUPP BY order_item_id, product_id
+), varer_i_lager AS (
+    SELECT product_id, stock_qty
+    FROM Lagring
+)
+SELECT i.product_id, p.navn, i.totalt_kaupt, s.stock_qty
+FRIMFRT i JOIN Produkter AS p ON i.product_id = p.product_id
+JOIN varer_i_lager AS s ON i.product_id = s.product_id
+JOIN kunder_bestillinger AS ko ON i.order_item_id IN (
+    SELECT order_id
+    FRIMFRT Bestillinger
+    JOIN kunder_bestillinger ON Bestillinger.customer_id = kunder_bestillinger.customer_id
+)
+SORT ER BY s.stock_qty ASC;
+``` To handle the predictably invalid XML with unexpected nested tags within the `description` tag, you can create a custom `XMLFilter` that extends `SAXFilterImpl`, which allows you to override the `startElement()` and `chars()` methods. This filter will remove any nested tags and replace them with their content, making it valid for parsing using `DocumentBuilder`.
+
+Here's an example implementation of a custom `XMLFilter`:
 
 ```java
-import javax.xml.parsers.SAXParserFactory;
-import javax.xml.parsers.XMLFilter;
 import javax.xml.parsers.SAXParser;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.sax.SAXTransformerFactory;
-import javax.xml.transform.sax.TransformerHandler;
-import org.xml.sax.*;
+import javax.xml.parsers.SAXParserFactory;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.helpers.DefaultHandler;
+import org.xml.sax.helpers.XMLFilterImpl;
 
 public class CustomXMLFilter extends XMLFilterImpl {
-    private String[] invalidTags = {"THIS-IS-PART-OF-DESCRIPTION"};
-    private EntityResolver entityResolver = new EntityResolver() {
-        @Override
-        public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-            if (publicId != null && publicId.equals("-//W3C//DTD XML Entity Example//EN")) {
-                return new InputSource(new StringReader("<" + invalidTags[0] + "/>"));
-            }
-            return null;
-        }
-    };
+    private boolean descriptionStarted = false;
+    private StringBuilder descriptionBuilder = new StringBuilder();
 
-    public CustomXMLFilter() throws SAXException {
-        super(new DefaultHandler());
-        SAXParserFactory factory = SAXParserFactory.newInstance();
-        factory.setNamespaceAware(true);
-        SAXTransformerFactory transformerFactory = (SAXTransformerFactory) TransformerFactory.newInstance();
-        TransformerHandler handler = transformerFactory.newTransformer();
-        this.setContentHandler(this.getParent() != null ? this.getParent().getContentHandler() : this);
-        this.setDTDHandler(new DTDHandler() {
-            @Override
-            public void setDocumentLocator(Locator locator) {}
-            @Override
-            public void parseDTD(InputSource inputSource) throws SAXException {
-                inputSource.getSystemId(); // Ignore DTD to avoid issues with invalid entities
-            }
-            @Override
-            public void notification(String name, Attributes attributes) throws SAXException {}
-        });
-        this.setErrorHandler(new ErrorHandler() {
-            @Override
-            public void warning(SAXParseException exception) throws SAXException {
-                System.err.println("Warning: " + exception);
-            }
-            @Override
-            public void error(SAXParseException exception) throws SAXException {
-                throw exception;
-            }
-            @Override
-            public void fatalError(SAXParseException exception) throws SAXException {
-                throw exception;
-            }
-        });
-        this.setEntityResolver(entityResolver);
+    public CustomXMLFilter(ContentHandler delegate) {
+        super(delegate);
     }
 
     @Override
-    public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-        // Check for invalid tags
-        if (Arrays.asList(invalidTags).contains(qName)) {
-            System.out.println("Invalid tag encountered: " + qName);
+    public void startElement(String uri, String localName, String qName, Attributes attributes) throws org.xml.sax.SAXException {
+        if ("description".equals(qName)) {
+            descriptionStarted = true;
         } else {
+            if (descriptionStarted && !"THIS-IS-PART-OF-DESCRIPTION".equals(localName)) {
+                throw new RuntimeException("Unexpected tag encountered within description: " + localName);
+            }
             super.startElement(uri, localName, qName, attributes);
         }
     }
-}
-```
 
-Then use the `CustomXMLFilter` to parse your XML:
+    @Override
+    public void characters(char[] ch, int start, int length) throws org.xml.sax.SAXException {
+        if (descriptionStarted) {
+            descriptionBuilder.append(ch, start, length);
+        } else {
+            super.characters(ch, start, length);
+        }
+    }
 
-```java
-SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
-CustomXMLFilter filter = new CustomXMLFilter();
-parser.parse(inputSource, filter);
-``` For resolving the issue, you need to update your project's compileSdkVersion, targetSdkVersion, and minSdkVersion to match or exceed the required Android API level. Here are the steps:
-
-1. In your `build.gradle` (Module) file, look for the following lines:
-
-```
-compileSdkVersion 32
-targetSdkVersion 32
-minSdkVersion 26
-```
-
-Update them to at least 33, like this:
-
-```
-compileSdkVersion 33
-targetSdkVersion 33
-minSdkVersion 26
-```
-
-2. To ensure that all dependencies also use the updated API level, you can add the following line to your `build.gradle` (Module) file:
-
-```
-android {
-    ...
-    configurations.all {
-        resolutionStrategy {
-            force 'com.android.support:support-v4:28.0.0' // or any other required library with the same issue
+    @Override
+    public void endElement(String uri, String localName, String qName) throws org.xml.sax.SAXException {
+        if ("description".equals(qName)) {
+            if (descriptionStarted && !descriptionBuilder.toString().isEmpty()) {
+                getContentHandler().characters(descriptionBuilder.toString().toCharArray(), 0, descriptionBuilder.length());
+            }
+            descriptionStarted = false;
+        } else {
+            super.endElement(uri, localName, qName);
         }
     }
 }
 ```
 
-3. Save the changes and sync your project. Gradle will automatically update the dependencies if it can. If not, you may need to manually update them by adding new versions in the `build.gradle` file.
+With the custom `XMLFilter`, you can parse your XML as follows:
 
-4. After updating the dependencies, clean and rebuild your project:
-
+```java
+SAXParserFactory factory = SAXParserFactory.newInstance();
+SAXParser parser = factory.newSAXParser();
+CustomXMLFilter filter = new CustomXMLFilter(new DefaultHandler() {
+    // Handle the parsed XML here...
+});
+parser.parse(xmlInput, filter);
 ```
-./gradlew clean build
+
+This approach will remove any unexpected nested tags within the `description` tag and make your XML valid for parsing using `DocumentBuilder`. For resolving the issues you're facing, you'll need to update your project's compileSdkVersion to at least API level 33. Here are the steps to follow:
+
+1. Open your `build.gradle` file (module app) in Android Studio.
+
+2. Update the `compileSdkVersion`, `targetSdkVersion`, and `minSdkVersion` values to match the desired SDK levels, for example:
+
+```groovy
+android {
+    compileSdkVersion 33
+    targetSdkVersion 33
+    minSdkVersion 21
+}
 ```
 
-If you still encounter issues, try to find newer versions of the problematic dependencies that are compatible with API level 33, or consider reaching out to their developers for assistance. The issue might be due to the fact that your FastAPI application is expecting JSON data in the POST request, but you're not providing it correctly in your JavaScript and Python Requests code.
+3. Sync your Gradle project by clicking on the "Sync Now" button in the Gradle tab or by running `./gradlew sync` in terminal/command prompt.
 
-Here's how you can modify your JavaScript and Python Requests code to send a JSON payload:
+4. After syncing, rebuild your project and clean it if any errors persist:
 
-JavaScript (using axios):
+```sh
+./gradlew clean
+./gradlew build
+```
+
+If you still encounter issues, make sure that all dependencies are compatible with the updated SDK version. You may need to manually update some libraries or check for newer versions of problematic libraries on Maven Central or JCenter repositories. It seems like your FastAPI server is expecting JSON data in the POST request, but it's not receiving any. In your JavaScript and Python code examples, you are sending plain objects (not JSON), so it might be causing the issue.
+
+To fix this problem, convert the data object to a JSON string before sending the request:
+
+In JavaScript:
+
 ```javascript
 let axios = require('axios');
 data = { user: 'smith' };
-axios.post('http://localhost:8000', data, { headers: {'Content-Type': 'application/json' } })
-    .then(response => (console.log(response.url)))
+const jsonData = JSON.stringify(data);
+axios.post('http://localhost:8000', jsonData).then(response => (console.log(response.url))).catch(error => console.log(error));
 ```
 
-Python (using requests):
-```python
-import json
-import requests
+In Python:
 
+```python
+import requests
+import json
 url = 'http://127.0.0.1:8000'
 data = {'user': 'Smith'}
-headers = {'Content-Type': 'application/json'}
-response = requests.post(url, json=data, headers=headers)
+response = requests.post(url, json=json.dumps(data))
 print(response.text)
 ```
 
-Make sure your FastAPI function accepts JSON data:
-
-FastAPI code:
-```python
-from fastapi import FastAPI, Request
-app = FastAPI()
-
-@app.post('/')
-async def main(request: Request):
-    user = await request.json()
-    return user
-```
-
-With this modification, your API should accept JSON data and respond accordingly without any 422 errors. ```json
+With these changes, your API should receive the correct JSON data and respond without error. ```json
 {
-    "order_id": "OR-001",
-    "customer": {
-        "name": "John Doe",
-        "email": "john.doe@example.com"
+  "order_id": "OR-123456",
+  "customer": {
+    "name": "John Doe",
+    "email": "johndoe@example.com",
+    "address": {
+      "street": "Main Street",
+      "number": "123",
+      "city": "Oslo",
+      "zip_code": "01234"
+    }
+  },
+  "items": [
+    {
+      "product_id": "P-ABC123",
+      "name": "Product A",
+      "quantity": 2,
+      "price": 99.99
     },
-    "items": [
-        {
-            "product_id": "PR-123",
-            "product_name": "Product A",
-            "quantity": 2,
-            "price_per_item": 100.50
-        },
-        {
-            "product_id": "PR-456",
-            "product_name": "Product B",
-            "quantity": 3,
-            "price_per_item": 75.00
-        }
-    ],
-    "total": 832.15
+    {
+      "product_id": "P-DEF456",
+      "name": "Product B",
+      "quantity": 3,
+      "price": 79.99
+    }
+  ],
+  "total": 329.96
 }
 ```
+This JSON file represents an order receipt with order ID `OR-123456`, customer name John Doe, his email and address, a list of items in the order, and the total cost of the order. The items in the order have their respective product IDs, names, quantities, and prices.
