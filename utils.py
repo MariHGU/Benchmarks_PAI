@@ -1,3 +1,4 @@
+from pathlib import Path
 import logging, os, time
 from datetime import datetime
 from hashlib import sha1
@@ -5,12 +6,14 @@ from enum import IntEnum
 from typing import Tuple, List
 from openpyxl import load_workbook
 import pandas as pd
-from llms import JUDGE_MODEL, JUDGE_SEED, JUDGE_TEMPERATURE
+
+
 
 class TestType(IntEnum):
     SUMMARIZATION = 1
     PROMPT_ALIGNMENT = 2
     HELPFULNESS = 3
+    BENCHMARKING = 4
 
 class CustomRelativeFormatter(logging.Formatter):
     """
@@ -79,7 +82,7 @@ def retrieve_model_info(model_name: str = None, csv_file: str = "models.csv") ->
         raise FileNotFoundError(f"CSV file not found: {csv_file}")
 
 
-    models_DF = pd.read_csv("models.csv")
+    models_DF = pd.read_csv(csv_file)
     
     match = models_DF[models_DF['model_name'] == model_name]
 
@@ -152,7 +155,7 @@ def read_responses_from_csv(file_name: str) -> pd.DataFrame:
     return df
 
 
-def write_to_xlsx(df: pd.DataFrame, file_name: str, sheet_name: str) -> None:
+def write_to_xlsx(df: pd.DataFrame, file_name: str, sheet_name: str, test_type: TestType) -> None:
     """
     Write data to an Microsoft Excel file (.xlsx), appending to a specified sheet.
     If the sheet does not exist, it will be created.
@@ -163,22 +166,9 @@ def write_to_xlsx(df: pd.DataFrame, file_name: str, sheet_name: str) -> None:
         file_name (str): The name of the Excel file.
         sheet (str): The name of the sheet to write to.
     """
-    if not os.path.exists(file_name):
-        with pd.ExcelWriter(file_name) as excel_writer:
-            # Create a new file if it does not exist
-            df_header = pd.DataFrame({
-                "Model": [],
-                "Digest": [],
-                "KV Cache": [],
-                "Prompt Number": [],
-                "Judge Model": [],
-                "Judge Seed": [],
-                "Judge Temperature": [],
-                "Score": [],
-                "Reason": [],
-                "Hash": []
-            })
-            df_header.to_excel(excel_writer, sheet_name=sheet_name, index=False)
+    if not Path(file_name).exists():
+        initNewExcel(test_type=test_type, fileName=file_name)
+        print('init')
     workbook = load_workbook(file_name)
 
     header = False
@@ -194,6 +184,74 @@ def write_to_xlsx(df: pd.DataFrame, file_name: str, sheet_name: str) -> None:
     with pd.ExcelWriter(file_name, engine='openpyxl', mode='a', if_sheet_exists='overlay') as writer:
         df.to_excel(writer, sheet_name=sheet_name, index=False, header=header, startrow=startrow)
 
+    print('write')
+
+def initNewExcel(test_type: TestType, fileName: str):
+    """
+    Initiates blank excel with headers
+    """
+    match test_type:
+        case TestType.SUMMARIZATION | TestType.PROMPT_ALIGNMENT | TestType.HELPFULNESS:
+            sheet_map = {
+                TestType.SUMMARIZATION: "SummarizationResults",
+                TestType.PROMPT_ALIGNMENT: "PromptAlignmentResults",
+                TestType.HELPFULNESS: "HelpfulnessResults"
+            }
+
+            df_header = pd.DataFrame({
+                "Model": [],
+                "Digest": [],
+                "KV Cache": [],
+                "Prompt Number": [],
+                "Judge Model": [],
+                "Judge Seed": [],
+                "Judge Temperature": [],
+                "Score": [],
+                "Reason": [],
+                "Hash": []
+            })
+
+            with pd.ExcelWriter(filepath) as writer:
+                df_header.to_excel(writer, index=False, sheet_name=sheet_map[test_type])
+
+        case TestType.BENCHMARKING:
+            df = pd.DataFrame({
+                'Model': [],
+                'Digest': [],
+                'KV Cache Type': [],
+                'Prompt nr':[],
+                'Total Duration[ms]': [],
+                'Load Duration[ms]':[],
+                'Promt Eval Count':[],
+                'Prompt eval duration[ms]':[],
+                'Prompt eval rate':[],
+                'Eval Count':[],
+                'Eval duration[ms]':[],
+                'Eval rate':[],
+                'Inteded purpose': []
+            })
+
+            avg_df = pd.DataFrame({
+                'Model':[],
+                'Digest': [],
+                'KV Cache Type': [],
+                'Average time (experienced)[s]': [],
+                'Average tokens/s':[],
+                'Average Time (API)[s]': [],
+                'Inteded purpose': []
+            })
+
+            # Create excel outside of git repo
+            filepath = Path.cwd()/fileName
+
+            with pd.ExcelWriter(filepath) as writer:
+                df.to_excel(writer, index=False, sheet_name='Benchmarks')
+                avg_df.to_excel(writer, index=False, sheet_name='Avg_Benchmarks')
+        case _:
+            raise ValueError("Invalid test type provided. Use TestType.SUMMARIZATION, TestType.PROMPT_ALIGNMENT, TestType.BENCHMARKING or TestType.HELPFULNESS.")
+
+
+
     
 def save_eval_results_to_xlsx(
         type_of_test: TestType,
@@ -201,7 +259,7 @@ def save_eval_results_to_xlsx(
         results: List[tuple],
         file_name: str,
         prompt_id: int = None,
-        judge_params: Tuple[str, int, float] = (JUDGE_MODEL, JUDGE_SEED, JUDGE_TEMPERATURE),
+        judge_params: Tuple[str, int, float] = None,
         time_hash: str = ""
         ) -> None:
     """Log the summarization results to .xlsx file.
@@ -254,6 +312,7 @@ def save_eval_results_to_xlsx(
         write_to_xlsx(
             df=df_result, 
             file_name=file_name, 
-            sheet_name=sheet_name
+            sheet_name=sheet_name,
+            test_type = type_of_test
         )
             
