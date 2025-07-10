@@ -10,10 +10,21 @@ run with `$ python3 overnight_report.py`
 results in ./results_<date>
 """
 
+#TODO automatisk teste de modellene som hentes (de som støtter chat i hvert fall), importere use_case_metrics, samle til pdf?
+
+
+
+
 #region global variables
 
-max_n = 2 #maximum number of test runs before generating a report
+max_n = 2 #maximum number of test runs before generating a report. Greater than 5
+date_str = ""  #Set on format DD_MM_YYYY. Leave empty for today
 end_at = (7, 30) #(hour, minute) to stop testing and generate report
+gather_data = False # If false: skips testing. Useful if you already have a dataset. If True: run all tests
+visualize = False #If false: skips visualization
+
+
+
 
 #endregion
 
@@ -27,38 +38,105 @@ import pandas as pd
 from pathlib import Path
 from typing import List, Tuple
 from ollama import AsyncClient, ChatResponse
+from contextlib import closing
+import matplotlib.pyplot as plt
+
+if not date_str:
+    date_str = str(date.today().strftime('%d_%m_%Y'))
+
+
 
 #endregion
 
-#region Database initializing
-def init_db():
+#region initializing
+
+def init_directory():
+    """
+    Initializes a name for todays directory "/results_<date>"
+
+    Returns
+    ---
+    dir_str: str
+        Directory name
+    """
+    dir_str = 'results_' + date_str
+
+    try:
+        os.mkdir(dir_str)
+    except FileExistsError:
+        pass
+
+    plot_dir_str = dir_str + '/plots'        
+
+    try:
+        os.mkdir(plot_dir_str)
+    except FileExistsError:
+        pass
+
+    return dir_str
+
+
+def init_db(dir_str):
     """
     Initializes a SQLite database to save results from tests
 
-    file:
-    ./results_<date>/db_<date>.db
+    Parameters
+    ---
+    dir_str: str
+        Directory name
+
+
+    Returns
+    ---
+    conn: SQLite connection
+        connection to the database
 
     """
-    date_str = str(date.today().strftime('%d_%m_%Y'))
-    results_date = 'results_' + date_str
-    try:
-        os.mkdir(results_date)
-    except:
-        print("Directory exists")
 
-    db_path_str = 'results_' + date_str + '/data_' + date_str + '.db'
+
+    db_path_str = dir_str + '/data.db'
 
     conn = sqlite3.connect(db_path_str)
-    cur = conn.cursor()
-
-    cur.execute("PRAGMA foreign_keys = ON;")
-
     return conn
 
+async def get_available_models(client):
+    """
+    Async call API through client and fetch available models
+
+    Parameters
+    ---
+    client: ollama.Client
+        authenticated call to ollama server
+    
+    Returns
+    ---
+    list[str]
+        list of current model names
+    
+    
+    """
+
+    try:
+        response: ChatResponse = await client.list()
+        # Extract and return the message content from the response
+        if hasattr(response, 'models'):
+            return [model.model for model in response.models]
+        else:
+            print("Failed to parse message content")
+            return None
+
+    except ValueError as e:
+        print(f"An error occurred while parsing JSON: {e}")
+        return None
+    except Exception as e:
+        print(f"An error occurred while calling the API: {e}")
+        return None
+
+    
 
 #endregion
 
-#region time tests
+#region benchmarking
 
 """
 Based on benchmarking.py by Mari
@@ -187,13 +265,12 @@ async def test_llm_performance(prompts: list, purpose: str, model: str) -> str:
 
 
         if response:
-            print(f"Test #{i+1}: Prompt='{prompt[:50]}', Response='{response[:150]}...', Time={experienced_time:.4f}s")
             print(f"Prompt_tokens={prompt_token}, Prompt_token/s={prompt_ps:.4f}, Response_tokens={response_token}, Response_token/s={response_ps:.4f} \n")
         else:
             print(f"Test #{i+1}: Prompt='{prompt}' No response received. Time={experienced_time:.4f}s")
 
     new_data = pd.DataFrame({
-        'Model': [model],
+        'model': [model],
         'total_api_time': [total_api_time],
         'total_load_duration': [total_load_duration],
         'total_prompt_tokens': [total_prompt_tokens],
@@ -214,11 +291,157 @@ async def multiple_test_llm_performance(prompts: list, purpose: str, model: list
 
 #endregion
 
-#region quality tests
+#region use_case_metrics
 
 #endregion
 
 #region plots
+
+def get_tests_categories(conn):
+    """
+    Returns a list of the names of the performed tests in the database
+
+    Parameters
+    ---
+    conn: sqlite3.Connection
+        connection to database
+    
+    Returns
+    ---
+    test_categories: list[str]
+        list of names of performed tests (= table names)
+    
+    """
+    with closing(conn.cursor()) as cur:
+        test_categories = cur.execute("SELECT name FROM sqlite_master WHERE type='table';").fetchall()
+        return [category_tuple[0] for category_tuple in test_categories]
+
+
+
+
+def get_measures(conn, category_name):
+    """
+    Fetches the numeric measures from a single test. As some test measures multiple metrics we might want to plot
+
+    Parameters
+    ---
+    conn: sqlite3.Connection
+        connection to database
+
+    category_name: str
+        name of test (table in the database)
+
+
+    Returns
+    ---
+    measures: list[str]
+        the columns of the table    
+    
+    """
+    numerics = {'INTEGER', 'REAL', 'NUMERIC'}
+    measures = []
+
+    with closing(conn.cursor()) as cur:
+
+        cur.execute(f"PRAGMA table_info({category_name});")
+        columns_info = cur.fetchall()
+
+        for col in columns_info:
+            col_name = col[1]
+            col_type = col[2].upper()
+            if any(ntype in col_type for ntype in numerics):
+                measures.append(col_name)
+    return measures
+
+def boxplot(conn, category_name, measure, ax):
+    """
+    collects appropriate data and adds a boxplot to the specified plt-axis
+
+    Parameters
+    ---
+    conn: sqlite3.Connection
+        connection to database
+    category_name: str
+        name of test (table in the database)
+    measure: str
+        a measure during the test, i.e. a db attribte
+    ax: plt axis
+        where to create the boxplot
+    """
+    with closing(conn.cursor()) as cur:
+
+        models = get_tested_models(conn, category_name)
+
+        boxplot_data = []
+        labels = []
+
+        for m in models:
+
+            cur.execute(f"SELECT {measure} FROM {category_name} WHERE model = '{m}';")
+            results = [row[0] for row in cur.fetchall()]
+            if results:
+                boxplot_data.append(results)
+                labels.append(m)
+
+    ax.boxplot(boxplot_data, showcaps = False, showmeans = True)
+    ax.set_xticklabels(labels, rotation = 45, ha = 'right')
+
+
+def get_tested_models(conn, category_name):
+    """
+    Returns the model names in this test
+
+    Parameters
+    ---
+    conn: sqlite3.Connection
+        connection to database
+    category_name: str
+        name of test (table in the database)
+
+    Returns
+    ---
+    models: list[str]
+        list of model names
+
+    """
+    with closing(conn.cursor()) as cur:
+        cur.execute(f"SELECT DISTINCT model FROM {category_name};")  
+        models = [row[0] for row in cur.fetchall()]
+    return models
+
+
+
+
+
+
+def plot_test_category(conn, category_name):
+    """
+    creates boxplots for a test category automatically
+
+    Parameters
+    ---
+    conn: sqlite3.Connection
+        connection to database
+    category_name: str
+        name of test (table in the database)
+    
+    """
+
+    measures = get_measures(conn, category_name)
+    n_measures = len(measures)
+    n_models = len(get_tested_models(conn, category_name))
+    axs = []
+
+    fig = plt.figure(layout = "constrained")
+    fig.set_figheight(3 * n_measures)
+    fig.set_figwidth(1 * n_models)
+
+    for i, measure in enumerate(measures):
+        ax = plt.subplot2grid((n_measures, 1), (i, 0))
+        boxplot(conn, category_name, measure, ax)
+    
+    plt.savefig(dir_str + '/plots/' + category_name + '.png')
+    
 
 #endregion
 
@@ -233,6 +456,8 @@ async def multiple_test_llm_performance(prompts: list, purpose: str, model: list
 #region main
 
 if __name__ == "__main__":
+
+    #initialize
     api_key = load_api_key('.api_key.txt')
 
     client = AsyncClient(
@@ -241,37 +466,47 @@ if __name__ == "__main__":
             'Authorization': f'Bearer {api_key}'
         }
     )   
-
-    #Where to put data while running
-    conn = init_db()
-
-    #Set correct end time
-    now = datetime.now()
-    tomorrow = now + timedelta(days=1)
-    end_time = datetime(year=tomorrow.year, month=tomorrow.month, day=tomorrow.day, hour=7, minute=30)
-    n = 0
-
-    #collect models
-    models_df = pd.read_csv('models.csv')
-    code_model_names = models_df[models_df['purpose'] != 'text']['model_name']
-    text_model_names = models_df[models_df['purpose'] != 'coding']['model_name']
+    dir_str = init_directory()
+    conn = init_db(dir_str)
 
 
+    if gather_data:
+        #Run until at latest specified time tomorrow
+        now = datetime.now()
+        tomorrow = now + timedelta(days=1)
+        end_time = datetime(year=tomorrow.year, month=tomorrow.month, day=tomorrow.day, hour=7, minute=30)
+        n = 0
 
-    while n < max_n and datetime.now() < end_time:
+        #collect models
+        models_df = pd.read_csv('models.csv')
+        code_model_names = models_df[models_df['purpose'] != 'text']['model_name']
+        text_model_names = models_df[models_df['purpose'] != 'coding']['model_name']
+
+        
+        while n < max(max_n, 5) and datetime.now() < end_time:
 
 
-        print("The time is " + str(datetime.now()) + ", Running experiment replication " + str(n))
+            print("The time is " + str(datetime.now()) + ", Running experiment replication " + str(n))
+            purpose, prompts = initPurpose(purp='coding')
+            results = asyncio.run(multiple_test_llm_performance(prompts, purpose, code_model_names))
+            for df in results:
+                df.to_sql('coding_time', conn, if_exists = 'append', index = False)
 
-        purpose, prompts = initPurpose(purp='coding')
-        results = asyncio.run(multiple_test_llm_performance(prompts, purpose, code_model_names))
-        for df in results:
-            df.to_sql('coding_time', conn, if_exists = 'append', index = False)
+            n += 1
+        
+        
+    if visualize:
+        plt.style.use('ggplot')
 
-        n += 1
+        test_categories = get_tests_categories(conn)
+
+        for category in test_categories:
+            plot_test_category(conn, category)
     
-    #generate_plots()
-    #generate_report()
+    models = asyncio.run(get_available_models(client))
+    print(models)
+        
+
 
 
 #endregion
