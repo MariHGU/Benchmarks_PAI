@@ -132,7 +132,38 @@ async def get_available_models(client):
         print(f"An error occurred while calling the API: {e}")
         return None
 
+
+
+async def get_chat_models(client):
+    """
+    Gathers all available models and checks whether they support chat
+
+    As it turns out this takes a very long time since ollama has to load each model in and out of memory.
+    Using this during working hours might be slow and disruptive
+
+
+    Parameters
+    ---
+    client: ollama.Client
+        authenticated call to ollama server
     
+    Returns
+    ---
+    list[str]
+        list of model names, which supports chat
+    
+    """
+
+    all_models = await get_available_models(client)
+
+    chat_models = []
+
+    for model in all_models:
+        res = await call_llm_api("hello", model)
+        if res:
+            chat_models.append(model)
+            print("Model " + model + " answers chat")
+
 
 #endregion
 
@@ -474,21 +505,18 @@ if __name__ == "__main__":
         #Run until at latest specified time tomorrow
         now = datetime.now()
         tomorrow = now + timedelta(days=1)
-        end_time = datetime(year=tomorrow.year, month=tomorrow.month, day=tomorrow.day, hour=7, minute=30)
+        end_time = datetime(year=tomorrow.year, month=tomorrow.month, day=tomorrow.day, hour= end_at[0], minute=end_at[1])
         n = 0
 
         #collect models
-        models_df = pd.read_csv('models.csv')
-        code_model_names = models_df[models_df['purpose'] != 'text']['model_name']
-        text_model_names = models_df[models_df['purpose'] != 'coding']['model_name']
-
+        model_names = asyncio.run(get_chat_models(client))
         
         while n < max(max_n, 5) and datetime.now() < end_time:
 
 
             print("The time is " + str(datetime.now()) + ", Running experiment replication " + str(n))
             purpose, prompts = initPurpose(purp='coding')
-            results = asyncio.run(multiple_test_llm_performance(prompts, purpose, code_model_names))
+            results = asyncio.run(multiple_test_llm_performance(prompts, purpose, model_names))
             for df in results:
                 df.to_sql('coding_time', conn, if_exists = 'append', index = False)
 
@@ -503,8 +531,7 @@ if __name__ == "__main__":
         for category in test_categories:
             plot_test_category(conn, category)
     
-    models = asyncio.run(get_available_models(client))
-    print(models)
+
         
 
 
