@@ -139,6 +139,7 @@ def eval_responses(
             model=JUDGE_MODEL,
             seed=JUDGE_SEED,
             temperature=JUDGE_TEMPERATURE,
+            top_k=JUDGE_TOP_K,
         )
 
         match test_type:
