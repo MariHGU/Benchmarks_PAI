@@ -17,11 +17,11 @@ results in ./results_<date>
 
 #region global variables
 
-max_n = 2 #maximum number of test runs before generating a report. Greater than 5
+max_n = 5 #maximum number of test runs before generating a report. Greater than 5
 date_str = ""  #Set on format DD_MM_YYYY. Leave empty for today
 end_at = (7, 30) #(hour, minute) to stop testing and generate report
 gather_data = False # If false: skips testing. Useful if you already have a dataset. If True: run all tests
-visualize = False #If false: skips visualization
+visualize = True #If false: skips visualization
 
 
 
@@ -40,6 +40,8 @@ from typing import List, Tuple
 from ollama import AsyncClient, ChatResponse
 from contextlib import closing
 import matplotlib.pyplot as plt
+from use_case_metrics import generate_responses, eval_responses
+from utils import TestType
 
 if not date_str:
     date_str = str(date.today().strftime('%d_%m_%Y'))
@@ -163,6 +165,8 @@ async def get_chat_models(client):
         if res:
             chat_models.append(model)
             print("Model " + model + " answers chat")
+    
+    return chat_models
 
 
 #endregion
@@ -312,17 +316,34 @@ async def test_llm_performance(prompts: list, purpose: str, model: str) -> str:
     
     return new_data
 
-async def multiple_test_llm_performance(prompts: list, purpose: str, model: list):
+async def run_all_benchmarks_and_return_models(n: int, conn: sqlite3.Connection):
 
+    models = await get_chat_models(client)
 
+    purpose_coding, prompts_coding = initPurpose(purp='coding')
+    
 
-    tests_to_run =[test_llm_performance(prompts=prompts, purpose=purpose, model=coding_model) for coding_model in code_model_names]
+    tests_to_run =[test_llm_performance(prompts=prompts_coding, purpose=purpose_coding, model=model) for model in models] * n
     test_results = await asyncio.gather(*tests_to_run)
-    return test_results
+    for df in test_results:
+        df.to_sql('coding_time', conn, if_exists = 'append', index = False)
+
+
+    purpose_text, prompts_text = initPurpose(purp='text')
+
+    tests_to_run =[test_llm_performance(prompts=prompts_text, purpose=purpose_text, model=model) for model in models] * n
+    test_results = await asyncio.gather(*tests_to_run)
+    for df in test_results:
+        df.to_sql('coding_time', conn, if_exists = 'append', index = False)
+
+    return models
+
 
 #endregion
 
 #region use_case_metrics
+
+
 
 #endregion
 
@@ -442,9 +463,6 @@ def get_tested_models(conn, category_name):
 
 
 
-
-
-
 def plot_test_category(conn, category_name):
     """
     creates boxplots for a test category automatically
@@ -502,27 +520,49 @@ if __name__ == "__main__":
 
 
     if gather_data:
-        #Run until at latest specified time tomorrow
+
+        #This is not timed, probably fine
+        print("Benchmarking:")
+
+        model_names = asyncio.run(run_all_benchmarks_and_return_models(max_n, conn))
+        #Set correct end time
         now = datetime.now()
         tomorrow = now + timedelta(days=1)
-        end_time = datetime(year=tomorrow.year, month=tomorrow.month, day=tomorrow.day, hour= end_at[0], minute=end_at[1])
+        end_time = datetime(year=tomorrow.year, month=tomorrow.month, day=tomorrow.day, hour=7, minute=30)
         n = 0
 
-        #collect models
-        model_names = asyncio.run(get_chat_models(client))
-        
-        while n < max(max_n, 5) and datetime.now() < end_time:
+        #In a perfect world this would probably have been async. Anyways:
+        for i, model_name in enumerate(model_names):
+
+            print("Use cases for " + model_name)
+
+            generate_responses(test_type=TestType.PROMPT_ALIGNMENT, model=model_name, n_responses=max_n)
+            generate_responses(test_type=TestType.HELPFULNESS, model=model_name, n_responses=max_n)
+            generate_responses(test_type=TestType.SUMMARIZATION, model=model_name, n_responses=max_n)
+
+            prompt_alignment_row = 3 * max_n * i
+            helpfullness_row = (3 * i + 1 ) * max_n 
+            summarization_row = (3 * i + 2) * max_n
+
+            prompt_alignment = eval_responses(test_type=TestType.PROMPT_ALIGNMENT, write_results= False, eval_archived=True, eval_range=(prompt_alignment_row,prompt_alignment_row + max_n))
+            prompt_alignment = pd.DataFrame(prompt_alignment, columns=["prompt_alignment", "model"])
+            prompt_alignment["model"] = model_name
+            prompt_alignment.to_sql('prompt_alignment', conn, if_exists = 'append', index = False)
+
+            helpfullness = eval_responses(test_type=TestType.HELPFULNESS, write_results= False, eval_archived=True, eval_range=(helpfullness_row, helpfullness_row + max_n))
+            helpfullness = pd.DataFrame(helpfullness, columns=["helpfullness", "model"])
+            helpfullness["model"] = model_name
+            helpfullness.to_sql('helpfullness', conn, if_exists = 'append', index = False)
+
+            summarization = eval_responses(test_type=TestType.SUMMARIZATION, write_results= False, eval_archived=True, eval_range=(summarization_row, summarization_row + max_n))
+            summarization = pd.DataFrame(summarization, columns=["summarization", "model"])
+            summarization["model"] = model_name
+            summarization.to_sql('summarization', conn, if_exists = 'append', index = False)
 
 
-            print("The time is " + str(datetime.now()) + ", Running experiment replication " + str(n))
-            purpose, prompts = initPurpose(purp='coding')
-            results = asyncio.run(multiple_test_llm_performance(prompts, purpose, model_names))
-            for df in results:
-                df.to_sql('coding_time', conn, if_exists = 'append', index = False)
 
-            n += 1
-        
-        
+
+                
     if visualize:
         plt.style.use('ggplot')
 
