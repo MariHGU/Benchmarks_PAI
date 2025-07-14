@@ -21,3 +21,4 @@ hermes3:70b-llama3.1-q8_0,72f0aa5b30bb,Q8_0
 codellama:34b,685be00e1532,Q4_0
 codestral:22b,0898a8b286d5,Q4_0
 codestral:22b-v0.1-q5_0,05c0a78fd842,Q5_0
+cogito:14b,d0cac86a2347,Q4_K_M
