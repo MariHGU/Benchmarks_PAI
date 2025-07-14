@@ -1,0 +1,5 @@
+model,results
+dolphin3-8b-llama3.1-q8_0,"cs,java"
+nhn-small-latest,"java,py,sh,sql"
+nhn-small-og,"cs,css,go,java,kt,py,rb,sh,ts,xml,yml"
+nhn-small-v2,"java,py,sh,sql"

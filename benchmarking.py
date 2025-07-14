@@ -5,9 +5,13 @@ import pandas as pd
 from pathlib import Path
 from typing import List, Tuple
 from ollama import AsyncClient, ChatResponse
+from openpyxl import load_workbook
 from code_retrieval import retrieveCode
 from code_validation import runCodeValidation
-from utils import retrieve_model_info, TestType, write_to_xlsx, initNewExcel
+from utils import write_to_xlsx, initNewExcel, TestType
+
+#filename = "Benchmarks.xlsx"
+filename = "test.xlsx"
 
 # -- Initialize the client with appropriate host and authorization token --
 def get_api_key(file_path='.api_key') -> str:
@@ -88,11 +92,10 @@ def initPurpose(purp: str) -> Tuple[str, List[str]]:
 
 
 # -- Test LLM performance --
-async def test_llm_performance(prompts: list, purpose: str, test_type: TestType, model: str) -> str:
+async def test_llm_performance(prompts: list, purpose: str, model: str, TestType: TestType) -> pd.DataFrame:
     """
     Performs the actual testing of the model, and writes individual prompt-performance to excel file.
 
-    Input: The prompts you wish to perform the test on.
     Input: The prompts you wish to perform the test on.
     Output: The model used, the average experienced time, average api time(time retrieved from api-call) aswell as average number of generated tokens per second.
     """
@@ -106,8 +109,7 @@ async def test_llm_performance(prompts: list, purpose: str, test_type: TestType,
 
     num_tests = len(prompts)
 
-    #digest, kv_cache = retrieveModel(model)
-    digest, kv_cache = retrieve_model_info(model_name=model)
+    digest, kv_cache = retrieveModel(model)
 
 
     for i in range(num_tests):
@@ -143,9 +145,8 @@ async def test_llm_performance(prompts: list, purpose: str, test_type: TestType,
                 'Eval rate':[round(response_ps, 4)],
                 'Intended Purpose': [purpose]
                 })
-            #write_to_xcl(ny_data=ny_data, file_name='Benchmarks.xlsx', sheet='Benchmarks')
-            write_to_xlsx(df=ny_data, file_name='test.xlsx', sheet_name='Benchmarks', test_type=test_type)
-
+            
+            write_to_xlsx(df=ny_data, file_name=filename, sheet_name='Benchmarks', test_type=TestType)
             if purpose == 'coding':
                 with open("llm_response.txt", "a", encoding="utf-8") as f:
                     f.write(response)
@@ -167,13 +168,14 @@ async def test_llm_performance(prompts: list, purpose: str, test_type: TestType,
         'Average time': [round(average_time,4)], 
         'Average tokens/s': [round(average_token_ps,4)], 
         'Average Time (API)': [round(average_api_time, 4)],
-        'Inteded purpose': [purpose]
+        'Inteded purpose': [purpose],
+        'Language errors': [1]
         })
 
-    #write_to_xcl(ny_data=ny_data, file_name='Benchmarks.xlsx', sheet='Avg_Benchmarks')
-    write_to_xlsx(df=ny_data, file_name='test.xlsx', sheet_name='Avg_Benchmarks', test_type=test_type)
+    #write_to_xcl(ny_data=ny_data, file_name='Benchmarks.xlsx', sheet='Sheet2')
 
     print('Test completed')
+    return ny_data
 
 
 # Ny data du vil legge til
@@ -183,7 +185,7 @@ async def test_llm_performance(prompts: list, purpose: str, test_type: TestType,
 #         Writes data to an excisting excel file as specified in file_name and sheet number.
 #     """
 #     # Last eksisterende arbeidsbok
-#     folder = Path.cwd().parent
+#     folder = Path.cwd()
 #     filepath = folder / file_name
 
 #     arknavn = sheet
@@ -200,21 +202,21 @@ async def test_llm_performance(prompts: list, purpose: str, test_type: TestType,
 #     with pd.ExcelWriter(filepath, engine='openpyxl', mode='a', if_sheet_exists='overlay') as writer:
 #         ny_data.to_excel(writer, sheet_name=arknavn, index=False, header=False, startrow=startrow)
 
-# # -- Retrieve model-info --
-# def retrieveModel(modelName: str) -> Tuple[str, str]:
-#     """
-#     Retrieves saved KV_Cache and digest from csv file
-#     """
-#     df = pd.read_csv(r'models.csv')
+# -- Retrieve model-info --
+def retrieveModel(modelName: str) -> Tuple[str, str]:
+    """
+    Retrieves saved KV_Cache and digest from csv file
+    """
+    df = pd.read_csv(r'models.csv')
     
-#     match = df[df['model_name'] == modelName]
+    match = df[df['model_name'] == modelName]
 
-#     if not match.empty:
-#         digest = match.iloc[0]['digest_nr']
-#         kv_cache = match.iloc[0]['kv_cache']
-#         return digest, kv_cache
-#     else:
-#         raise NameError(f"Did not find model: {modelName}")
+    if not match.empty:
+        digest = match.iloc[0]['digest_nr']
+        kv_cache = match.iloc[0]['kv_cache']
+        return digest, kv_cache
+    else:
+        raise NameError(f"Did not find model: {modelName}")
     
 # def initNewExcel():
 #     """
@@ -243,13 +245,14 @@ async def test_llm_performance(prompts: list, purpose: str, test_type: TestType,
 #         'Average time (experienced)[s]': [],
 #         'Average tokens/s':[],
 #         'Average Time (API)[s]': [],
-#         'Inteded purpose': []
+#         'Inteded purpose': [],
+#         'Language errors': []
 #     })
 
 #     # Create excel outside of git repo
-#     folder = Path.cwd().parent
+#     folder = Path.cwd()
 
-#     filepath = folder/"Benchmarks.xlsx"
+#     filepath = folder/filename
 
 #     with pd.ExcelWriter(filepath) as writer:
 #         df.to_excel(writer, index=False, sheet_name='Sheet1')
@@ -257,29 +260,62 @@ async def test_llm_performance(prompts: list, purpose: str, test_type: TestType,
 
 async def initBenchmarking(newExcel: bool = False):
     purps = ['coding', 'text']
+    models = ['dolphin3:8b-llama3.1-q8_0', 'codestral:22b', 'codeqwen:chat', 'qwen3:1.7b-fp16', 'codellama:34b']
+    TestType = 4
+    
 
-    test_type = TestType.BENCHMARKING
+    avg_df = pd.DataFrame({
+        'Model':[],
+        'Digest': [],
+        'KV Cache Type': [],
+        'Average time (experienced)[s]': [],
+        'Average tokens/s':[],
+        'Average Time (API)[s]': [],
+        'Inteded purpose': [],
+        'Language errors': []
+    })
 
+    filepath = Path("results")/"avg_results.csv"
+
+    if not filepath.exists():
+        avg_df.to_csv(filepath, index=False)
+    
 
     # Uncomment to initiate new excel:
     if newExcel == True:
-        initNewExcel(test_type=test_type, fileName="test.xlsx")
+        initNewExcel(test_type=TestType, fileName=filename)
 
     # Test and write to file
-    for purp in purps:
-        purpose, prompts = initPurpose(purp=purp)
-        await test_llm_performance(prompts, purpose, test_type,model='nhn-small:latest')
+    for model in models:
+
+        for purp in purps:
+            purpose, prompts = initPurpose(purp=purp)
+            df = await test_llm_performance(prompts, purpose, model=model, TestType=TestType)
+            if purp == 'coding':
+                retrieveCode()
+                
+                validateCode = input('Run code validation? [y/n]: ')
+
+                if validateCode == 'y':
+                    #call code validation
+                    df['Language errors'] = runCodeValidation(model=model.replace(':','-'))
+                    print(df)
+
+                    df.to_csv(filepath, mode='a', index=False, header=False)
+                    write_to_xlsx(df=df, file_name=Path("test.xlsx"), sheet_name="Avg_Benchmarks", test_type=TestType)
+            
+
 
 
 # Run the test
 if __name__ == "__main__":
 
     asyncio.run(initBenchmarking(newExcel=False))
-    retrieveCode()
+    # retrieveCode()
     
-    validateCode = input('Run code validation? [y/n]: ')
+    # validateCode = input('Run code validation? [y/n]: ')
 
-    if validateCode == 'y':
-        #call code validation
-        runCodeValidation()
+    # if validateCode == 'y':
+    #     #call code validation
+    #     runCodeValidation()
         
