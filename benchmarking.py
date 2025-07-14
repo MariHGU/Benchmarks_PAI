@@ -260,7 +260,7 @@ def retrieveModel(modelName: str) -> Tuple[str, str]:
 
 async def initBenchmarking(newExcel: bool = False):
     purps = ['coding', 'text']
-    models = ['dolphin3:8b-llama3.1-q8_0', 'codestral:22b', 'codeqwen:chat', 'qwen3:1.7b-fp16', 'codellama:34b']
+    models = ['nhn-small:latest', 'devstral:24b-small-2505-q8_0']
     TestType = 4
     
 

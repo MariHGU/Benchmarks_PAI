@@ -1,5 +1,15 @@
 model,results
-dolphin3-8b-llama3.1-q8_0,"cs,java"
-nhn-small-latest,"java,py,sh,sql"
+dolphin3-8b-llama3.1-q8_0,"java,py"
+nhn-small-latest,"cs,go,java,py,sql"
 nhn-small-og,"cs,css,go,java,kt,py,rb,sh,ts,xml,yml"
 nhn-small-v2,"java,py,sh,sql"
+codestral-22b,"cs,go"
+codeqwen-chat,"go,java,rb"
+qwen3-1.7b-fp16,"cpp,cs,go,java"
+codellama-34b,sql
+gemma3-27b,"java,sh,sql"
+codestral-22b-v0.1-q5_0,sql
+dolphin3-8b-llama3.1-fp16,cs
+cogito-14b,java
+hermes3-8b,"go,java"
+devstral-24b-small-2505-q8_0,"java,sh"
