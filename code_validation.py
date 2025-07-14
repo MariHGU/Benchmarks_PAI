@@ -1,6 +1,8 @@
 import os
-import subprocess
+import csv
 import json
+import subprocess
+import pandas as pd
 from pathlib import Path
 from code_retrieval import LANG_EXTENSION_MAP
 from lxml import etree
@@ -367,6 +369,9 @@ langFuncs = {
 }
 
 def checkCode(modelFrame: str):
+        """
+        
+        """
         model = modelFrame
         langFiles = createLangLists(modelFolder=model)
 
@@ -386,14 +391,51 @@ def checkCode(modelFrame: str):
 
         if len(bad_languages)>0:
             print(f'The model: {model} presents code with syntax-errors from the following languages: {bad_languages}')
+        return bad_languages
 
-def runCodeValidation():
-    models = os.listdir('output')
+def saveResults(model: str, results: set):
+    """
+    Saves results to results.csv
 
-    for model in models:
-        print(f'Currently testing: {model}\n ... \n')
-        
-        checkCode(modelFrame=model)
+    """
+    fieldnames = ["model", "results"]
+    path = Path("results").mkdir(parents=True, exist_ok=True)
+    result_path = Path("results") / "results.csv"
+
+    if not Path(result_path).exists():
+        # --- Init New results.csv ---
+        with open(result_path, 'x', newline='') as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer.writeheader()
+
+    df = pd.read_csv(result_path)
+
+    result_str = ",".join(sorted(results))
+
+    if model in df['model'].values:
+        df.loc[df['model'] == model, 'results'] = result_str
+        print("Updated results")
+
+    else:
+        new_result = pd.DataFrame([{"model": model, "results": result_str}])
+        df = pd.concat([df, new_result], ignore_index=True)
+
+    df.to_csv(result_path, index=False)
+    return result_str
+
+
+def runCodeValidation(model: str) -> str:
+    #models = os.listdir('output')
+
+    model_path = Path('output') / model
+    #for model in models:
+    print(f'Currently testing: {model}\n ... \n')
+    
+    results = checkCode(modelFrame=model)
+    results_str = saveResults(model=model, results=results)
+    print("\n ... \nResults saved to results/results.csv")
+
+    return results_str
 
 if __name__ =='__main__':
-    runCodeValidation()
+    runCodeValidation('dolphin3-8b-llama3.1-q8_0')

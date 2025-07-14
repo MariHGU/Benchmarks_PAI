@@ -39,7 +39,9 @@ def extract_all_code_blocks(response_text: str):
     Removes ``` and returns only the code itself.
     """
     # Ekstraher kodeblokker som starter med ```<språk>
-    pattern = r"```(\w+)?\n(.*?)```"
+    #pattern = r"```(\w+)?\n(.*?)```"
+    pattern = r"```[ \t]*([\w+-]*)\s*\n(.*?)```"
+
     matches = re.findall(pattern, response_text, re.DOTALL | re.IGNORECASE)
     return matches
 

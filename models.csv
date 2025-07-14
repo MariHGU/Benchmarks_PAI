@@ -1,7 +1,7 @@
 model_name,digest_nr,kv_cache
 nhn-small:latest,8530fca74a2a94c,q8_0
 nhn-large:latest,7eedb0a718e7909,q8_0
-magistral:24b-small-2506-q8_0,02423f83f1a1005603d,Q8_0
+magistral:24b-small-2506-q8_0,02423f83f1a1,Q8_0
 gemma3:27b,a418f5838eaf,Q4_K_M
 devstral:24b-small-2505-q8_0,c180539775785745,Q8_0
 devstral:24b-small-2505-fp16,00d8e20b5637,F16
@@ -18,3 +18,6 @@ hermes3:8b,4f6b83f30b62,Q4_0
 hermes3:70b,60ef54cd913f,Q4_0
 hermes3:70b-llama3.1-fp16,e95c7ce02c58,F16
 hermes3:70b-llama3.1-q8_0,72f0aa5b30bb,Q8_0
+codellama:34b,685be00e1532,Q4_0
+codestral:22b,0898a8b286d5,Q4_0
+codestral:22b-v0.1-q5_0,05c0a78fd842,Q5_0

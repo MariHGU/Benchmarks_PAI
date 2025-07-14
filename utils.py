@@ -184,8 +184,6 @@ def write_to_xlsx(df: pd.DataFrame, file_name: str, sheet_name: str, test_type: 
     with pd.ExcelWriter(file_name, engine='openpyxl', mode='a', if_sheet_exists='overlay') as writer:
         df.to_excel(writer, sheet_name=sheet_name, index=False, header=header, startrow=startrow)
 
-    print('write')
-
 def initNewExcel(test_type: TestType, fileName: str):
     """
     Initiates blank excel with headers
@@ -238,7 +236,8 @@ def initNewExcel(test_type: TestType, fileName: str):
                 'Average time (experienced)[s]': [],
                 'Average tokens/s':[],
                 'Average Time (API)[s]': [],
-                'Inteded purpose': []
+                'Inteded purpose': [],
+                'Language errors': []
             })
 
             # Create excel outside of git repo
