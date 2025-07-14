@@ -18,11 +18,11 @@ results in ./results_<date>
 #region global variables
 
 max_n = 5 #maximum number of test runs before generating a report. Greater than 5
-date_str = ""  #Set on format DD_MM_YYYY. Leave empty for today
+date_str = "13_07_2025"  #Set on format DD_MM_YYYY. Leave empty for today
 end_at = (7, 30) #(hour, minute) to stop testing and generate report
-gather_data = False # If false: skips testing. Useful if you already have a dataset. If True: run all tests
+gather_all_data = False # If false: skips testing. Useful if you already have a dataset. If True: run all tests
 visualize = True #If false: skips visualization
-
+use_cases = False
 
 
 
@@ -344,6 +344,10 @@ async def run_all_benchmarks_and_return_models(n: int, conn: sqlite3.Connection)
 #region use_case_metrics
 
 
+def count_lines(file_path):
+    with open(file_path, 'r', encoding='utf-8') as file:
+        return sum(1 for line in file)
+
 
 #endregion
 
@@ -519,7 +523,7 @@ if __name__ == "__main__":
     conn = init_db(dir_str)
 
 
-    if gather_data:
+    if gather_all_data:
 
         #This is not timed, probably fine
         print("Benchmarking:")
@@ -531,35 +535,41 @@ if __name__ == "__main__":
         end_time = datetime(year=tomorrow.year, month=tomorrow.month, day=tomorrow.day, hour=7, minute=30)
         n = 0
 
+    if gather_all_data or use_cases:
+        if use_cases and not gather_all_data:
+            model_names = asyncio.run(get_chat_models(client))
+
         #In a perfect world this would probably have been async. Anyways:
         for i, model_name in enumerate(model_names):
 
             print("Use cases for " + model_name)
 
+            if datetime.now() > end_time:
+                print("Too late to begin further testing.")
+                break
+
+
             generate_responses(test_type=TestType.PROMPT_ALIGNMENT, model=model_name, n_responses=max_n)
             generate_responses(test_type=TestType.HELPFULNESS, model=model_name, n_responses=max_n)
             generate_responses(test_type=TestType.SUMMARIZATION, model=model_name, n_responses=max_n)
 
-            prompt_alignment_row = 3 * max_n * i
-            helpfullness_row = (3 * i + 1 ) * max_n 
-            summarization_row = (3 * i + 2) * max_n
 
-            prompt_alignment = eval_responses(test_type=TestType.PROMPT_ALIGNMENT, write_results= False, eval_archived=True, eval_range=(prompt_alignment_row,prompt_alignment_row + max_n))
+
+
+            prompt_alignment = eval_responses(test_type=TestType.PROMPT_ALIGNMENT, write_results= False, eval_archived=False)
             prompt_alignment = pd.DataFrame(prompt_alignment, columns=["prompt_alignment", "model"])
             prompt_alignment["model"] = model_name
             prompt_alignment.to_sql('prompt_alignment', conn, if_exists = 'append', index = False)
 
-            helpfullness = eval_responses(test_type=TestType.HELPFULNESS, write_results= False, eval_archived=True, eval_range=(helpfullness_row, helpfullness_row + max_n))
+            helpfullness = eval_responses(test_type=TestType.HELPFULNESS, write_results= False, eval_archived=False)
             helpfullness = pd.DataFrame(helpfullness, columns=["helpfullness", "model"])
             helpfullness["model"] = model_name
             helpfullness.to_sql('helpfullness', conn, if_exists = 'append', index = False)
 
-            summarization = eval_responses(test_type=TestType.SUMMARIZATION, write_results= False, eval_archived=True, eval_range=(summarization_row, summarization_row + max_n))
+            summarization = eval_responses(test_type=TestType.SUMMARIZATION, write_results= False, eval_archived=False)
             summarization = pd.DataFrame(summarization, columns=["summarization", "model"])
             summarization["model"] = model_name
             summarization.to_sql('summarization', conn, if_exists = 'append', index = False)
-
-
 
 
                 
