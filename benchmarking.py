@@ -260,7 +260,7 @@ def retrieveModel(modelName: str) -> Tuple[str, str]:
 
 async def initBenchmarking(newExcel: bool = False):
     purps = ['coding', 'text']
-    models = ['nhn-small:latest', 'devstral:24b-small-2505-q8_0']
+    models = ['qwen2.5-coder:32b-instruct-fp16']
     TestType = 4
     
 
@@ -301,8 +301,8 @@ async def initBenchmarking(newExcel: bool = False):
                     df['Language errors'] = runCodeValidation(model=model.replace(':','-'))
                     print(df)
 
-                    df.to_csv(filepath, mode='a', index=False, header=False)
-                    write_to_xlsx(df=df, file_name=Path("test.xlsx"), sheet_name="Avg_Benchmarks", test_type=TestType)
+            df.to_csv(filepath, mode='a', index=False, header=False)
+            write_to_xlsx(df=df, file_name=Path("test.xlsx"), sheet_name="Avg_Benchmarks", test_type=TestType)
             
 
 
@@ -311,11 +311,4 @@ async def initBenchmarking(newExcel: bool = False):
 if __name__ == "__main__":
 
     asyncio.run(initBenchmarking(newExcel=False))
-    # retrieveCode()
-    
-    # validateCode = input('Run code validation? [y/n]: ')
-
-    # if validateCode == 'y':
-    #     #call code validation
-    #     runCodeValidation()
         

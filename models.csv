@@ -1,12 +1,15 @@
 model_name,digest_nr,kv_cache
 nhn-small:latest,8530fca74a2a94c,q8_0
 nhn-large:latest,7eedb0a718e7909,q8_0
-magistral:24b-small-2506-q8_0,02423f83f1a1,Q8_0
 gemma3:27b,a418f5838eaf,Q4_K_M
+gemma3:27b-it-q8_0,273cbcd67032,Q8_0
+gemma3:27b-it-fp16,b7d58e2e179e,F16
+magistral:24b-small-2506-q8_0,02423f83f1a1,Q8_0
 devstral:24b-small-2505-q8_0,c180539775785745,Q8_0
 devstral:24b-small-2505-fp16,00d8e20b5637,F16
 qwen3:1.7b-fp16,e9354f6174db6aa7af,F16
 qwen3:1.7b-q8_0,29b6a7a420a42b7d5,Q8_0
+qwen2.5-coder:32b-instruct-fp16,938472346418,F16
 codeqwen:chat,df352abf55b1,Q4_0
 deepseek-r1:32b-qwen-distill-fp16,20ed0f80363b,F16
 dolphin3:8b-llama3.1-fp16,b0941c6f3226,F16

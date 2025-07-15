@@ -13,3 +13,4 @@ dolphin3-8b-llama3.1-fp16,cs
 cogito-14b,java
 hermes3-8b,"go,java"
 devstral-24b-small-2505-q8_0,"java,sh"
+qwen2.5-coder-32b-instruct-fp16,"java,sh,sql"

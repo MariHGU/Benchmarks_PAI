@@ -11,3 +11,6 @@ cogito:14b,d0cac86a2347,Q4_K_M,6.7383,95.7562,6.6409,coding,java
 hermes3:8b,4f6b83f30b62,Q4_0,3.6342,186.7854,3.5211,coding,"go,java"
 nhn-small:latest,8530fca74a2a94c,q8_0,2.8753,164.3512,2.7026,coding,"cs,go,java,py,sql"
 devstral:24b-small-2505-q8_0,c180539775785745,Q8_0,13.2244,57.4989,13.1116,coding,"java,sh"
+qwen2.5-coder:32b-instruct-fp16,938472346418,F16,23.1682,30.9243,23.1053,coding,"java,sh,sql"
+qwen2.5-coder:32b-instruct-fp16,938472346418,F16,27.8596,30.8478,27.8014,coding,"java,sh,sql"
+qwen2.5-coder:32b-instruct-fp16,938472346418,F16,22.3905,30.9226,22.3305,text,1

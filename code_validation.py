@@ -155,6 +155,8 @@ def check_bash_validation(modelFolder: str, LangFiles: list) -> bool:
         )
         if result.returncode != 0:
             files_with_error.add(file)
+            print(result.stderr)
+            print(result.stdout)
 
     return True if len(files_with_error)>0 else False
 
@@ -438,4 +440,4 @@ def runCodeValidation(model: str) -> str:
     return results_str
 
 if __name__ =='__main__':
-    runCodeValidation('dolphin3-8b-llama3.1-q8_0')
+    runCodeValidation('qwen2.5-coder-32b-instruct-fp16')
