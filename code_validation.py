@@ -440,4 +440,4 @@ def runCodeValidation(model: str) -> str:
     return results_str
 
 if __name__ =='__main__':
-    runCodeValidation('qwen2.5-coder-32b-instruct-fp16')
+    runCodeValidation('cogito-14b')

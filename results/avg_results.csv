@@ -14,3 +14,7 @@ devstral:24b-small-2505-q8_0,c180539775785745,Q8_0,13.2244,57.4989,13.1116,codin
 qwen2.5-coder:32b-instruct-fp16,938472346418,F16,23.1682,30.9243,23.1053,coding,"java,sh,sql"
 qwen2.5-coder:32b-instruct-fp16,938472346418,F16,27.8596,30.8478,27.8014,coding,"java,sh,sql"
 qwen2.5-coder:32b-instruct-fp16,938472346418,F16,22.3905,30.9226,22.3305,text,1
+devstral:24b-small-2505-fp16,00d8e20b5637,F16,16.1909,42.6521,16.0972,coding,java
+devstral:24b-small-2505-fp16,00d8e20b5637,F16,21.7934,38.554,21.7157,text,1
+deepseek-r1:32b-qwen-distill-fp16,20ed0f80363b,F16,47.1075,30.8155,47.0505,coding,java
+deepseek-r1:32b-qwen-distill-fp16,20ed0f80363b,F16,24.2051,31.2536,24.1482,text,1

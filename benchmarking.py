@@ -177,31 +177,6 @@ async def test_llm_performance(prompts: list, purpose: str, model: str, TestType
     print('Test completed')
     return ny_data
 
-
-# Ny data du vil legge til
-
-# def write_to_xcl(ny_data, file_name:str, sheet:str):
-#     """
-#         Writes data to an excisting excel file as specified in file_name and sheet number.
-#     """
-#     # Last eksisterende arbeidsbok
-#     folder = Path.cwd()
-#     filepath = folder / file_name
-
-#     arknavn = sheet
-#     workbook = load_workbook(filepath)
-
-#     if arknavn in workbook.sheetnames:
-#         sheet = workbook[arknavn]
-#         startrow = sheet.max_row
-#     else:
-#         sheet = workbook.create_sheet(arknavn)
-#         startrow = 0
-
-#     # Bruk ExcelWriter i append-modus uten å sette writer.book
-#     with pd.ExcelWriter(filepath, engine='openpyxl', mode='a', if_sheet_exists='overlay') as writer:
-#         ny_data.to_excel(writer, sheet_name=arknavn, index=False, header=False, startrow=startrow)
-
 # -- Retrieve model-info --
 def retrieveModel(modelName: str) -> Tuple[str, str]:
     """
@@ -218,49 +193,10 @@ def retrieveModel(modelName: str) -> Tuple[str, str]:
     else:
         raise NameError(f"Did not find model: {modelName}")
     
-# def initNewExcel():
-#     """
-#     Initiates blank excel with headers
-#     """
-#     df = pd.DataFrame({
-#         'Model': [],
-#         'Digest': [],
-#         'KV Cache Type': [],
-#         'Prompt nr':[],
-#         'Total Duration[ms]': [],
-#         'Load Duration[ms]':[],
-#         'Promt Eval Count':[],
-#         'Prompt eval duration[ms]':[],
-#         'Prompt eval rate':[],
-#         'Eval Count':[],
-#         'Eval duration[ms]':[],
-#         'Eval rate':[],
-#         'Inteded purpose': []
-#     })
-
-#     avg_df = pd.DataFrame({
-#         'Model':[],
-#         'Digest': [],
-#         'KV Cache Type': [],
-#         'Average time (experienced)[s]': [],
-#         'Average tokens/s':[],
-#         'Average Time (API)[s]': [],
-#         'Inteded purpose': [],
-#         'Language errors': []
-#     })
-
-#     # Create excel outside of git repo
-#     folder = Path.cwd()
-
-#     filepath = folder/filename
-
-#     with pd.ExcelWriter(filepath) as writer:
-#         df.to_excel(writer, index=False, sheet_name='Sheet1')
-#         avg_df.to_excel(writer, index=False, sheet_name='Sheet2')
-
 async def initBenchmarking(newExcel: bool = False):
     purps = ['coding', 'text']
-    models = ['qwen2.5-coder:32b-instruct-fp16']
+    #models = ['devstral:24b-small-2505-fp16','deepseek-r1:70b-llama-distill-q8_0','mistral-small:24b-instruct-2501-fp16']
+    models = ['deepseek-r1:32b-qwen-distill-fp16']
     TestType = 4
     
 
