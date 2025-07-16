@@ -23,3 +23,5 @@ responses/
 
 # Ignore temporary files
 test.py
+llm_response.txt
+test.xlsx

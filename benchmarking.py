@@ -6,6 +6,8 @@ from pathlib import Path
 from typing import List, Tuple
 from ollama import AsyncClient, ChatResponse
 from openpyxl import load_workbook
+from code_retrieval import retrieveCode
+from code_validation import runCodeValidation
 
 # -- Initialize the client with appropriate host and authorization token --
 def get_api_key(file_path='.api_key') -> str:
@@ -23,7 +25,7 @@ api_key_file = Path.cwd().parent / ".api_key"
 api_key = get_api_key(api_key_file)
 
 client = AsyncClient(
-    host=BASE_URL,
+    host="https://beta.chat.nhn.no/ollama",
     headers={
         'Authorization': f'{api_key}'
     }
@@ -91,11 +93,12 @@ async def test_llm_performance(prompts: list, purpose: str, model: str) -> str:
     Performs the actual testing of the model, and writes individual prompt-performance to excel file.
 
     Input: The prompts you wish to perform the test on.
+    Input: The prompts you wish to perform the test on.
     Output: The model used, the average experienced time, average api time(time retrieved from api-call) aswell as average number of generated tokens per second.
     """
     if purpose == 'coding':
         with open("llm_response.txt", "w", encoding="utf-8") as f:
-            f.write(model)
+            f.write(f'{model}\n')
 
     total_time = 0
     total_response_tokens_ps = 0
@@ -139,11 +142,10 @@ async def test_llm_performance(prompts: list, purpose: str, model: str) -> str:
                 'Eval rate':[round(response_ps, 4)],
                 'Intended Purpose': [purpose]
                 })
-            write_to_xcl(ny_data=ny_data, file_name='Benchmarks.xlsx', sheet='Sheet1')
-            #  -- Uncomment for coding output --
-            # if purpose == 'coding':
-            #     with open("llm_response.txt", "a", encoding="utf-8") as f:
-            #         f.write(response)
+            #write_to_xcl(ny_data=ny_data, file_name='Benchmarks.xlsx', sheet='Sheet1')
+            if purpose == 'coding':
+                with open("llm_response.txt", "a", encoding="utf-8") as f:
+                    f.write(response)
 
         else:
             print(f"Test #{i+1}: Prompt='{prompt}' No response received. Time={elapsed_time:.4f}s")
@@ -165,7 +167,7 @@ async def test_llm_performance(prompts: list, purpose: str, model: str) -> str:
         'Inteded purpose': [purpose]
         })
 
-    write_to_xcl(ny_data=ny_data, file_name='Benchmarks.xlsx', sheet='Sheet2')
+    #write_to_xcl(ny_data=ny_data, file_name='Benchmarks.xlsx', sheet='Sheet2')
 
     print('Test completed')
 
@@ -249,18 +251,29 @@ def initNewExcel():
         df.to_excel(writer, index=False, sheet_name='Sheet1')
         avg_df.to_excel(writer, index=False, sheet_name='Sheet2')
 
-
-
-# Run the test
-if __name__ == "__main__":
+async def initBenchmarking(newExcel: bool = False):
     purps = ['coding', 'text']
 
 
     # Uncomment to initiate new excel:
-    #initNewExcel()
+    if newExcel == True:
+        initNewExcel()
 
     # Test and write to file
     for purp in purps:
         purpose, prompts = initPurpose(purp=purp)
-        asyncio.run(test_llm_performance(prompts, purpose, model='nhn-small:latest'))
+        await test_llm_performance(prompts, purpose, model='dolphin3:8b-llama3.1-q8_0')
+
+
+# Run the test
+if __name__ == "__main__":
+
+    asyncio.run(initBenchmarking(newExcel=False))
+    retrieveCode()
     
+    validateCode = input('Run code validation? [y/n]: ')
+
+    if validateCode == 'y':
+        #call code validation
+        runCodeValidation()
+        

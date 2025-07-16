@@ -27,26 +27,14 @@ if __name__ == "__main__":
     # Example usage of the script to generate and evaluate responses for different models.
     #######################
 
-    # NUM_RESPONSES = 1
-    # EVAL_RANGE = (0, 10)
+    NUM_RESPONSES = 3
+    # EVAL_RANGE = (10, 100)
 
-    # generate_responses(
-    #     test_type=TestType.PROMPT_ALIGNMENT,
-    #     model=MODEL,
-    #     n_responses=NUM_RESPONSES,
-    # )
-    alignment = eval_responses(test_type=TestType.PROMPT_ALIGNMENT, eval_archived=True)
+    # generate_responses(test_type=TestType.PROMPT_ALIGNMENT, model=MODEL, n_responses=NUM_RESPONSES)
+    # generate_responses(test_type=TestType.HELPFULNESS, model=MODEL, n_responses=NUM_RESPONSES)
+    # generate_responses(test_type=TestType.SUMMARIZATION, model=MODEL, n_responses=NUM_RESPONSES)
     
-    # generate_responses(
-    #     test_type=TestType.SUMMARIZATION,
-    #     model=MODEL,
-    #     n_responses=NUM_RESPONSES,
-    # )
-    summaries = eval_responses(test_type=TestType.SUMMARIZATION, eval_archived=True)
-    
-    # generate_responses(
-    #     test_type=TestType.HELPFULNESS,
-    #     model=MODEL,
-    #     n_responses=NUM_RESPONSES,
-    #     )
-    helpfulness = eval_responses(test_type=TestType.HELPFULNESS, eval_archived=True)
+    alignment = eval_responses(test_type=TestType.PROMPT_ALIGNMENT)
+    helpfulness = eval_responses(test_type=TestType.HELPFULNESS)
+    # summaries = eval_responses(test_type=TestType.SUMMARIZATION)
+

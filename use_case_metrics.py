@@ -115,7 +115,6 @@ def eval_responses(
     Logger = utils.CustomLogger()
     Logger.info("Init eval model")
 
-
     match test_type:
         case TestType.SUMMARIZATION:
             load_file = "responses/summaries.csv"
