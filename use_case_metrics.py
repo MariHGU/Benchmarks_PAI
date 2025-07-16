@@ -25,7 +25,7 @@ def generate_responses(
             - TestType.HELPFULNESS: Generates responses for evaluating helpfulness - the actual output should be helpful in answering the input.
         model (str): Name of the model to use for generating summaries.
         n_responses (int): Number of responses to generate for each prompt.
-    
+
     Returns:
         None: The function saves the generated summaries to a CSV file.
     """
@@ -64,21 +64,23 @@ def generate_responses(
             prompt_instructions = prompt_instructions.strip()
         else:
             prompt_instructions = None
-        for _ in tqdm(range(n_responses), desc=f"Generating responses for prompt {i}"):
+        for j in tqdm(range(n_responses), desc=f"Generating responses for prompt {i}"):
             response = LLM.generate(prompt)
             time_hash = utils.create_time_hash()
 
             utils.write_response_to_csv(
                 model_name=model,
+                prompt_id=i,
                 prompt=prompt,
                 response=response[0],
                 file_name=save_file,
                 time_hash=time_hash,
-                append=i, # Remove all old responses when starting a new test
+                append=(i+j), # Remove all old responses when starting a new test
                 prompt_instructions=prompt_instructions
             )
             utils.write_response_to_csv(
                 model_name=model,
+                prompt_id=i,
                 prompt=prompt,
                 response=response[0],
                 file_name=save_file.replace(".csv", "_archive.csv"),
@@ -168,9 +170,9 @@ def eval_responses(
 
             case _:
                 raise ValueError("Invalid test type provided. Use TestType.SUMMARIZATION, TestType.PROMPT_ALIGNMENT, or TestType.HELPFULNESS.")
+        prompt_id = row['prompt id']
         prompt = row['prompt']
         response = row['response']
-        prompt_id = row['prompt id']
   
         Logger.info("Creating test case for prompt %d", i)
         test_case = LLMTestCase(
@@ -183,10 +185,12 @@ def eval_responses(
             score = metric.measure(test_case)
         except ValueError as ve:
             Logger.error("Error measuring for prompt %d: %s", i, ve)
-            score = -1.0  # Assign a default score in case of error
+            score = -1.0
+            metric.reason = "Error in measurement: {}".format(ve)
         except Exception as e:
             Logger.error("Unexpected error for prompt %d: %s", i, e)
             score = -1.0
+            metric.reason = "Unexpected error: {}".format(e)
 
         Logger.info("Measurement complete. Score: %s", score)
 
@@ -206,25 +210,3 @@ def eval_responses(
 
     Logger.info("All responses evaluated.")
     return scores
-
-
-if __name__ == "__main__":
-    # Example usage
-    model = "nhn-small:latest"
-
-    prompts_file = "prompts/summarization_prompts.txt"
-
-    # Generate summaries
-    # generate_responses(model=model, prompts_file=prompts_file, save_file="summaries.csv")
-    # Evaluate summaries
-    
-
-    # results = test_summarization(model=model, prompts_file=prompts_file)
-    
-    # utils.save_eval_results_to_xlsx(
-    #     type_of_test="summarization",
-    #     model_name=model,
-    #     results=results,
-    #     file_name="results.xlsx",
-    #     judge_params=(JUDGE_MODEL, JUDGE_SEED, JUDGE_TEMPERATURE, JUDGE_TOP_K),
-    # )

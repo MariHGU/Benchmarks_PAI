@@ -156,7 +156,7 @@ def read_responses_from_csv(file_name: str) -> pd.DataFrame:
     if not os.path.exists(file_name):
         raise FileNotFoundError(f"CSV file not found: {file_name}")
     
-    df = pd.read_csv(file_name)
+    df = pd.read_csv(file_name, sep=',', encoding='utf-8', encoding_errors='ignore')
     return df
 
 
@@ -181,7 +181,7 @@ def write_to_xlsx(df: pd.DataFrame, file_name: str, sheet_name: str) -> None:
                 "Prompt Number": [],
                 "Judge Model": [],
                 "Judge Seed": [],
-                "Judge Temperature": [],
+                "Judge Temp": [],
                 "Judge Top K": [],
                 "Score": [],
                 "Reason": [],
@@ -254,7 +254,7 @@ def save_eval_results_to_xlsx(
             "Prompt Number": [prompt_ref],
             "Judge Model": [judge_model_name],
             "Judge Seed": [judge_seed],
-            "Judge Temperature": [judge_temp],
+            "Judge Temp": [judge_temp],
             "Judge Top K": [judge_top_k],
             "Score": [score],
             "Reason": [reason],

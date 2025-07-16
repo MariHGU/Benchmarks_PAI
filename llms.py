@@ -7,8 +7,11 @@ from groq import Groq, AsyncGroq
 from pydantic import BaseModel
 
 BASE_URL = "https://beta.chat.nhn.no/ollama"
-MODEL = "devstral:24b-small-2505-q8_0"
-JUDGE_MODEL = "deepseek-r1:32b-qwen-distill-fp16" # OLLAMA MODEL
+MODEL = "qwen3:1.7b-fp16"
+JUDGE_MODEL = "deepseek-r1:32b-qwen-distill-fp16" # OLLAMA
+# JUDGE_MODEL = "devstral:24b-small-2505-fp16" # OLLAMA 
+# JUDGE_MODEL = "hermes3:70b-llama3.1-fp16" # OLLAMA
+MODEL
 JUDGE_SEED = 42
 JUDGE_TEMPERATURE = 0.2
 JUDGE_TOP_K = 10
