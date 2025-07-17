@@ -235,6 +235,8 @@ def check_cs_validation(modelFolder: str, LangFiles: str) -> bool:
         )
         if result.returncode != 0:
             files_with_error.add(file)
+            print("cs: ",result.stderr)
+            print("cs: ",result.stdout)
 
     return True if len(files_with_error)>0 else False  
 
@@ -251,6 +253,8 @@ def check_go_validation(modelFolder: str, LangFiles: list) -> bool:
         )
         if result.returncode != 0:
             files_with_error.add(file)
+            print("go: ",result.stderr)
+            print("go: ",result.stdout)
 
     return True if len(files_with_error)>0 else False  
 
@@ -427,10 +431,7 @@ def saveResults(model: str, results: set):
 
 
 def runCodeValidation(model: str) -> str:
-    #models = os.listdir('output')
-
-    model_path = Path('output') / model
-    #for model in models:
+    
     print(f'Currently testing: {model}\n ... \n')
     
     results = checkCode(modelFrame=model)
@@ -440,4 +441,10 @@ def runCodeValidation(model: str) -> str:
     return results_str
 
 if __name__ =='__main__':
-    runCodeValidation('cogito-14b')
+    #models = os.listdir('output')
+
+    #model_path = Path('output') / model
+    #for model in models:
+    model = 'magistral-24b-small-2506-q8_0'
+    
+    runCodeValidation(model=model)
