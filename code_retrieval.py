@@ -32,18 +32,20 @@ LANG_EXTENSION_MAP = {
 
 unknown_lang = set()
 
-
 def extract_all_code_blocks(response_text: str):
     """
-    Extracts all blocks of code
+    Extracts all blocks of code from the text that are not within <think>...</think>.
     Removes ``` and returns only the code itself.
     """
-    # Ekstraher kodeblokker som starter med ```<språk>
-    #pattern = r"```(\w+)?\n(.*?)```"
-    pattern = r"```[ \t]*([\w+-]*)\s*\n(.*?)```"
+    # 1. Fjern <think>...</think>-blokker
+    cleaned_text = re.sub(r"<think>.*?</think>", "", response_text, flags=re.DOTALL | re.IGNORECASE)
 
-    matches = re.findall(pattern, response_text, re.DOTALL | re.IGNORECASE)
+    # 2. Ekstraher kodeblokker (```<språk>\n<kode>```)
+    pattern = r"```[ \t]*([\w+-]*)\s*\n(.*?)```"
+    matches = re.findall(pattern, cleaned_text, re.DOTALL | re.IGNORECASE)
+
     return matches
+
 
 
 def save_code_blocks(code_blocks: list, model: str):
