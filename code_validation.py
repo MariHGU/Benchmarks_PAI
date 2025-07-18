@@ -68,7 +68,7 @@ def check_python_Validation(modelFolder: str, langFiles: list) -> bool:
     path = 'output/' + modelFolder
     files_with_error = set()
 
-    # -- Retrieve Python files for validation
+    # -- Retrieve Python files for validation --
     pythonFiles = langFiles['py']['files']
 
     for file in pythonFiles:
@@ -100,6 +100,7 @@ def check_java_Validation(modelFolder: str, langFiles: list) -> bool:
     return True if len(files_with_error)>0 else False
 
 def check_js_Validation(modelFolder: str, langFiles: list) -> bool:
+    # -- Retrieve files for JS validation --
     jsFiles = langFiles['js']['files']
     files_with_error = set()
     
@@ -116,6 +117,7 @@ def check_js_Validation(modelFolder: str, langFiles: list) -> bool:
 
 
 def check_cpp_Validation(modelFolder: str, langFiles: list) -> bool:
+    # -- Retrieve files for C++ validaion --
     cppFiles = langFiles['cpp']['files']
     files_with_error = set()
 
@@ -131,6 +133,7 @@ def check_cpp_Validation(modelFolder: str, langFiles: list) -> bool:
     return True if len(files_with_error)>0 else False
 
 def check_json_validation(modelFolder: str, langFiles: list) -> bool:
+    # -- Retrieve files for JSON validation --
     jsonFiles = langFiles['json']['files']
     files_with_error = set()
 
@@ -144,6 +147,7 @@ def check_json_validation(modelFolder: str, langFiles: list) -> bool:
     return True if len(files_with_error)>0 else False
 
 def check_bash_validation(modelFolder: str, LangFiles: list) -> bool:
+    # -- Retrieve files for bash validation --
     bashFiles = LangFiles['sh']['files']
     files_with_error = set()
 
@@ -161,6 +165,7 @@ def check_bash_validation(modelFolder: str, LangFiles: list) -> bool:
     return True if len(files_with_error)>0 else False
 
 def check_ts_validation(modelFolder: str, LangFiles: list) -> bool:
+    # -- Retrieve files for TypeScript validation --
     tsFiles = LangFiles['ts']['files']
     files_with_error = set()
 
@@ -176,6 +181,7 @@ def check_ts_validation(modelFolder: str, LangFiles: list) -> bool:
     return True if len(files_with_error)>0 else False
 
 def check_html_validation(modelFolder: str, LangFiles: list) -> bool:
+    # -- Retrieve Files for HTML validation --
     htmlFiles = LangFiles['html']['files']
     files_with_error = set()
 
@@ -191,6 +197,7 @@ def check_html_validation(modelFolder: str, LangFiles: list) -> bool:
     return True if len(files_with_error)>0 else False
 
 def check_css_validation(modelFolder: str, LangFiles: list) -> bool:
+    # -- Retrieve files for CSS validation --
     cssFiles = LangFiles['css']['files']
     files_with_error = set()
 
@@ -207,6 +214,7 @@ def check_css_validation(modelFolder: str, LangFiles: list) -> bool:
     return True if len(files_with_error)>0 else False  
 
 def check_c_validation(modelFolder: str, LangFiles: str) -> bool:
+    # -- Retrieve Files for C validation
     cFiles = LangFiles['c']['files']
     files_with_error = set()
 
@@ -223,6 +231,7 @@ def check_c_validation(modelFolder: str, LangFiles: str) -> bool:
     return True if len(files_with_error)>0 else False  
 
 def check_cs_validation(modelFolder: str, LangFiles: str) -> bool:
+    # -- Retrieve Files for C# validation --
     csFiles = LangFiles['cs']['files']
     files_with_error = set()
 
@@ -241,6 +250,7 @@ def check_cs_validation(modelFolder: str, LangFiles: str) -> bool:
     return True if len(files_with_error)>0 else False  
 
 def check_go_validation(modelFolder: str, LangFiles: list) -> bool:
+    # -- Retrieve files for Go Validation --
     goFiles = LangFiles['go']['files']
     files_with_error = set()
 
@@ -259,6 +269,7 @@ def check_go_validation(modelFolder: str, LangFiles: list) -> bool:
     return True if len(files_with_error)>0 else False  
 
 def check_ruby_validation(modelFolder: str, LangFiles: list) -> bool:
+    # -- Retrieve files for Ruby validation --
     rbFiles = LangFiles['rb']['files']
     files_with_error = set()
 
@@ -275,6 +286,7 @@ def check_ruby_validation(modelFolder: str, LangFiles: list) -> bool:
     return True if len(files_with_error)>0 else False  
 
 def check_yaml_validation(modelFolder: str, LangFiles: list) -> bool:
+    # -- Retrieve files for Yaml validation --
     ymlFiles = LangFiles['yml']['files']
     files_with_error = set()
 
@@ -290,6 +302,7 @@ def check_yaml_validation(modelFolder: str, LangFiles: list) -> bool:
     return True if len(files_with_error)>0 else False
 
 def check_xml_validation(modelFolder: str, LangFiles: list) -> bool:
+    # -- Retrieve files for XML validation --
     xmlFiles = LangFiles['xml']['files']
     files_with_error = set()
 
@@ -305,6 +318,7 @@ def check_xml_validation(modelFolder: str, LangFiles: list) -> bool:
     return True if len(files_with_error)>0 else False
 
 def check_xsl_validation(modelFolder: str, LangFiles: list) -> bool:
+    # -- Retrieve files for XSL validation --
     xslFiles = LangFiles['xsl']['files']
     files_with_error = set()
 
@@ -331,6 +345,7 @@ def check_xslt_validation(modelFolder: str, LangFiles: list) -> bool:
     return True if len(files_with_error)>0 else False
 
 def check_kt_validation(modelFolder: str, LangFiles: list) -> bool:
+    # -- Retrieves files for Kotlin validation --
     ktFiles = LangFiles['kt']['files']
     files_with_error = set()
     subprocess.run(
@@ -374,9 +389,14 @@ langFuncs = {
     "kt": check_kt_validation
 }
 
-def checkCode(modelFrame: str):
+def checkCode(modelFrame: str) -> set:
         """
-        
+        Executes the syntax-validation of each programming language.
+
+        Args:
+            modelFrame (str): Name of the model whose code to test.
+        Returns:
+            bad_languages (set): A set of languages containing syntax-errors. 
         """
         model = modelFrame
         langFiles = createLangLists(modelFolder=model)
@@ -399,10 +419,16 @@ def checkCode(modelFrame: str):
             print(f'The model: {model} presents code with syntax-errors from the following languages: {bad_languages}')
         return bad_languages
 
-def saveResults(model: str, results: set):
+def saveResults(model: str, results: set) -> str:
     """
     Saves results to results.csv
 
+    Args:
+        model (str): Name of model.
+        results (set): Set of results of the performed validation tests.
+
+    Returns:
+        result_str (str): String of results(language errors).
     """
     fieldnames = ["model", "results"]
     path = Path("results").mkdir(parents=True, exist_ok=True)
@@ -431,6 +457,15 @@ def saveResults(model: str, results: set):
 
 
 def runCodeValidation(model: str) -> str:
+    """
+    Initiates codevalidation of a model.
+
+    Args:
+        model (str): Name of model to test.
+
+    Returns:
+        results_str (str): String of any language errors the model may have.
+    """
     
     print(f'Currently testing: {model}\n ... \n')
     
@@ -444,7 +479,8 @@ if __name__ =='__main__':
     #models = os.listdir('output')
 
     #model_path = Path('output') / model
-    #for model in models:
-    model = 'magistral-24b-small-2506-q8_0'
+    models = ['mixtral-v0.1','mixtral-8x7b-instruct-v0.1-q8_0', 'magistral-24b-small-2506-q8_0']
+    for model in models:
+    #model = 'magistral-24b-small-2506-q8_0'
     
-    runCodeValidation(model=model)
+        runCodeValidation(model=model)

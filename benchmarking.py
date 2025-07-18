@@ -10,7 +10,6 @@ from code_retrieval import retrieveCode
 from code_validation import runCodeValidation
 from utils import write_to_xlsx, initNewExcel, TestType
 
-#filename = "Benchmarks.xlsx
 filename = "test.xlsx"
 
 # -- Initialize the client with appropriate host and authorization token --
@@ -24,7 +23,6 @@ def get_api_key(file_path='.api_key') -> str:
         raise
 
 # -- Get the API key from a file outside the git repo --
-#api_key_file = os.path.join(os.getcwd(), ".api_key")
 api_key_file = Path.cwd().parent / ".api_key"
 api_key = get_api_key(api_key_file)
 
@@ -53,8 +51,8 @@ async def call_llm_api(prompt: str, model: str) -> str:
 
         # Extract and return the message content from the response
         if hasattr(response, 'message') and hasattr(response.message, 'content'):
-            response_ps = response.eval_count / (response.eval_duration / 1e9)              # Converting to seconds
-            prompt_ps = response.prompt_eval_count / (response.prompt_eval_duration / 1e9)  # Converting to seconds
+            response_ps = response.eval_count / (response.eval_duration / 1e9)              # Converting to tokens/seconds
+            prompt_ps = response.prompt_eval_count / (response.prompt_eval_duration / 1e9)  # Converting to tokens/seconds
 
             return response.message.content, response.total_duration, response.load_duration, response.prompt_eval_count, response.prompt_eval_duration, prompt_ps, response.eval_count, response.eval_duration, response_ps
         else:
@@ -89,6 +87,14 @@ def initPurpose(purp: str) -> Tuple[str, List[str]]:
         purpose = purp
         prompts = read_prompts('prompts/'+ purp + '_prompts.txt')
         return purpose, prompts
+
+def write_to_txt(purpose: str, response: str):
+    """
+    Writes coding related response to llm_response.txt
+    """
+    if purpose == 'coding':
+        with open("llm_response.txt", "a", encoding="utf-8") as f:
+            f.write(response)
 
 
 # -- Test LLM performance --
@@ -135,28 +141,27 @@ async def test_llm_performance(prompts: list, purpose: str, model: str, TestType
                 'Digest': [digest],
                 'KV Cache Type': [kv_cache],
                 'Prompt nr':[i], 
-                'Total Duration': [round(totalt_duration/1e6, 4)], 
-                'Load Duration':[round(load_duration/1e6, 4)], 
+                'Total Duration': [round(totalt_duration/1e6)], 
+                'Load Duration':[round(load_duration/1e6)], 
                 'Promt Eval Count':[prompt_token], 
-                'Prompt eval duration':[round(prompt_eval_duration/1e6, 4)], 
-                'Prompt eval rate':[round(prompt_ps, 4)],  
+                'Prompt eval duration':[round(prompt_eval_duration/1e6)], 
+                'Prompt eval rate':[round(prompt_ps)],  
                 'Eval Count':[response_token], 
-                'Eval duration':[round(response_eval_duration/1e6, 4)], 
-                'Eval rate':[round(response_ps, 4)],
+                'Eval duration':[round(response_eval_duration/1e6)], 
+                'Eval rate':[round(response_ps)],
                 'Intended Purpose': [purpose]
                 })
             
             write_to_xlsx(df=ny_data, file_name=filename, sheet_name='Benchmarks', test_type=TestType)
-            if purpose == 'coding':
-                with open("llm_response.txt", "a", encoding="utf-8") as f:
-                    f.write(response)
+
+            write_to_txt(purpose=purpose, response=response)
 
         else:
             print(f"Test #{i+1}: Prompt='{prompt}' No response received. Time={elapsed_time:.4f}s")
 
-    average_time = total_time / num_tests
-    average_token_ps = total_response_tokens_ps / num_tests
-    average_api_time = total_api_time / num_tests
+    average_time = round(total_time / num_tests)
+    average_token_ps = round(total_response_tokens_ps / num_tests)
+    average_api_time = round(total_api_time / num_tests)
 
     print(f"\nAverage response time over {num_tests} tests: {average_time:.4f} seconds")
     print(f"Average response tokens/s: {average_token_ps:.4f}")
@@ -165,14 +170,12 @@ async def test_llm_performance(prompts: list, purpose: str, model: str, TestType
         'Model': [model],
         'Digest': [digest],
         'KV Cache Type': [kv_cache],
-        'Average time': [round(average_time,4)], 
-        'Average tokens/s': [round(average_token_ps,4)], 
-        'Average Time (API)': [round(average_api_time, 4)],
+        'Average time': [average_time], 
+        'Average tokens/s': [average_token_ps], 
+        'Average Time (API)': [average_api_time],
         'Inteded purpose': [purpose],
-        'Language errors': [1]
+        'Language errors': [1]      # Default value for non-coding prompts
         })
-
-    #write_to_xcl(ny_data=ny_data, file_name='Benchmarks.xlsx', sheet='Sheet2')
 
     print('Test completed')
     return ny_data
@@ -195,8 +198,7 @@ def retrieveModel(modelName: str) -> Tuple[str, str]:
     
 async def initBenchmarking(newExcel: bool = False):
     purps = ['coding', 'text']
-    #models = ['devstral:24b-small-2505-fp16','deepseek-r1:70b-llama-distill-q8_0','mistral-small:24b-instruct-2501-fp16']
-    models = ['deepseek-r1:32b-qwen-distill-fp16']
+    models = ['cogito:32b-v1-preview-qwen-fp16','hermes3:70b-llama3.1-fp16']
     TestType = 4
     
 
@@ -217,7 +219,6 @@ async def initBenchmarking(newExcel: bool = False):
         avg_df.to_csv(filepath, index=False)
     
 
-    # Uncomment to initiate new excel:
     if newExcel == True:
         initNewExcel(test_type=TestType, fileName=filename)
 

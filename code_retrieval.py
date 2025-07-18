@@ -1,6 +1,7 @@
 import os
 import re
 from pathlib import Path
+from typing import Tuple
 
 LANG_EXTENSION_MAP = {
     "python": "py",
@@ -32,10 +33,14 @@ LANG_EXTENSION_MAP = {
 
 unknown_lang = set()
 
-def extract_all_code_blocks(response_text: str):
+def extract_all_code_blocks(response_text: str) -> list:
     """
     Extracts all blocks of code from the text that are not within <think>...</think>.
-    Removes ``` and returns only the code itself.
+    
+    Args:
+        response_text (str): String of entire llm_response to the coding prompts.
+    Returns:
+        matchers (list): List of all code snippets found in llm_response.
     """
     # 1. Fjern <think>...</think>-blokker
     cleaned_text = re.sub(r"<think>.*?</think>", "", response_text, flags=re.DOTALL | re.IGNORECASE)
@@ -48,9 +53,13 @@ def extract_all_code_blocks(response_text: str):
 
 
 
-def save_code_blocks(code_blocks: list, model: str):
+def save_code_blocks(code_blocks: list, model: str) -> None:
     """
     Saves every block of code as a seperate .{lang}-file to specified folder.
+
+    Args:
+        code_blocks (list): List of code_snippets extracted from llm_response.
+        model (str): Name of model who generated the code.
     """
     base_filename = "code_snippet"
 
@@ -72,9 +81,13 @@ def save_code_blocks(code_blocks: list, model: str):
             f.write(code.strip())
         print(f"Lagret: {filename}")
 
-def read_output():
+def read_output() -> Tuple[str, str]:
     """
         Retrieves output and model from llm_output
+
+        Returns:
+            llm_output (str): String of llm_output.
+            model (str): Name of model who genereated response.
     """
     with open("llm_response.txt", "r", encoding="utf-8") as f:
         llm_output = f.read()
@@ -83,7 +96,10 @@ def read_output():
 
     return llm_output, model
 
-def retrieveCode():
+def retrieveCode() -> None:
+    """
+    Initiates retrieval of code from llm_response.
+    """
     llm_output, model = read_output()
 
     print(f'Retrieving code from the model: {model} \n')
