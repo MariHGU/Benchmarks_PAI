@@ -5,7 +5,7 @@ from enum import IntEnum
 from typing import Tuple, List
 from openpyxl import load_workbook
 import pandas as pd
-from llms import JUDGE_MODEL, JUDGE_SEED, JUDGE_TEMPERATURE, JUDGE_TOP_K
+from llms import JudgeParams
 
 class TestType(IntEnum):
     SUMMARIZATION = 1
@@ -209,8 +209,8 @@ def save_eval_results_to_xlsx(
         model_name: str,
         results: List[tuple],
         file_name: str,
+        judge_params: JudgeParams,
         prompt_id: int = None,
-        judge_params: Tuple[str, int, float, int] = (JUDGE_MODEL, JUDGE_SEED, JUDGE_TEMPERATURE, JUDGE_TOP_K),
         time_hash: str = ""
         ) -> None:
     """Log the summarization results to .xlsx file.
@@ -238,7 +238,7 @@ def save_eval_results_to_xlsx(
 
     digest, kv_cache = retrieve_model_info(model_name=model_name)
 
-    judge_model_name, judge_seed, judge_temp, judge_top_k = judge_params
+    judge_model_name, judge_seed, judge_temp, judge_top_k = judge_params.get_params()
 
 
     for prompt_no, (score, reason) in enumerate(results):

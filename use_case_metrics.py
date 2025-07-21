@@ -206,8 +206,8 @@ def eval_responses(
                     model_name=row['model'],
                     results=[(score, metric.reason)],
                     file_name=result_file,
-                    prompt_id=prompt_id,
                     judge_params=judge.get_params(),
+                    prompt_id=prompt_id,
                     time_hash=row['hash']
                 )
 
