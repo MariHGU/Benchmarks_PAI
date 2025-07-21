@@ -69,7 +69,7 @@ class OllamaLocalModel(OllamaModel):
     """
     def __init__(
             self, 
-            model: str = MODEL, 
+            model: str, 
             base_url: str = BASE_URL,
             seed: int = None,
             temperature: float = None,
@@ -192,8 +192,8 @@ class GroqModel(DeepEvalBaseLLM):
     def __init__(self, 
                  model_name: str = GROQ_MODEL, 
                  async_mode: bool = False, 
-                 seed: int = JUDGE_SEED,
-                 temperature: float = JUDGE_TEMPERATURE,
+                 seed: int = 42,
+                 temperature: float = 0,
                  ):
         super().__init__(model_name=model_name)
         self.seed = seed
