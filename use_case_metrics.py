@@ -8,12 +8,12 @@ from ollama import Client, ChatResponse
 import utils
 from utils import TestType
 from llms import GroqModel, OllamaLocalModel
-from llms import MODEL, JUDGE_MODEL, JUDGE_SEED, JUDGE_TEMPERATURE, JUDGE_TOP_K
+from llms import JudgeParams
 
 
 def generate_responses(
         test_type: TestType,
-        model: str = MODEL,
+        models: List[str],
         n_responses: int = 1,
     ) -> None:
     """Generate summaries for a set of prompts using the specified model.
@@ -23,75 +23,78 @@ def generate_responses(
             - TestType.SUMMARIZATION: Generates responses for summarization prompts.
             - TestType.PROMPT_ALIGNMENT: Generates responses for checking prompt alignment.
             - TestType.HELPFULNESS: Generates responses for evaluating helpfulness - the actual output should be helpful in answering the input.
-        model (str): Name of the model to use for generating summaries.
+        models (List[str]): A list of model names to use for generating responses.
         n_responses (int): Number of responses to generate for each prompt.
 
     Returns:
         None: The function saves the generated summaries to a CSV file.
     """
-
     Logger = utils.CustomLogger()
     Logger.info("Init model")
+    _append = False
 
-    LLM = OllamaLocalModel(model=model)
+    for model in models:
+        LLM = OllamaLocalModel(model=model)
 
-    Logger.info("Loading prompts from file...")
+        Logger.info("Loading prompts from file...")
 
-    match test_type:
-        case TestType.SUMMARIZATION:
-            prompts_file = "prompts/summarization_prompts.txt"
-            save_file = "responses/summaries.csv"
-        case TestType.PROMPT_ALIGNMENT:
-            prompts_file = "prompts/alignment_prompts.txt"
-            save_file = "responses/alignment_responses.csv"
-        case TestType.HELPFULNESS:
-            prompts_file = "prompts/helpfulness_prompts.txt"
-            save_file = "responses/helpfulness_responses.csv"
-        case _:
-            raise ValueError("Invalid test type provided. Use TestType.SUMMARIZATION, TestType.PROMPT_ALIGNMENT, or TestType.HELPFULNESS.")
+        match test_type:
+            case TestType.SUMMARIZATION:
+                prompts_file = "prompts/summarization_prompts.txt"
+                save_file = "responses/summaries.csv"
+            case TestType.PROMPT_ALIGNMENT:
+                prompts_file = "prompts/alignment_prompts.txt"
+                save_file = "responses/alignment_responses.csv"
+            case TestType.HELPFULNESS:
+                prompts_file = "prompts/helpfulness_prompts.txt"
+                save_file = "responses/helpfulness_responses.csv"
+            case _:
+                raise ValueError("Invalid test type provided. Use TestType.SUMMARIZATION, TestType.PROMPT_ALIGNMENT, or TestType.HELPFULNESS.")
 
-    with open(prompts_file, "r") as f:
-        prompts = [line.strip() for line in f if line.strip()]
+        with open(prompts_file, "r") as f:
+            prompts = [line.strip() for line in f if line.strip()]
 
-    for i, prompt in enumerate(prompts):
-        if test_type == TestType.PROMPT_ALIGNMENT:
-            # For prompt alignment, we need to include the prompt instructions
-            prompt_sections = prompt.split("<|INSTRUCTIONS|>")
-            if len(prompt_sections) != 2:
-                raise ValueError("prompt/prompt_instructions split failed: expected 2 sections, got {}".format(len(prompt_sections)))
+        for i, prompt in enumerate(prompts):
+            if test_type == TestType.PROMPT_ALIGNMENT:
+                # For prompt alignment, we need to include the prompt instructions
+                prompt_sections = prompt.split("<|INSTRUCTIONS|>")
+                if len(prompt_sections) != 2:
+                    raise ValueError("prompt/prompt_instructions split failed: expected 2 sections, got {}".format(len(prompt_sections)))
 
-            prompt, prompt_instructions = prompt_sections
-            prompt_instructions = prompt_instructions.strip()
-        else:
-            prompt_instructions = None
-        for j in tqdm(range(n_responses), desc=f"Generating responses for prompt {i}"):
-            response = LLM.generate(prompt)
-            time_hash = utils.create_time_hash()
+                prompt, prompt_instructions = prompt_sections
+                prompt_instructions = prompt_instructions.strip()
+            else:
+                prompt_instructions = None
+            for _ in tqdm(range(n_responses), desc=f"Generating responses for prompt {i}"):
+                response = LLM.generate(prompt)
+                time_hash = utils.create_time_hash()
 
-            utils.write_response_to_csv(
-                model_name=model,
-                prompt_id=i,
-                prompt=prompt,
-                response=response[0],
-                file_name=save_file,
-                time_hash=time_hash,
-                append=(i+j), # Remove all old responses when starting a new test
-                prompt_instructions=prompt_instructions
-            )
-            utils.write_response_to_csv(
-                model_name=model,
-                prompt_id=i,
-                prompt=prompt,
-                response=response[0],
-                file_name=save_file.replace(".csv", "_archive.csv"),
-                time_hash=time_hash,
-                prompt_instructions=prompt_instructions
-            )
-    Logger.info("All generations successful.")
+                utils.write_response_to_csv(
+                    model_name=model,
+                    prompt_id=i,
+                    prompt=prompt,
+                    response=response[0],
+                    file_name=save_file,
+                    time_hash=time_hash,
+                    append=_append, # Remove all old responses when starting a new test
+                    prompt_instructions=prompt_instructions
+                )
+                _append = True  # After the first response, append to the file
+                utils.write_response_to_csv(
+                    model_name=model,
+                    prompt_id=i,
+                    prompt=prompt,
+                    response=response[0],
+                    file_name=save_file.replace(".csv", "_archive.csv"),
+                    time_hash=time_hash,
+                    prompt_instructions=prompt_instructions
+                )
+        Logger.info("All generations successful.")
 
 
 def eval_responses( 
         test_type: TestType,
+        judges: List[JudgeParams],
         write_results: bool = True,
         result_file: str = "results.xlsx",
         eval_archived: bool = False,
@@ -103,6 +106,7 @@ def eval_responses(
             - TestType.SUMMARIZATION: Evaluates ability to summarize text, and how well the summary captures the main points.
             - TestType.PROMPT_ALIGNMENT: Evaluates how well the model follows the prompt instructions
             - TestType.HELPFULNESS: Evaluates whether the actual output is helpful in answering the input.
+        judges (List[JudgeParams]): A list of JudgeParams objects containing the judge models parameters.
         write_results (bool): Whether to write the results to a file.
         result_file (str): The file to write the results to.
         eval_archived (bool): Whether to evaluate all archived responses.
@@ -134,78 +138,80 @@ def eval_responses(
     scores = []
 
     responses = responses_df if not eval_range else responses_df.iloc[eval_range[0]:eval_range[1]]
+    for judge in judges:
+        judge_model, judge_seed, judge_temperature, judge_top_k = judge.get_params()
 
-    for i, row in tqdm(responses.iterrows(), desc="Evaluating responses", total=len(responses)):
-        JudgeLLM = OllamaLocalModel(
-            model=JUDGE_MODEL,
-            seed=JUDGE_SEED,
-            temperature=JUDGE_TEMPERATURE,
-            top_k=JUDGE_TOP_K,
-        )
-
-        match test_type:
-            case TestType.SUMMARIZATION:
-                Logger.info("Preparing metric")
-                metric = SummarizationMetric(
-                    threshold=0.5,
-                    model=JudgeLLM
-        )
-            case TestType.PROMPT_ALIGNMENT:
-                Logger.info("Preparing metric for prompt alignment with instructions")
-                prompt_instructions = row['prompt instructions'].split(';') if ';' in row['prompt instructions'] else [row['prompt instructions']]
-                metric = PromptAlignmentMetric(
-                    prompt_instructions=prompt_instructions,
-                    model=JudgeLLM,
-                    include_reason=True,
-                )
-            case TestType.HELPFULNESS:
-                Logger.info("Preparing metric")
-                metric = GEval(
-                    name="Helpfulness",
-                    criteria = "Determine whether the `actual output` is helpful in answering the `input`.",
-                    evaluation_params = [LLMTestCaseParams.INPUT, LLMTestCaseParams.ACTUAL_OUTPUT],
-                    model=JudgeLLM
-                )
-
-            case _:
-                raise ValueError("Invalid test type provided. Use TestType.SUMMARIZATION, TestType.PROMPT_ALIGNMENT, or TestType.HELPFULNESS.")
-        prompt_id = row['prompt id']
-        prompt = row['prompt']
-        response = row['response']
-  
-        Logger.info("Creating test case for prompt %d", i)
-        test_case = LLMTestCase(
-            input=prompt,
-            actual_output=response
-        )
-
-        Logger.info("Measuring...")
-        try:
-            score = metric.measure(test_case)
-        except ValueError as ve:
-            Logger.error("Error measuring for prompt %d: %s", i, ve)
-            score = -1.0
-            metric.reason = "Error in measurement: {}".format(ve)
-        except Exception as e:
-            Logger.error("Unexpected error for prompt %d: %s", i, e)
-            score = -1.0
-            metric.reason = "Unexpected error: {}".format(e)
-
-        Logger.info("Measurement complete. Score: %s", score)
-
-        if write_results:
-            Logger.info("Writing result to file...")
-            utils.save_eval_results_to_xlsx(
-                type_of_test=test_type,
-                model_name=row['model'],
-                results=[(score, metric.reason)],
-                file_name=result_file,
-                prompt_id=prompt_id,
-                judge_params=(JudgeLLM.get_model_name(), JudgeLLM.get_seed(), JudgeLLM.get_temperature(), JudgeLLM.get_top_k()),
-                time_hash=row['hash']
+        for i, row in tqdm(responses.iterrows(), desc="Evaluating responses", total=len(responses)):
+            JudgeLLM = OllamaLocalModel(
+                model=judge_model,
+                seed=judge_seed,
+                temperature=judge_temperature,
+                top_k=judge_top_k
             )
 
-        scores.append((score, metric.reason))
+            match test_type:
+                case TestType.SUMMARIZATION:
+                    Logger.info("Preparing metric")
+                    metric = SummarizationMetric(
+                        threshold=0.5,
+                        model=JudgeLLM
+            )
+                case TestType.PROMPT_ALIGNMENT:
+                    Logger.info("Preparing metric for prompt alignment with instructions")
+                    prompt_instructions = row['prompt instructions'].split(';') if ';' in row['prompt instructions'] else [row['prompt instructions']]
+                    metric = PromptAlignmentMetric(
+                        prompt_instructions=prompt_instructions,
+                        model=JudgeLLM,
+                        include_reason=True,
+                    )
+                case TestType.HELPFULNESS:
+                    Logger.info("Preparing metric")
+                    metric = GEval(
+                        name="Helpfulness",
+                        criteria = "Determine whether the `actual output` is helpful in answering the `input`.",
+                        evaluation_params = [LLMTestCaseParams.INPUT, LLMTestCaseParams.ACTUAL_OUTPUT],
+                        model=JudgeLLM
+                    )
+
+                case _:
+                    raise ValueError("Invalid test type provided. Use TestType.SUMMARIZATION, TestType.PROMPT_ALIGNMENT, or TestType.HELPFULNESS.")
+            prompt_id = row['prompt id']
+            prompt = row['prompt']
+            response = row['response']
+    
+            Logger.info("Creating test case for prompt %d", i)
+            test_case = LLMTestCase(
+                input=prompt,
+                actual_output=response
+            )
+
+            Logger.info("Measuring...")
+            try:
+                score = metric.measure(test_case)
+            except ValueError as ve:
+                Logger.error("Error measuring for prompt %d: %s", i, ve)
+                score = -1.0
+                metric.reason = "Error in measurement: {}".format(ve)
+            except Exception as e:
+                Logger.error("Unexpected error for prompt %d: %s", i, e)
+                score = -1.0
+                metric.reason = "Unexpected error: {}".format(e)
+
+            Logger.info("Measurement complete. Score: %s", score)
+
+            if write_results:
+                Logger.info("Writing result to file...")
+                utils.save_eval_results_to_xlsx(
+                    type_of_test=test_type,
+                    model_name=row['model'],
+                    results=[(score, metric.reason)],
+                    file_name=result_file,
+                    prompt_id=prompt_id,
+                    judge_params=judge.get_params(),
+                    time_hash=row['hash']
+                )
+
+            scores.append((score, metric.reason))
 
     Logger.info("All responses evaluated.")
     return scores
