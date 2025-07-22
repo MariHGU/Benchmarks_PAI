@@ -468,7 +468,7 @@ def runCodeValidation(model: str) -> str:
     """
     
     print(f'Currently testing: {model}\n ... \n')
-    
+      
     results = checkCode(modelFrame=model)
     results_str = saveResults(model=model, results=results)
     print("\n ... \nResults saved to results/results.csv")
@@ -478,7 +478,7 @@ def runCodeValidation(model: str) -> str:
 if __name__ =='__main__':
     #models = os.listdir('output')    # Uncomment to run validation on every model in output folder
 
-    models = ['mixtral-v0.1','mixtral-8x7b-instruct-v0.1-q8_0', 'magistral-24b-small-2506-q8_0']
+    models = ['hermes3-8b','hermes3-70b', 'hermes3-70b-llama3.1-fp16']
     for model in models:
     
         runCodeValidation(model=model)
