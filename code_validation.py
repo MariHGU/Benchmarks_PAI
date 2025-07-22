@@ -476,11 +476,9 @@ def runCodeValidation(model: str) -> str:
     return results_str
 
 if __name__ =='__main__':
-    #models = os.listdir('output')
+    #models = os.listdir('output')    # Uncomment to run validation on every model in output folder
 
-    #model_path = Path('output') / model
     models = ['mixtral-v0.1','mixtral-8x7b-instruct-v0.1-q8_0', 'magistral-24b-small-2506-q8_0']
     for model in models:
-    #model = 'magistral-24b-small-2506-q8_0'
     
         runCodeValidation(model=model)
