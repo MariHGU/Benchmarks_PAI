@@ -42,7 +42,7 @@ def extract_all_code_blocks(response_text: str) -> list:
     Returns:
         matchers (list): List of all code snippets found in llm_response.
     """
-    # 1. Fjern <think>...</think>-blokker
+    # 1. Fjerner <think>...</think>-blokker
     cleaned_text = re.sub(r"<think>.*?</think>", "", response_text, flags=re.DOTALL | re.IGNORECASE)
 
     # 2. Ekstraher kodeblokker (```<språk>\n<kode>```)
@@ -62,11 +62,12 @@ def save_code_blocks(code_blocks: list, model: str) -> None:
         model (str): Name of model who generated the code.
     """
     base_filename = "code_snippet"
+    folderName = "output"
 
-    Path("output").mkdir(parents=True, exist_ok=True)
+    Path(folderName).mkdir(parents=True, exist_ok=True)
     model_folder = model.replace(':', '-').strip('\n')
 
-    folder = Path("output") / model_folder
+    folder = Path(folderName) / model_folder
     Path(folder).mkdir(parents=True, exist_ok=True)
 
     for i, (lang, code) in enumerate(code_blocks, start=1):
@@ -109,13 +110,17 @@ def retrieveCode() -> None:
     if blocks:
         save_code_blocks(blocks, model=model)
     else:
-        print("Ingen kodeblokker funnet.")
+        print("No codeblock were found in llm_resposne.")
     
     if (len(unknown_lang) > 0):
         print(f'\nThe following unknown languages where found: {unknown_lang}')
         print("Consider adding to language dictionary, or handle manually.\n")
 
     remove = input("Delete textfile? [y/n]: ")
+
+    while remove != 'y' and remove != 'n':
+        print(f'Invalid input: "{remove}"')
+        remove = input("Delete textfile? [y/n]: ")
     if remove == 'y':
         os.remove('llm_response.txt')
 
