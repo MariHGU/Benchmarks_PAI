@@ -9,38 +9,6 @@ from pydantic import BaseModel
 BASE_URL = "https://beta.chat.nhn.no/ollama"
 GROQ_MODEL = "llama-3.3-70b-versatile" # GROQ MODEL
 
-class JudgeParams:
-    """
-    A class to hold parameters for the judge model.
-    Attributes:
-        model_name (str): The name of the judge model.
-        seed (int): The seed for the judge model.
-        temperature (float): The temperature for the judge model.
-        top_k (int): The top_k for the judge model.
-    """
-
-    def __init__(self, model_name: str, seed: int, temperature: float, top_k: int):
-        self.model_name = model_name
-        self.seed = seed
-        self.temperature = temperature
-        self.top_k = top_k
-
-    def get_params(self) -> Tuple[str, int, float, int]:
-        """
-        Get the parameters for the judge model.
-        Returns:
-            Tuple[str, int, float, int]: A tuple containing the model name, seed, temperature, and top_k.
-        """
-        return (self.model_name, self.seed, self.temperature, self.top_k)
-    
-    def get_model_name(self) -> str:
-        """
-        Get the model name for the judge model.
-        Returns:
-            str: The name of the judge model.
-        """
-        return self.model_name
-
 def load_api_key(path: str = ".api_key.txt") -> str:
     """
     Load the API key from a specified file.

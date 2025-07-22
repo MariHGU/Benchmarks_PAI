@@ -5,7 +5,6 @@ from enum import IntEnum
 from typing import Tuple, List
 from openpyxl import load_workbook
 import pandas as pd
-from llms import JudgeParams
 
 class TestType(IntEnum):
     SUMMARIZATION = 1
@@ -209,15 +208,27 @@ def save_eval_results_to_xlsx(
         model_name: str,
         results: List[tuple],
         file_name: str,
-        judge_params: JudgeParams,
+        judge_params: Tuple[str, int, float, int],
         prompt_id: int = None,
         time_hash: str = ""
         ) -> None:
     """Log the summarization results to .xlsx file.
     Args:
+        type_of_test (TestType): The type of test being evaluated.
         model_name (str): The name of the model used for summarization.
         results (List[tuple]): A list of tuples containing the score and reason for each prompt.
         file_name (str): The name of the file to save the results.
+        judge_params (Tuple[str, int, float, int]): A tuple containing the judge model parameters:
+            - str: The name of the judge model
+            - int: The seed for the judge model
+            - float: The temperature for the judge model
+            - int: The top_k for the judge model
+        prompt_id (int, optional): The ID of the prompt being evaluated. Defaults to None.
+        time_hash (str, optional): A hash string representing the time of evaluation. Defaults to "".
+    Raises:
+        ValueError: If the file name does not end with '.xlsx'.
+        TypeError: If type_of_test is not an instance of TestType.
+        ValueError: If type_of_test is not one of the defined TestType values.
     Returns:
         None: This function does not return anything. It writes the results to an Excel file.
     """
@@ -238,7 +249,7 @@ def save_eval_results_to_xlsx(
 
     digest, kv_cache = retrieve_model_info(model_name=model_name)
 
-    judge_model_name, judge_seed, judge_temp, judge_top_k = judge_params.get_params()
+    judge_model_name, judge_seed, judge_temp, judge_top_k = judge_params
 
 
     for prompt_no, (score, reason) in enumerate(results):

@@ -1,8 +1,7 @@
 from use_case_metrics import generate_responses, eval_responses
 from utils import TestType
-from llms import JudgeParams
 
-MODEL = "dolphin3:8b-llama3.1-fp16"
+MODEL = "hermes3:70b"
 JUDGE_MODEL1 = "nhn-large:latest" # "deepseek-r1:32b-qwen-distill-fp16" # OLLAMA
 JUDGE_MODEL2 = "nhn-medium:latest" # "devstral:24b-small-2505-fp16" # OLLAMA 
 JUDGE_MODEL3 = "hermes3:70b-llama3.1-fp16" # OLLAMA
@@ -38,16 +37,16 @@ if __name__ == "__main__":
     # EVAL_RANGE = (10, 100)
     
 
-    # generate_responses(test_type=TestType.PROMPT_ALIGNMENT, model=MODEL, n_responses=NUM_RESPONSES)
-    # generate_responses(test_type=TestType.HELPFULNESS, model=MODEL, n_responses=NUM_RESPONSES)
+    # generate_responses(test_type=TestType.PROMPT_ALIGNMENT, models=[MODEL], n_responses=NUM_RESPONSES)
+    # generate_responses(test_type=TestType.HELPFULNESS, models=[MODEL], n_responses=NUM_RESPONSES)
     # generate_responses(test_type=TestType.SUMMARIZATION, model=MODEL, n_responses=NUM_RESPONSES)
     
-    JUDGE1 = JudgeParams(model_name=JUDGE_MODEL1, seed=JUDGE_SEED, temperature=JUDGE_TEMPERATURE, top_k=JUDGE_TOP_K)
-    JUDGE2 = JudgeParams(model_name=JUDGE_MODEL2, seed=JUDGE_SEED, temperature=JUDGE_TEMPERATURE, top_k=JUDGE_TOP_K)
-    JUDGE3 = JudgeParams(model_name=JUDGE_MODEL3, seed=JUDGE_SEED, temperature=JUDGE_TEMPERATURE, top_k=JUDGE_TOP_K)
-    JUDGES = [JUDGE1, JUDGE2, JUDGE3]
+    JUDGE1 = (JUDGE_MODEL1, JUDGE_SEED, JUDGE_TEMPERATURE, JUDGE_TOP_K)
+    JUDGE2 = (JUDGE_MODEL2, JUDGE_SEED, JUDGE_TEMPERATURE, JUDGE_TOP_K)
+    JUDGE3 = (JUDGE_MODEL3, JUDGE_SEED, JUDGE_TEMPERATURE, JUDGE_TOP_K)
+    JUDGES = [JUDGE2, JUDGE3]
 
-    alignment = eval_responses(test_type=TestType.PROMPT_ALIGNMENT, judges=JUDGES)
+    alignment = eval_responses(test_type=TestType.PROMPT_ALIGNMENT, judges=JUDGES, eval_range=(14, 100))
     helpfulness = eval_responses(test_type=TestType.HELPFULNESS, judges=JUDGES)
     # summaries = eval_responses(test_type=TestType.SUMMARIZATION, judges=JUDGES)
 

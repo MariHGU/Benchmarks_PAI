@@ -8,7 +8,6 @@ from ollama import Client, ChatResponse
 import utils
 from utils import TestType
 from llms import GroqModel, OllamaLocalModel
-from llms import JudgeParams
 
 
 def generate_responses(
@@ -94,7 +93,7 @@ def generate_responses(
 
 def eval_responses( 
         test_type: TestType,
-        judges: List[JudgeParams],
+        judges: List[Tuple[str, int, float, int]],
         write_results: bool = True,
         result_file: str = "results.xlsx",
         eval_archived: bool = False,
@@ -106,7 +105,11 @@ def eval_responses(
             - TestType.SUMMARIZATION: Evaluates ability to summarize text, and how well the summary captures the main points.
             - TestType.PROMPT_ALIGNMENT: Evaluates how well the model follows the prompt instructions
             - TestType.HELPFULNESS: Evaluates whether the actual output is helpful in answering the input.
-        judges (List[JudgeParams]): A list of JudgeParams objects containing the judge models parameters.
+        judges (List[Tuple[str, int, float, int]]): A list of tuples containing judge model parameters:
+            - str: The name of the judge model
+            - int: The seed for the judge model
+            - float: The temperature for the judge model
+            - int: The top_k for the judge model
         write_results (bool): Whether to write the results to a file.
         result_file (str): The file to write the results to.
         eval_archived (bool): Whether to evaluate all archived responses.
@@ -139,7 +142,7 @@ def eval_responses(
 
     responses = responses_df if not eval_range else responses_df.iloc[eval_range[0]:eval_range[1]]
     for judge in judges:
-        judge_model, judge_seed, judge_temperature, judge_top_k = judge.get_params()
+        judge_model, judge_seed, judge_temperature, judge_top_k = judge
 
         for i, row in tqdm(responses.iterrows(), desc="Evaluating responses", total=len(responses)):
             JudgeLLM = OllamaLocalModel(
@@ -206,7 +209,7 @@ def eval_responses(
                     model_name=row['model'],
                     results=[(score, metric.reason)],
                     file_name=result_file,
-                    judge_params=judge.get_params(),
+                    judge_params=(judge_model, judge_seed, judge_temperature, judge_top_k),
                     prompt_id=prompt_id,
                     time_hash=row['hash']
                 )
