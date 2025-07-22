@@ -9,7 +9,7 @@ devstral-24b-small-2505-fp16,java
 deepseek-r1-32b-qwen-distill-fp16,java
 dolphin3-8b-llama3.1-q8_0,"java,py"
 dolphin3-8b-llama3.1-fp16,cs
-nhn-small-latest,"cs,go,java,py,sql"
+nhn-small-latest,"cs,go,java,sh"
 nhn-small-og,"cs,css,go,java,kt,py,rb,sh,ts,xml,yml"
 nhn-small-v2,"java,py,sql"
 gemma3-27b,"java,sql"
@@ -24,3 +24,5 @@ mixtral-8x7b-instruct-v0.1-q8_0,"java,js,py,sh"
 magistral-24b-small-2506-q8_0,"cs,go,java,sql"
 cogito-32b-v1-preview-qwen-fp16,"go,java,sh,sql"
 hermes3-70b-llama3.1-fp16,"cs,java"
+nhn-medium-latest,"java,sql"
+nhn-large-latest,"java,py,sql"

@@ -34,3 +34,11 @@ cogito:32b-v1-preview-qwen-fp16,d76677b01639,F16,20.2236,29.9969,20.0947,coding,
 cogito:32b-v1-preview-qwen-fp16,d76677b01639,F16,12.4597,30.3076,12.3872,text,1
 hermes3:70b-llama3.1-fp16,e95c7ce02c58,F16,36.0894,19.5699,35.9797,coding,"cs,java"
 hermes3:70b-llama3.1-fp16,e95c7ce02c58,F16,21.5329,19.707,21.4271,text,1
+nhn-small:latest,8530fca74a2a94c,q8_0,10,65,9,coding,"cs,go,java,sh"
+nhn-small:latest,8530fca74a2a94c,q8_0,5,68,5,text,1
+nhn-medium:latest,0609171a3d9a05,F16,21,44,21,coding,"java,sh,sql"
+nhn-medium:latest,0609171a3d9a05,F16,11,42,11,text,1
+nhn-large:latest,a28ddf13553,F16,64,31,64,coding,"java,py,sql"
+nhn-large:latest,a28ddf13553,F16,22,30,22,text,1
+nhn-small:latest,8530fca74a2a94c,q8_0,59,81,59,coding,"cs,go,java,sh"
+nhn-small:latest,8530fca74a2a94c,q8_0,27,80,27,text,1

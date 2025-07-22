@@ -1,6 +1,7 @@
 model_name,digest_nr,kv_cache
 nhn-small:latest,8530fca74a2a94c,q8_0
-nhn-large:latest,7eedb0a718e7909,q8_0
+nhn-medium:latest,0609171a3d9a05,F16
+nhn-large:latest,a28ddf13553,F16
 magistral:24b-small-2506-q8_0,02423f83f1a1,Q8_0
 magistral:24b-small-2506-fp16,0a0e2be3b6c4,F16
 gemma3:27b,a418f5838eaf,Q4_K_M
