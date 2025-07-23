@@ -152,11 +152,19 @@ def check_bash_validation(modelFolder: str, LangFiles: list) -> bool:
     files_with_error = set()
 
     for file in bashFiles:
+        file_path = f'output/{modelFolder}/{file}'
+        with open(file_path, 'r', encoding='utf-8') as f:
+            content = f.read().replace('\r\n', '\n').replace('\r', '\n')
+
+        with open (file_path, 'w', newline='\n', encoding='utf-8') as f:
+            f.write(content)
+
         result = subprocess.run(
             ['bash', '-n', f'output/{modelFolder}/{file}'],
             capture_output=True,
             text=True
         )
+
         if result.returncode != 0:
             files_with_error.add(file)
             print(result.stderr)
@@ -478,7 +486,8 @@ def runCodeValidation(model: str) -> str:
 if __name__ =='__main__':
     #models = os.listdir('output')    # Uncomment to run validation on every model in output folder
 
-    models = ['hermes3-8b','hermes3-70b', 'hermes3-70b-llama3.1-fp16']
+    models = ['mixtral-8x7b']
+
     for model in models:
     
         runCodeValidation(model=model)
