@@ -7,12 +7,7 @@ from groq import Groq, AsyncGroq
 from pydantic import BaseModel
 
 BASE_URL = "https://beta.chat.nhn.no/ollama"
-MODEL = "devstral:24b-small-2505-q8_0"
-JUDGE_MODEL = "deepseek-r1:32b-qwen-distill-fp16" # OLLAMA MODEL
-JUDGE_SEED = 42
-JUDGE_TEMPERATURE = 0.2
-JUDGE_TOP_K = 10
-# JUDGE_MODEL = "llama-3.3-70b-versatile" # GROQ MODEL
+GROQ_MODEL = "llama-3.3-70b-versatile" # GROQ MODEL
 
 def load_api_key(path: str = ".api_key.txt") -> str:
     """
@@ -42,7 +37,7 @@ class OllamaLocalModel(OllamaModel):
     """
     def __init__(
             self, 
-            model: str = MODEL, 
+            model: str, 
             base_url: str = BASE_URL,
             seed: int = None,
             temperature: float = None,
@@ -163,10 +158,10 @@ class GroqModel(DeepEvalBaseLLM):
     
     """
     def __init__(self, 
-                 model_name: str = JUDGE_MODEL, 
+                 model_name: str = GROQ_MODEL, 
                  async_mode: bool = False, 
-                 seed: int = JUDGE_SEED,
-                 temperature: float = JUDGE_TEMPERATURE,
+                 seed: int = 42,
+                 temperature: float = 0,
                  ):
         super().__init__(model_name=model_name)
         self.seed = seed

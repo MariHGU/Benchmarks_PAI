@@ -5,7 +5,6 @@ from enum import IntEnum
 from typing import Tuple, List
 from openpyxl import load_workbook
 import pandas as pd
-from llms import JUDGE_MODEL, JUDGE_SEED, JUDGE_TEMPERATURE, JUDGE_TOP_K
 
 class TestType(IntEnum):
     SUMMARIZATION = 1
@@ -156,7 +155,7 @@ def read_responses_from_csv(file_name: str) -> pd.DataFrame:
     if not os.path.exists(file_name):
         raise FileNotFoundError(f"CSV file not found: {file_name}")
     
-    df = pd.read_csv(file_name)
+    df = pd.read_csv(file_name, sep=',', encoding='utf-8', encoding_errors='ignore')
     return df
 
 
@@ -181,7 +180,7 @@ def write_to_xlsx(df: pd.DataFrame, file_name: str, sheet_name: str) -> None:
                 "Prompt Number": [],
                 "Judge Model": [],
                 "Judge Seed": [],
-                "Judge Temperature": [],
+                "Judge Temp": [],
                 "Judge Top K": [],
                 "Score": [],
                 "Reason": [],
@@ -209,15 +208,27 @@ def save_eval_results_to_xlsx(
         model_name: str,
         results: List[tuple],
         file_name: str,
+        judge_params: Tuple[str, int, float, int],
         prompt_id: int = None,
-        judge_params: Tuple[str, int, float, int] = (JUDGE_MODEL, JUDGE_SEED, JUDGE_TEMPERATURE, JUDGE_TOP_K),
         time_hash: str = ""
         ) -> None:
     """Log the summarization results to .xlsx file.
     Args:
+        type_of_test (TestType): The type of test being evaluated.
         model_name (str): The name of the model used for summarization.
         results (List[tuple]): A list of tuples containing the score and reason for each prompt.
         file_name (str): The name of the file to save the results.
+        judge_params (Tuple[str, int, float, int]): A tuple containing the judge model parameters:
+            - str: The name of the judge model
+            - int: The seed for the judge model
+            - float: The temperature for the judge model
+            - int: The top_k for the judge model
+        prompt_id (int, optional): The ID of the prompt being evaluated. Defaults to None.
+        time_hash (str, optional): A hash string representing the time of evaluation. Defaults to "".
+    Raises:
+        ValueError: If the file name does not end with '.xlsx'.
+        TypeError: If type_of_test is not an instance of TestType.
+        ValueError: If type_of_test is not one of the defined TestType values.
     Returns:
         None: This function does not return anything. It writes the results to an Excel file.
     """
@@ -254,7 +265,7 @@ def save_eval_results_to_xlsx(
             "Prompt Number": [prompt_ref],
             "Judge Model": [judge_model_name],
             "Judge Seed": [judge_seed],
-            "Judge Temperature": [judge_temp],
+            "Judge Temp": [judge_temp],
             "Judge Top K": [judge_top_k],
             "Score": [score],
             "Reason": [reason],
