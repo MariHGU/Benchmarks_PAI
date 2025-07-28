@@ -2,6 +2,7 @@ import os
 import csv
 import json
 import subprocess
+import tempfile
 import pandas as pd
 from pathlib import Path
 from code_retrieval import LANG_EXTENSION_MAP
@@ -82,21 +83,47 @@ def check_python_Validation(modelFolder: str, langFiles: list) -> bool:
 
     return True if len(files_with_error)>0 else False
 
-def check_java_Validation(modelFolder: str, langFiles: list) -> bool:
+def check_java_Validation(modelFolder: str, langFiles: list):
+    """
+    Check syntax of a Java file using javac compiler.
+    
+    Args:
+        java_file_path (str): Path to the Java file to check
+        
+    Returns:
+        tuple: (success: bool, errors: list of str)
+    """
+    # Verify file exists
+    
+    # Verify it's a Java file
+    javaFiles = langFiles['java']['files']
     files_with_error = set()
 
-    # -- Retrieve Java files for validation --
-    javaFiles = langFiles['java']['files']
-    
     for file in javaFiles:
-        result = subprocess.run(
-                ['javac', f'output/{modelFolder}/{file}'], 
-                capture_output=True, 
-                text=True
+        java_file_path = f'output/{modelFolder}/{file}'
+        try:
+            # Create a temporary directory for class files (to avoid cluttering current directory)
+            with tempfile.TemporaryDirectory() as temp_dir:
+                # Run javac with options to check syntax only
+                result = subprocess.run(
+                    ['javac', '-d', temp_dir, java_file_path],
+                    capture_output=True,
+                    text=True,
+                    timeout=30  # 30 second timeout
                 )
-        if result.returncode != 0:
-            files_with_error.add(file)
-            
+                
+                if result.returncode != 0:
+                    #print("Java: ", result.stderr)  # Uncomment to see error messages
+                    files_with_error.add(file)
+
+                    
+        except subprocess.TimeoutExpired:
+            return False, ["Error: Compilation timed out (possible infinite loop in code)"]
+        except FileNotFoundError:
+            return False, ["Error: 'javac' not found. Please ensure Java JDK is installed and in PATH."]
+        except Exception as e:
+            return False, [f"Error: {str(e)}"]
+        
     return True if len(files_with_error)>0 else False
 
 def check_js_Validation(modelFolder: str, langFiles: list) -> bool:
@@ -111,6 +138,7 @@ def check_js_Validation(modelFolder: str, langFiles: list) -> bool:
                 text=True
                 )
         if result.returncode != 0:
+            #print("js: ", result.stderr) # Uncomment to see error messages
             files_with_error.add(file)
             
     return True if len(files_with_error)>0 else False
@@ -128,6 +156,7 @@ def check_cpp_Validation(modelFolder: str, langFiles: list) -> bool:
                 text=True
             )
         if result.returncode != 0:
+            #print("cpp: ", result.stderr) # Uncomment to see error messages
             files_with_error.add(file)
             
     return True if len(files_with_error)>0 else False
@@ -167,8 +196,7 @@ def check_bash_validation(modelFolder: str, LangFiles: list) -> bool:
 
         if result.returncode != 0:
             files_with_error.add(file)
-            print(result.stderr)
-            print(result.stdout)
+            #print("bash: ", result.stderr)
 
     return True if len(files_with_error)>0 else False
 
@@ -185,6 +213,7 @@ def check_ts_validation(modelFolder: str, LangFiles: list) -> bool:
             shell=True
         )
         if result.returncode != 0:
+            print("ts: ", result.stderr) # Uncomment to see error messages
             files_with_error.add(file)
     return True if len(files_with_error)>0 else False
 
@@ -200,6 +229,7 @@ def check_html_validation(modelFolder: str, LangFiles: list) -> bool:
             text= True
         )
         if result.returncode != 0:
+            #print("html: ", result.stderr) # Uncomment to see error messages
             files_with_error.add(file)
 
     return True if len(files_with_error)>0 else False
@@ -217,6 +247,7 @@ def check_css_validation(modelFolder: str, LangFiles: list) -> bool:
             text=True
         )
         if result.returncode != 0:
+            #print("css: ", result.stderr) # Uncomment to see error messages
             files_with_error.add(file)
 
     return True if len(files_with_error)>0 else False  
@@ -234,6 +265,7 @@ def check_c_validation(modelFolder: str, LangFiles: str) -> bool:
             text=True
         )
         if result.returncode != 0:
+            #print("c: ", result.stderr) # Uncomment to see error messages
             files_with_error.add(file)
 
     return True if len(files_with_error)>0 else False  
@@ -252,8 +284,7 @@ def check_cs_validation(modelFolder: str, LangFiles: str) -> bool:
         )
         if result.returncode != 0:
             files_with_error.add(file)
-            print("cs: ",result.stderr)
-            print("cs: ",result.stdout)
+            #print("cs: ",result.stderr)
 
     return True if len(files_with_error)>0 else False  
 
@@ -271,8 +302,7 @@ def check_go_validation(modelFolder: str, LangFiles: list) -> bool:
         )
         if result.returncode != 0:
             files_with_error.add(file)
-            print("go: ",result.stderr)
-            print("go: ",result.stdout)
+            #print("go: ",result.stderr)
 
     return True if len(files_with_error)>0 else False  
 
@@ -289,6 +319,7 @@ def check_ruby_validation(modelFolder: str, LangFiles: list) -> bool:
             text=True
         )
         if result.returncode != 0:
+            #print("ruby: ", result.stderr) # Uncomment to see error messages
             files_with_error.add(file)
 
     return True if len(files_with_error)>0 else False  
@@ -305,6 +336,7 @@ def check_yaml_validation(modelFolder: str, LangFiles: list) -> bool:
             text= True
         )
         if result.returncode != 0:
+            #print("yaml: ", result.stderr) # Uncomment to see error messages
             files_with_error.add(file)
             
     return True if len(files_with_error)>0 else False
@@ -321,6 +353,7 @@ def check_xml_validation(modelFolder: str, LangFiles: list) -> bool:
             text= True
         )
         if result.returncode != 0:
+            #print(result.stderr) # Uncomment to see error messages
             files_with_error.add(file)
             
     return True if len(files_with_error)>0 else False
@@ -484,9 +517,9 @@ def runCodeValidation(model: str) -> str:
     return results_str
 
 if __name__ =='__main__':
-    #models = os.listdir('output')    # Uncomment to run validation on every model in output folder
+    models = os.listdir('output')    # Uncomment to run validation on every model in output folder
 
-    models = ['mixtral-8x7b']
+    #models = ['mixtral-8x7b']
 
     for model in models:
     
