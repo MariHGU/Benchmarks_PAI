@@ -184,7 +184,7 @@ async def test_llm_performance(prompts: list, purpose: str, model: str, TestType
         'Average tokens/s': [average_token_ps], 
         'Average Time (API)': [average_api_time],
         'Inteded purpose': [purpose],
-        'Language errors': [1]      # Default value for non-coding prompts
+        'Language errors': [1]          # Default value for non-coding prompts
         })
 
     print('Test completed')
@@ -208,15 +208,16 @@ def retrieveModel(modelName: str) -> Tuple[str, str]:
     
 async def initBenchmarking(newExcel: bool = False) -> None:
     """
-    Initiates benchmarking tests through iteration of testing-purpose, a list of purposes you want to test the model on.
-    Results of the tests are written to a specified excel-file aswell as a csv file. 
+    Initiates benchmarking tests through iteration of testing-purpose; a list of purposes you want to test the model on.
+    Results of the tests are written to a specified excel-file, aswell as a csv file. 
 
     Args:
         newExcel (bool, optional): If True initiates a blank excel, overwriting past data. Defaults to false. 
     """
-    purpose = ['coding', 'text']      # Purposes to test model on
-    models = ['nhn-small:latest']   # Names of models to test
-    TestType = 4                    # Benchmarking - allows for proper function of utils-functions
+    purpose = ['coding', 'text']                # Purposes to test model on
+    models = ['hermes3:70b-llama3.1-q8_0']      # Names of models to test
+    #models = retrieve_untested_models()          # Retrieve untested models from models.csv
+    TestType = 4                                # Benchmarking - allows for proper function of utils-functions
     
 
     avg_df = pd.DataFrame({
@@ -262,11 +263,45 @@ async def initBenchmarking(newExcel: bool = False) -> None:
             df.to_csv(filepath, mode='a', index=False, header=False)
             write_to_xlsx(df=df, file_name=Path("test.xlsx"), sheet_name="Avg_Benchmarks", test_type=TestType)
             
+def process_models(models: pd.DataFrame) -> List[str]:
+    """
+    Processes the models dataframe to extract model names.
+    
+    Args:
+        models (DataFrame): DataFrame containing model information.
+        
+    Returns:
+        List[str]: List of model names.
+    """
+    return models.astype(str).str.replace(':', '-')
 
+def retrieve_untested_models() -> List[str]:
+    """
+    Retrieves a list of models that have not been tested yet.
+    
+    Returns:
+        List[str]: A list of model names that have not been tested.
+    """
+    result_df = pd.read_csv(r'results/results.csv')['model']
+    models_df = pd.read_csv(r'models.csv')['model_name']
+
+    processed_models = process_models(models_df)
+    processed_results = process_models(result_df)
+
+    untested_models = processed_models[~processed_models.isin(processed_results)].tolist()
+
+    if not untested_models:
+        print("All models in models.csv have been tested.")
+        return []
+    else:
+        for i in range(len(untested_models)):
+            untested_models[i] = untested_models[i].replace('-',':', 1)
+        return untested_models
 
 
 # Run the test
 if __name__ == "__main__":
 
-    asyncio.run(initBenchmarking(newExcel=False))   # Set newExcel=True if you want a clear slate (This overwrites past file)
+    #print(retrieve_untested_models())
+    #asyncio.run(initBenchmarking(newExcel=False))   # Set newExcel=True if you want a clear slate (This overwrites past file)
         
