@@ -215,8 +215,8 @@ async def initBenchmarking(newExcel: bool = False) -> None:
         newExcel (bool, optional): If True initiates a blank excel, overwriting past data. Defaults to false. 
     """
     purpose = ['coding', 'text']                # Purposes to test model on
-    models = ['hermes3:70b-llama3.1-q8_0']      # Names of models to test
-    #models = retrieve_untested_models()          # Retrieve untested models from models.csv
+    #models = ['hermes3:70b-llama3.1-q8_0']      # Names of models to test
+    models = retrieve_untested_models()          # Retrieve untested models from models.csv
     TestType = 4                                # Benchmarking - allows for proper function of utils-functions
     
 
@@ -303,5 +303,5 @@ def retrieve_untested_models() -> List[str]:
 if __name__ == "__main__":
 
     #print(retrieve_untested_models())
-    #asyncio.run(initBenchmarking(newExcel=False))   # Set newExcel=True if you want a clear slate (This overwrites past file)
+    asyncio.run(initBenchmarking(newExcel=False))   # Set newExcel=True if you want a clear slate (This overwrites past file)
         
