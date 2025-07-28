@@ -1,6 +1,7 @@
 model_name,digest_nr,kv_cache
 nhn-small:latest,8530fca74a2a94c,q8_0
-nhn-large:latest,7eedb0a718e7909,q8_0
+nhn-medium:latest,25a16f448fb3,q8_0
+nhn-large:latest,a28ddf13553,F16
 magistral:24b-small-2506-q8_0,02423f83f1a1,Q8_0
 magistral:24b-small-2506-fp16,0a0e2be3b6c4,F16
 gemma3:27b,a418f5838eaf,Q4_K_M
@@ -27,3 +28,5 @@ hermes3:70b-llama3.1-q8_0,72f0aa5b30bb,Q8_0
 cogito:32b-v1-preview-qwen-fp16,d76677b01639,F16
 cogito:14b,d0cac86a2347,Q4_K_M
 cogito:70b-v1-preview-llama-q8_0,9c80b552cd74,Q8_0
+cogito:32b,0b4aab772f57,Q4_K_M
+cogito:70b,8f2632d0faa4,Q4_K_M
