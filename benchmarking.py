@@ -80,18 +80,6 @@ def read_prompts(file_path: str) -> List[str]:
         return [line.strip() for line in file.readlines()]
     
 
-# -- List of prompts to test the model --
-def initPurpose(purp: str) -> Tuple[str, List[str]]:
-    """
-    Sets purpose for LLM test
-    Either 'text' or 'code'
-    """
-    if not (purp == 'text' or purp == 'coding'):
-        raise ValueError('Invalid purpose. \n Purpose has to be either "coding" or "text".')
-    else:
-        prompts = read_prompts('prompts/'+ purp + '_prompts.txt')
-        return prompts
-
 def write_to_txt(purpose: str, response: str) -> None: 
     """
     Writes coding related response to llm_response.txt
@@ -121,7 +109,6 @@ async def test_llm_performance(prompts: list, purpose: str, model: str, TestType
 
     total_time = 0
     total_response_tokens_ps = 0
-    total_api_time = 0
 
     num_tests = len(prompts)
 
@@ -130,19 +117,15 @@ async def test_llm_performance(prompts: list, purpose: str, model: str, TestType
 
     for i in range(num_tests):
         prompt = prompts[i]
-        start_time = time.time()
 
         # Call LLM-api
         response, totalt_duration, load_duration, prompt_token, prompt_eval_duration, prompt_ps, response_token, response_eval_duration, response_ps  = await call_llm_api(prompt, model=model)
 
-        end_time = time.time()
-        elapsed_time = end_time - start_time
-        total_time += elapsed_time
-        total_api_time += totalt_duration/1e9
+        total_time += totalt_duration/1e9
         total_response_tokens_ps += response_ps
 
         if response:
-            print(f"Test #{i+1}: Prompt='{prompt[:50]}', Response='{response[:150]}...', Time={elapsed_time:.4f}s")
+            print(f"Test #{i+1}: Prompt='{prompt[:50]}', Response='{response[:150]}...', Time={totalt_duration:.4f}s")
             print(f"Prompt_tokens={prompt_token}, Prompt_token/s={prompt_ps:.4f}, Response_tokens={response_token}, Response_token/s={response_ps:.4f} \n")
 
             # Write individual params to file here
@@ -167,11 +150,10 @@ async def test_llm_performance(prompts: list, purpose: str, model: str, TestType
             write_to_txt(purpose=purpose, response=response)
 
         else:
-            print(f"Test #{i+1}: Prompt='{prompt}' No response received. Time={elapsed_time:.4f}s")
+            print(f"Test #{i+1}: Prompt='{prompt}' No response received. Time={totalt_duration:.4f}s")
 
     average_time = round(total_time / num_tests)
     average_token_ps = round(total_response_tokens_ps / num_tests)
-    average_api_time = round(total_api_time / num_tests)
 
     print(f"\nAverage response time over {num_tests} tests: {average_time:.4f} seconds")
     print(f"Average response tokens/s: {average_token_ps:.4f}")
@@ -180,14 +162,13 @@ async def test_llm_performance(prompts: list, purpose: str, model: str, TestType
         'Model': [model],
         'Digest': [digest],
         'KV Cache Type': [kv_cache],
-        'Average time': [average_time], 
+        'Average time[s]': [average_time], 
         'Average tokens/s': [average_token_ps], 
-        'Average Time (API)': [average_api_time],
         'Inteded purpose': [purpose],
-        'Language errors': [1]          # Default value for non-coding prompts
+        'Language errors': [0]          # Default value for non-coding prompts
         })
 
-    print('Test completed')
+    print('Test completed\n')
     return ny_data
 
 # -- Retrieve model-info --
@@ -214,19 +195,19 @@ async def initBenchmarking(newExcel: bool = False) -> None:
     Args:
         newExcel (bool, optional): If True initiates a blank excel, overwriting past data. Defaults to false. 
     """
-    purpose = ['coding', 'text']                # Purposes to test model on
-    #models = ['hermes3:70b-llama3.1-q8_0']      # Names of models to test
-    models = retrieve_untested_models()          # Retrieve untested models from models.csv
-    TestType = 4                                # Benchmarking - allows for proper function of utils-functions
+
+    purpose = list(map(lambda x: x.split('_')[0], os.listdir('prompts')))   # Retrieve purposes from prompts folder
+    models = ['nhn-small:latest']                                           # Names of models to test
+    #models = retrieve_untested_models()                                    # Retrieve untested models from models.csv
+    TestType = 4                                                            # Benchmarking - allows for proper function of utils-functions
     
 
     avg_df = pd.DataFrame({
         'Model':[],
         'Digest': [],
         'KV Cache Type': [],
-        'Average time (experienced)[s]': [],
+        'Average time[s]': [],
         'Average tokens/s':[],
-        'Average Time (API)[s]': [],
         'Inteded purpose': [],
         'Language errors': []
     })
@@ -243,12 +224,13 @@ async def initBenchmarking(newExcel: bool = False) -> None:
     # -- Test and write to file --
     for model in models:
         for purp in purpose:
-            prompts = initPurpose(purp=purp)
+            prompts = read_prompts('prompts/' + purp + '_prompts.txt')
             df = await test_llm_performance(prompts, purp, model=model, TestType=TestType)
             if purp == 'coding':
                 retrieveCode()
                 
                 validateCode = input('Run code validation? [y/n]: ')
+                #validateCode = 'y'                                     # Uncomment to always run code validation
 
                 while validateCode != 'y' and validateCode != 'n':
                     print(f'Invalid input: "{validateCode}"')

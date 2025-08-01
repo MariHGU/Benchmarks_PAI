@@ -233,9 +233,8 @@ def initNewExcel(test_type: TestType, fileName: str):
                 'Model':[],
                 'Digest': [],
                 'KV Cache Type': [],
-                'Average time (experienced)[s]': [],
+                'Average time[s]': [],
                 'Average tokens/s':[],
-                'Average Time (API)[s]': [],
                 'Inteded purpose': [],
                 'Language errors': []
             })
