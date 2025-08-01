@@ -11,7 +11,7 @@ deepseek-r1-32b-qwen-distill-fp16,java
 deepseek-r1-70b-llama-distill-q8_0,"go,java,sql"
 dolphin3-8b-llama3.1-q8_0,"java,py"
 dolphin3-8b-llama3.1-fp16,cs
-nhn-small-latest,"cs,go,java"
+nhn-small-latest,"java,sh"
 nhn-medium-latest,"java,sql"
 nhn-large-latest,"java,sql"
 nhn-small-og,"cs,css,go,java,kt,py,rb,sh,ts,xml,yml"
@@ -29,7 +29,6 @@ magistral-24b-small-2506-q8_0,"cs,go,java,sql"
 magistral-24b-small-2506-fp16,"cs,go,sql"
 qwen3-1.7b-q8_0,"cpp,go,java"
 qwen3-30b-a3b-fp16,"cs,java"
-magistral-24b-small-2506-q8_0-feil,"cs,go,java,json,py,sh,sql,xml"
 qwen3-32b-fp16,"go,java,sql"
 mixtral-8x7b,java
 hermes3-70b-llama3.1-q8_0,java
