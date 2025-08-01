@@ -30,3 +30,6 @@ cogito:14b,d0cac86a2347,Q4_K_M
 cogito:70b-v1-preview-llama-q8_0,9c80b552cd74,Q8_0
 cogito:32b,0b4aab772f57,Q4_K_M
 cogito:70b,8f2632d0faa4,Q4_K_M
+qwen3-coder:30b-a3b-q8_0,bdecf39e3ee4,Q8_0
+qwen3-coder:30b-a3b-fp16,e481f3891b3e,F16
+qwen3-coder:30b-a3b-q4_K_M,ad67f85ca250,Q4_K_M
