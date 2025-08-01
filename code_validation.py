@@ -27,13 +27,24 @@ def createLangLists(modelFolder: str) -> dict:
 
     for lang in LANG_EXTENSION_MAP.values():
         for file in files:
-            if file.endswith(f'.{lang}'):
+            if file.endswith(f'go'):                            # Special case for Go files
+                go_files = os.listdir(Path(path) / 'code_go')
+                for f in go_files:
+                    languageFiles.setdefault('go', {
+                        'files':[], 
+                        'Contains error':False
+                        })
+                    if f not in languageFiles['go']['files']:
+                        languageFiles['go']['files'].append(f)
+
+            elif file.endswith(f'.{lang}'):
                 languageFiles.setdefault(lang, {
                     'files':[], 
                     'Contains error':False
                     })
                 if file not in languageFiles[lang]['files']:
                     languageFiles[lang]['files'].append(file)
+
     return languageFiles
 
 
@@ -138,7 +149,7 @@ def check_js_Validation(modelFolder: str, langFiles: list) -> bool:
                 text=True
                 )
         if result.returncode != 0:
-            #print("js: ", result.stderr) # Uncomment to see error messages
+            print("js: ", result.stderr) # Uncomment to see error messages
             files_with_error.add(file)
             
     return True if len(files_with_error)>0 else False
@@ -156,7 +167,7 @@ def check_cpp_Validation(modelFolder: str, langFiles: list) -> bool:
                 text=True
             )
         if result.returncode != 0:
-            #print("cpp: ", result.stderr) # Uncomment to see error messages
+            print("cpp: ", result.stderr) # Uncomment to see error messages
             files_with_error.add(file)
             
     return True if len(files_with_error)>0 else False
@@ -196,7 +207,7 @@ def check_bash_validation(modelFolder: str, LangFiles: list) -> bool:
 
         if result.returncode != 0:
             files_with_error.add(file)
-            #print("bash: ", result.stderr)
+            print("bash: ", result.stderr)
 
     return True if len(files_with_error)>0 else False
 
@@ -229,7 +240,7 @@ def check_html_validation(modelFolder: str, LangFiles: list) -> bool:
             text= True
         )
         if result.returncode != 0:
-            #print("html: ", result.stderr) # Uncomment to see error messages
+            print("html: ", result.stderr) # Uncomment to see error messages
             files_with_error.add(file)
 
     return True if len(files_with_error)>0 else False
@@ -247,7 +258,7 @@ def check_css_validation(modelFolder: str, LangFiles: list) -> bool:
             text=True
         )
         if result.returncode != 0:
-            #print("css: ", result.stderr) # Uncomment to see error messages
+            print("css: ", result.stderr) # Uncomment to see error messages
             files_with_error.add(file)
 
     return True if len(files_with_error)>0 else False  
@@ -265,7 +276,7 @@ def check_c_validation(modelFolder: str, LangFiles: str) -> bool:
             text=True
         )
         if result.returncode != 0:
-            #print("c: ", result.stderr) # Uncomment to see error messages
+            print("c: ", result.stderr) # Uncomment to see error messages
             files_with_error.add(file)
 
     return True if len(files_with_error)>0 else False  
@@ -284,7 +295,8 @@ def check_cs_validation(modelFolder: str, LangFiles: str) -> bool:
         )
         if result.returncode != 0:
             files_with_error.add(file)
-            #print("cs: ",result.stderr)
+            print("cs: ",result.stderr)
+            print("cs: ", result.stdout)
 
     return True if len(files_with_error)>0 else False  
 
@@ -295,14 +307,14 @@ def check_go_validation(modelFolder: str, LangFiles: list) -> bool:
 
     for file in goFiles:
         result = subprocess.run(
-            ['go', 'build','-o','NUL',f'output/{modelFolder}/{file}'],
+            ['go', 'build','-o','NUL',f'output/{modelFolder}/code_go/{file}'],
             shell=True,
             capture_output=True,
             text=True
         )
         if result.returncode != 0:
             files_with_error.add(file)
-            #print("go: ",result.stderr)
+            print("go: ",result.stderr)
 
     return True if len(files_with_error)>0 else False  
 
@@ -319,7 +331,7 @@ def check_ruby_validation(modelFolder: str, LangFiles: list) -> bool:
             text=True
         )
         if result.returncode != 0:
-            #print("ruby: ", result.stderr) # Uncomment to see error messages
+            print("ruby: ", result.stderr) # Uncomment to see error messages
             files_with_error.add(file)
 
     return True if len(files_with_error)>0 else False  
@@ -336,7 +348,7 @@ def check_yaml_validation(modelFolder: str, LangFiles: list) -> bool:
             text= True
         )
         if result.returncode != 0:
-            #print("yaml: ", result.stderr) # Uncomment to see error messages
+            print("yaml: ", result.stderr) # Uncomment to see error messages
             files_with_error.add(file)
             
     return True if len(files_with_error)>0 else False
@@ -353,7 +365,7 @@ def check_xml_validation(modelFolder: str, LangFiles: list) -> bool:
             text= True
         )
         if result.returncode != 0:
-            #print(result.stderr) # Uncomment to see error messages
+            print(result.stderr) # Uncomment to see error messages
             files_with_error.add(file)
             
     return True if len(files_with_error)>0 else False
@@ -472,7 +484,6 @@ def saveResults(model: str, results: set) -> str:
         result_str (str): String of results(language errors).
     """
     fieldnames = ["model", "results"]
-    path = Path("results").mkdir(parents=True, exist_ok=True)
     result_path = Path("results") / "results.csv"
 
     if not Path(result_path).exists():
@@ -519,7 +530,7 @@ def runCodeValidation(model: str) -> str:
 if __name__ =='__main__':
     models = os.listdir('output')    # Uncomment to run validation on every model in output folder
 
-    #models = ['mixtral-8x7b']
+    #models = ['codeqwen-chat'] 
 
     for model in models:
     

@@ -63,6 +63,7 @@ def save_code_blocks(code_blocks: list, model: str) -> None:
     """
     base_filename = "code_snippet"
     folderName = "output"
+    goFolder = "code_go"
 
     Path(folderName).mkdir(parents=True, exist_ok=True)
     model_folder = model.replace(':', '-').strip('\n')
@@ -76,6 +77,9 @@ def save_code_blocks(code_blocks: list, model: str) -> None:
 
         if (lang.lower() not in LANG_EXTENSION_MAP) and lang != '':
             unknown_lang.add(lang)                          # Store unknown languages to add to dictionary if necessary
+        if ext == 'go':
+            folder = Path(folderName) / model_folder / goFolder
+            Path(folder).mkdir(parents=True, exist_ok=True)
         filename = Path(folder) / f"{base_filename}_{i}.{ext}"
 
         with open(filename, "w", encoding="utf-8") as f:
@@ -117,6 +121,7 @@ def retrieveCode() -> None:
         print("Consider adding to language dictionary, or handle manually.\n")
 
     remove = input("Delete textfile? [y/n]: ")
+    #remove = 'y'                                       # Uncomment to always delete textfile
 
     while remove != 'y' and remove != 'n':
         print(f'Invalid input: "{remove}"')
