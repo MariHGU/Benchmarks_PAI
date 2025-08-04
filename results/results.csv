@@ -11,7 +11,7 @@ deepseek-r1-32b-qwen-distill-fp16,java
 deepseek-r1-70b-llama-distill-q8_0,"go,java,sql"
 dolphin3-8b-llama3.1-q8_0,"java,py"
 dolphin3-8b-llama3.1-fp16,cs
-nhn-small-latest,"java,sh"
+nhn-small-latest,"java,json"
 nhn-medium-latest,"java,sql"
 nhn-large-latest,"java,sql"
 nhn-small-og,"cs,css,go,java,kt,py,rb,sh,ts,xml,yml"
@@ -35,3 +35,5 @@ hermes3-70b-llama3.1-q8_0,java
 cogito-70b-v1-preview-llama-q8_0,"go,java,sql"
 cogito-32b,"cs,go,java,sql"
 cogito-70b,"cpp,cs,java,sql"
+qwen3-coder-30b-a3b-q8_0,"cs,java,sql"
+qwen3-coder-30b-a3b-q4_K_M,"cs,java,sql"

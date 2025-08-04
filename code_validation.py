@@ -4,6 +4,8 @@ import json
 import subprocess
 import tempfile
 import pandas as pd
+import sqlglot
+import sqlglot.parser
 from pathlib import Path
 from code_retrieval import LANG_EXTENSION_MAP
 from lxml import etree
@@ -116,12 +118,14 @@ def check_java_Validation(modelFolder: str, langFiles: list):
             # Create a temporary directory for class files (to avoid cluttering current directory)
             with tempfile.TemporaryDirectory() as temp_dir:
                 # Run javac with options to check syntax only
+
                 result = subprocess.run(
-                    ['javac', '-d', temp_dir, java_file_path],
+                    ['javac', '--enable-preview', '--release', '24', '-d', temp_dir, java_file_path],
                     capture_output=True,
                     text=True,
-                    timeout=30  # 30 second timeout
+                    timeout=30
                 )
+
                 
                 if result.returncode != 0:
                     #print("Java: ", result.stderr)  # Uncomment to see error messages
@@ -528,9 +532,9 @@ def runCodeValidation(model: str) -> str:
     return results_str
 
 if __name__ =='__main__':
+    #models = ['qwen3-coder-30b-a3b-q8_0','qwen3-coder-30b-a3b-q4_K_M']
     models = os.listdir('output')    # Uncomment to run validation on every model in output folder
 
-    #models = ['codeqwen-chat'] 
 
     for model in models:
     

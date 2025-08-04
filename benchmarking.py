@@ -35,6 +35,8 @@ client = AsyncClient(
 
 # -- Function to call LLM-api --
 async def call_llm_api(prompt: str, model: str) -> str:
+    # with open('prompts/security_prompts.md', 'r', encoding='utf-8') as f:
+    #     prompt = f.read()
     try:
         response: ChatResponse = await client.chat(
             model=model, 
@@ -91,6 +93,7 @@ def write_to_txt(purpose: str, response: str) -> None:
     if purpose == 'coding':
         with open("llm_response.txt", "a", encoding="utf-8") as f:
             f.write(response)
+            print(response)
 
 
 # -- Test LLM performance --
@@ -125,7 +128,7 @@ async def test_llm_performance(prompts: list, purpose: str, model: str, TestType
         total_response_tokens_ps += response_ps
 
         if response:
-            print(f"Test #{i+1}: Prompt='{prompt[:50]}', Response='{response[:150]}...', Time={totalt_duration:.4f}s")
+            print(f"Test #{i+1}: Prompt='{prompt[:50]}', Response='{response[:150]}...', Time={(totalt_duration/1e9):.4f}s")
             print(f"Prompt_tokens={prompt_token}, Prompt_token/s={prompt_ps:.4f}, Response_tokens={response_token}, Response_token/s={response_ps:.4f} \n")
 
             # Write individual params to file here
@@ -150,7 +153,7 @@ async def test_llm_performance(prompts: list, purpose: str, model: str, TestType
             write_to_txt(purpose=purpose, response=response)
 
         else:
-            print(f"Test #{i+1}: Prompt='{prompt}' No response received. Time={totalt_duration:.4f}s")
+            print(f"Test #{i+1}: Prompt='{prompt}' No response received. Time={(totalt_duration/1e9):.4f}s")
 
     average_time = round(total_time / num_tests)
     average_token_ps = round(total_response_tokens_ps / num_tests)
@@ -197,8 +200,9 @@ async def initBenchmarking(newExcel: bool = False) -> None:
     """
 
     purpose = list(map(lambda x: x.split('_')[0], os.listdir('prompts')))   # Retrieve purposes from prompts folder
-    models = ['nhn-small:latest']                                           # Names of models to test
-    #models = retrieve_untested_models()                                    # Retrieve untested models from models.csv
+    #purpose = ['security']
+    models = ['qwen3-coder:30b-a3b-q8_0','qwen3-coder:30b-a3b-q4_K_M']     # Names of models to test
+    #models = retrieve_untested_models()                                     # Retrieve untested models from models.csv
     TestType = 4                                                            # Benchmarking - allows for proper function of utils-functions
     
 
@@ -278,6 +282,7 @@ def retrieve_untested_models() -> List[str]:
     else:
         for i in range(len(untested_models)):
             untested_models[i] = untested_models[i].replace('-',':', 1)
+        print(untested_models)
         return untested_models
 
 

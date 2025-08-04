@@ -63,3 +63,13 @@ cogito:70b,8f2632d0faa4,Q4_K_M,15,28,text,0
 nhn-small:latest,8530fca74a2a94c,q8_0,10,49,coding,"java,sh"
 nhn-small:latest,8530fca74a2a94c,q8_0,8,47,summarization,0
 nhn-small:latest,8530fca74a2a94c,q8_0,9,40,text,0
+nhn-small:latest,8530fca74a2a94c,q8_0,52,86,coding,"java,json"
+qwen3-coder:30b-a3b-q8_0,bdecf39e3ee4,Q8_0,7,106,coding,0
+qwen3-coder:30b-a3b-q8_0,bdecf39e3ee4,Q8_0,8,103,summarization,0
+qwen3-coder:30b-a3b-q8_0,bdecf39e3ee4,Q8_0,7,105,text,0
+qwen3-coder:30b-a3b-q8_0,bdecf39e3ee4,Q8_0,8,108,coding,"cs,java,sql"
+qwen3-coder:30b-a3b-q8_0,bdecf39e3ee4,Q8_0,9,104,summarization,0
+qwen3-coder:30b-a3b-q8_0,bdecf39e3ee4,Q8_0,7,107,text,0
+qwen3-coder:30b-a3b-q4_K_M,ad67f85ca250,Q4_K_M,7,118,coding,"cs,java,sql"
+qwen3-coder:30b-a3b-q4_K_M,ad67f85ca250,Q4_K_M,7,113,summarization,0
+qwen3-coder:30b-a3b-q4_K_M,ad67f85ca250,Q4_K_M,6,119,text,0
