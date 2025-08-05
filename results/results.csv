@@ -35,5 +35,6 @@ hermes3-70b-llama3.1-q8_0,java
 cogito-70b-v1-preview-llama-q8_0,"go,java,sql"
 cogito-32b,"cs,go,java,sql"
 cogito-70b,"cpp,cs,java,sql"
-qwen3-coder-30b-a3b-q8_0,"cs,java,sql"
+qwen3-coder-30b-a3b-q8_0,"java,sql"
 qwen3-coder-30b-a3b-q4_K_M,"cs,java,sql"
+qwen3-coder-30b-a3b-fp16,"cs,java"

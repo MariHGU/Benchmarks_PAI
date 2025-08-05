@@ -532,8 +532,8 @@ def runCodeValidation(model: str) -> str:
     return results_str
 
 if __name__ =='__main__':
-    #models = ['qwen3-coder-30b-a3b-q8_0','qwen3-coder-30b-a3b-q4_K_M']
     models = os.listdir('output')    # Uncomment to run validation on every model in output folder
+    models = ['qwen3-coder-30b-a3b-q8_0','qwen3-coder-30b-a3b-q4_K_M', 'qwen3-coder-30b-a3b-fp16']
 
 
     for model in models:

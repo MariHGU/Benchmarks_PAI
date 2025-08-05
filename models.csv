@@ -33,5 +33,3 @@ cogito:70b,8f2632d0faa4,Q4_K_M
 qwen3-coder:30b-a3b-q8_0,bdecf39e3ee4,Q8_0
 qwen3-coder:30b-a3b-q4_K_M,ad67f85ca250,Q4_K_M
 qwen3-coder:30b-a3b-fp16,e481f3891b3e,F16
-d4n5h/white-rabbit-neo-70b-v2:latest,f63314f9d1d7,Q8_0
-WhiteRabbitNeo/WhiteRabbitNeo-V3-7B:latest,a254ec658a0f,F16

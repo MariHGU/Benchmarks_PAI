@@ -200,8 +200,7 @@ async def initBenchmarking(newExcel: bool = False) -> None:
     """
 
     purpose = list(map(lambda x: x.split('_')[0], os.listdir('prompts')))   # Retrieve purposes from prompts folder
-    #purpose = ['security']
-    models = ['qwen3-coder:30b-a3b-q8_0','qwen3-coder:30b-a3b-q4_K_M']     # Names of models to test
+    models = ['qwen3-coder:30b-a3b-q8_0']     # Names of models to test
     #models = retrieve_untested_models()                                     # Retrieve untested models from models.csv
     TestType = 4                                                            # Benchmarking - allows for proper function of utils-functions
     
@@ -281,7 +280,10 @@ def retrieve_untested_models() -> List[str]:
         return []
     else:
         for i in range(len(untested_models)):
-            untested_models[i] = untested_models[i].replace('-',':', 1)
+            if untested_models[i].startswith('qwen3-coder'):
+                untested_models[i] = untested_models[i].replace('qwen3-coder-', 'qwen3-coder:') # Replace 2nd occurrence of '-' with ':'
+            else:
+                untested_models[i] = untested_models[i].replace('-',':', 1)
         print(untested_models)
         return untested_models
 
@@ -289,6 +291,5 @@ def retrieve_untested_models() -> List[str]:
 # Run the test
 if __name__ == "__main__":
 
-    #print(retrieve_untested_models())
     asyncio.run(initBenchmarking(newExcel=False))   # Set newExcel=True if you want a clear slate (This overwrites past file)
         

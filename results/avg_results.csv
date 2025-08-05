@@ -73,3 +73,9 @@ qwen3-coder:30b-a3b-q8_0,bdecf39e3ee4,Q8_0,7,107,text,0
 qwen3-coder:30b-a3b-q4_K_M,ad67f85ca250,Q4_K_M,7,118,coding,"cs,java,sql"
 qwen3-coder:30b-a3b-q4_K_M,ad67f85ca250,Q4_K_M,7,113,summarization,0
 qwen3-coder:30b-a3b-q4_K_M,ad67f85ca250,Q4_K_M,6,119,text,0
+qwen3-coder:30b-a3b-fp16,e481f3891b3e,F16,26,102,coding,"cs,java,sql"
+qwen3-coder:30b-a3b-fp16,e481f3891b3e,F16,9,100,summarization,0
+qwen3-coder:30b-a3b-fp16,e481f3891b3e,F16,24,102,text,0
+qwen3-coder:30b-a3b-q8_0,bdecf39e3ee4,Q8_0,21,56,coding,"java,sql"
+qwen3-coder:30b-a3b-q8_0,bdecf39e3ee4,Q8_0,47,61,summarization,0
+qwen3-coder:30b-a3b-q8_0,bdecf39e3ee4,Q8_0,9,84,text,0
