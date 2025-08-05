@@ -1,0 +1,1 @@
+/Users/geoff/anaconda2/bin/conda init

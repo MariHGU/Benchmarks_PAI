@@ -1,0 +1,13 @@
+android {
+    namespace 'com.example.yourapp'
+    compileSdk 33 // Change from 32 to 33
+
+    defaultConfig {
+        applicationId "com.example.yourapp"
+        minSdk 21
+        targetSdk 32 // Optional: Can stay at 32 for now
+        versionCode 1
+        versionName "1.0"
+    }
+    ...
+}

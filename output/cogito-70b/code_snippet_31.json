@@ -1,0 +1,48 @@
+{
+  "order_id": "ORD2023001",
+  "order_date": "2023-04-15T14:30:00Z",
+  "customer_info": {
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "john.doe@example.com",
+    "phone": "+1-555-123-4567",
+    "address": {
+      "street": "123 Main Street",
+      "city": "Anytown",
+      "state": "CA",
+      "zip_code": "12345",
+      "country": "USA"
+    }
+  },
+  "items": [
+    {
+      "item_id": "PROD001",
+      "name": "Wireless Headphones",
+      "quantity": 2,
+      "unit_price": 99.99,
+      "subtotal": 199.98
+    },
+    {
+      "item_id": "PROD002",
+      "name": "Smart Watch",
+      "quantity": 1,
+      "unit_price": 149.95,
+      "subtotal": 149.95
+    }
+  ],
+  "tax_rate": 0.08,
+  "tax_amount": 35.18,
+  "shipping_cost": 9.99,
+  "total": {
+    "sub_total": 349.93,
+    "tax_amount": 35.18,
+    "shipping_cost": 9.99,
+    "grand_total": 395.10
+  },
+  "payment_info": {
+    "method": "credit_card",
+    "card_type": "Visa",
+    "last_four_digits": "1234"
+  },
+  "status": "paid"
+}

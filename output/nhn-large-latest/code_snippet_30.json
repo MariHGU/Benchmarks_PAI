@@ -1,0 +1,50 @@
+{
+  "order_id": "ORD123456",
+  "metadata": {
+    "order_date": "2023-10-05T14:30:00Z",
+    "status": "completed"
+  },
+  "customer_info": {
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "john.doe@example.com",
+    "phone": "+1234567890",
+    "address": {
+      "street": "123 Main Street",
+      "city": "New York",
+      "state": "NY",
+      "zip_code": "10001",
+      "country": "USA"
+    }
+  },
+  "items": [
+    {
+      "item_id": "ITM001",
+      "name": "Laptop Pro X",
+      "description": "High-performance laptop with 16GB RAM and 512GB SSD",
+      "price": 999.99,
+      "quantity": 1,
+      "total_price": 999.99
+    },
+    {
+      "item_id": "ITM002",
+      "name": "Wireless Headphones",
+      "description": "Premium noise-canceling wireless headphones with 30-hour battery life",
+      "price": 299.99,
+      "quantity": 2,
+      "total_price": 599.98
+    }
+  ],
+  "total": {
+    "subtotal": 1599.97,
+    "tax_amount": 131.99,
+    "discount_amount": 0,
+    "total_amount": 1731.96
+  },
+  "payment_method": {
+    "type": "credit_card",
+    "card_type": "Visa",
+    "last_four_digits": "4242",
+    "transaction_id": "TRX123"
+  }
+}

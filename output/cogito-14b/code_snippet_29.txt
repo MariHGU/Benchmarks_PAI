@@ -1,0 +1,7 @@
+android {
+    compileSdk 33
+    defaultConfig {
+        targetSdk 33
+        // Other configurations...
+    }
+}

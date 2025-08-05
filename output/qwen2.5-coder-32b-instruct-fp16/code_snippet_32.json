@@ -1,0 +1,29 @@
+{
+  "order_id": "ORD123456789",
+  "customer_info": {
+    "name": "John Doe",
+    "email": "johndoe@example.com",
+    "phone_number": "+1-555-123-4567",
+    "shipping_address": {
+      "street": "123 Elm Street",
+      "city": "Springfield",
+      "state": "IL",
+      "zip_code": "62701"
+    }
+  },
+  "items": [
+    {
+      "item_id": "ITEM001",
+      "name": "Wireless Bluetooth Headphones",
+      "quantity": 2,
+      "price_per_unit": 59.99
+    },
+    {
+      "item_id": "ITEM002",
+      "name": "Smartphone Case",
+      "quantity": 1,
+      "price_per_unit": 14.99
+    }
+  ],
+  "total": 134.97
+}

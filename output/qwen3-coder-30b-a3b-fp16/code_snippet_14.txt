@@ -1,0 +1,1 @@
+File "/usr/lib/python3.11/site-packages/docker/transport/unixconn.py", line 30, in connect sock.connect(self.unix_socket)

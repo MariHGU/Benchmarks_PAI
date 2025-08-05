@@ -1,0 +1,1 @@
+conda activate <environment_name>

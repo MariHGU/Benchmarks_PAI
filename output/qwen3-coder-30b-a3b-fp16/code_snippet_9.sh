@@ -1,0 +1,1 @@
+conda init zsh --no-activate

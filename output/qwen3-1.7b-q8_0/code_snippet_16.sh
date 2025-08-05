@@ -1,0 +1,2 @@
+sudo dnf install docker-ce docker-ce-cli containerd.io
+sudo systemctl restart docker

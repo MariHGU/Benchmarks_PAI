@@ -1,0 +1,5 @@
+SELECT product_id, SUM(quantity * unit_price) as total_earnings
+FROM OrderItems
+GROUP BY product_id
+ORDER BY total_earnings DESC
+LIMIT 1;

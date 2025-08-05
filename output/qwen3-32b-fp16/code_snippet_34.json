@@ -1,0 +1,28 @@
+{
+  "order_id": "ORD123456",
+  "date": "2023-10-05",
+  "customer": {
+    "name": "John Doe",
+    "email": "john.doe@example.com",
+    "phone": "555-1234"
+  },
+  "items": [
+    {
+      "product_id": "PROD789",
+      "name": "Laptop Bag",
+      "quantity": 2,
+      "price": 19.99,
+      "total": 39.98
+    },
+    {
+      "product_id": "PROD012",
+      "name": "Wireless Mouse",
+      "quantity": 1,
+      "price": 5.99,
+      "total": 5.99
+    }
+  ],
+  "subtotal": 45.97,
+  "tax": 3.68,
+  "total": 49.65
+}

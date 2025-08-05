@@ -1,0 +1,1 @@
+ls -laZ /var/run/docker.sock

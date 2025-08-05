@@ -1,0 +1,62 @@
+{
+  "order_id": "ORD-2023-123456",
+  "timestamp": "2023-07-20T14:30:00Z",
+  "customer_info": {
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "john.doe@email.com",
+    "phone": "+1-555-123-4567",
+    "address": {
+      "street": "123 Main St",
+      "city": "Anytown",
+      "state": "CA",
+      "postal_code": "90210",
+      "country": "USA"
+    }
+  },
+  "items": [
+    {
+      "item_id": "ITEM-1001",
+      "name": "Organic Coffee Beans",
+      "quantity": 2,
+      "price_per_unit": 15.99,
+      "subtotal": 31.98
+    },
+    {
+      "item_id": "ITEM-1002",
+      "name": "Ceramic French Press",
+      "quantity": 1,
+      "price_per_unit": 49.99,
+      "subtotal": 49.99
+    },
+    {
+      "item_id": "ITEM-1003",
+      "name": "Coffee Filter Papers (50 pack)",
+      "quantity": 2,
+      "price_per_unit": 7.99,
+      "subtotal": 15.98
+    }
+  ],
+  "shipping_info": {
+    "method": "Standard Shipping",
+    "cost": 8.99
+  },
+  "discounts": [
+    {
+      "code": "SUMMER2023",
+      "description": "Summer Sale - 15% off",
+      "amount": -26.47
+    }
+  ],
+  "total": {
+    "subtotal": 98.95,
+    "shipping": 8.99,
+    "taxes": 6.30,
+    "discounts": -26.47,
+    "grand_total": 87.77
+  },
+  "payment_info": {
+    "method": "Credit Card",
+    "transaction_id": "TX-2023-98765"
+  }
+}

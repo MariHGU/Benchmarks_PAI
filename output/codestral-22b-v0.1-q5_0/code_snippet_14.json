@@ -1,0 +1,29 @@
+{
+    "order_id": "ORD123456",
+    "customer_info": {
+        "name": "John Doe",
+        "email": "johndoe@example.com",
+        "phone": "+1-202-555-0179",
+        "address": {
+            "street": "123 Main St",
+            "city": "Anytown",
+            "state": "CA",
+            "zip_code": "12345"
+        }
+    },
+    "items": [
+        {
+            "item_id": "ITM001",
+            "name": "Product 1",
+            "quantity": 2,
+            "price_per_unit": 19.99
+        },
+        {
+            "item_id": "ITM002",
+            "name": "Product 2",
+            "quantity": 1,
+            "price_per_unit": 34.95
+        }
+    ],
+    "total": 84.89
+}

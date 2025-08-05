@@ -1,0 +1,1 @@
+ALTER TABLE employees CHANGE emp_name employee_name VARCHAR(100);

@@ -1,0 +1,2 @@
+ALTER TABLE table_name
+   CHANGE COLUMN old_col_name new_col_name VARCHAR(50);

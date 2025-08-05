@@ -1,0 +1,42 @@
+{
+  "order_id": "ORD-2023-12345",
+  "customer_info": {
+    "name": "John Doe",
+    "email": "john.doe@example.com", 
+    "phone": "+1-555-555-5555",
+    "address": {
+      "street": "123 Main St",
+      "city": "Anytown",
+      "state": "CA",
+      "postal_code": "90210"
+    }
+  },
+  "items": [
+    {
+      "item_id": "SKU-001",
+      "name": "Widget A",
+      "quantity": 2,
+      "price_per_unit": 15.99,
+      "total_price": 31.98
+    },
+    {
+      "item_id": "SKU-002", 
+      "name": "Gadget B",
+      "quantity": 1,
+      "price_per_unit": 49.99,
+      "total_price": 49.99
+    }
+  ],
+  "subtotal": 81.97,
+  "tax": {
+    "rate": 0.08, 
+    "amount": 6.56
+  },
+  "shipping": {
+    "method": "Standard",
+    "cost": 5.00
+  },
+  "total": 93.53,
+  "order_date": "2023-06-14T15:30:00Z",
+  "status": "Processing"
+}

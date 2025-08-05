@@ -1,0 +1,17 @@
+android {
+    compileSdkVersion 33  // Update this line
+    
+    defaultConfig {
+        applicationId "your.package.name"
+        minSdkVersion 21  // This can remain the same
+        targetSdkVersion 33  // You might want to update this as well, but it's not required
+        versionCode 1
+        versionName "1.0"
+    }
+    
+    buildTypes {
+        release {
+            ...
+        }
+    }
+}

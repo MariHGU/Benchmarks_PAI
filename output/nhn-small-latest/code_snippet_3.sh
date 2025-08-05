@@ -1,0 +1,1 @@
+# __conda_setup=\"$('/Users/geoff/anaconda2/bin/conda' 'shell.bash' 'hook' 2> /dev/null)\"

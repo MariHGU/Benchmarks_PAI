@@ -1,0 +1,15 @@
+android {
+       compileSdkVersion 33 // Update this line
+
+       defaultConfig {
+           applicationId "com.example.yourapp"
+           minSdkVersion 21 // Ensure this is appropriate for your app's target audience
+           targetSdkVersion 33 // Optional: You can keep this as needed, but updating it to match compileSdkVersion is recommended
+           versionCode 1
+           versionName "1.0"
+
+           testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+       }
+
+       // Other configurations...
+   }

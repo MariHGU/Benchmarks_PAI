@@ -1,0 +1,47 @@
+{
+  "order_id": "ORD-2023-15487",
+  "timestamp": "2023-10-15T14:30:22Z",
+  "customer_info": {
+    "name": "John Doe",
+    "email": "john.doe@email.com",
+    "phone": "+1-555-123-4567",
+    "shipping_address": {
+      "street": "123 Main Street",
+      "city": "Springfield",
+      "state": "IL",
+      "postal_code": "62704",
+      "country": "USA"
+    }
+  },
+  "items": [
+    {
+      "id": "PROD-001",
+      "name": "Wireless Bluetooth Headphones",
+      "quantity": 1,
+      "price_per_unit": 79.99,
+      "subtotal": 79.99
+    },
+    {
+      "id": "PROD-002",
+      "name": "USB-C Cable (3ft)",
+      "quantity": 2,
+      "price_per_unit": 14.99,
+      "subtotal": 29.98
+    }
+  ],
+  "tax_info": {
+    "tax_rate": 8.5,
+    "tax_amount": 9.07
+  },
+  "shipping_info": {
+    "method": "Standard Shipping",
+    "cost": 5.99,
+    "estimated_delivery_date": "2023-10-20"
+  },
+  "order_totals": {
+    "subtotal": 109.97,
+    "tax_amount": 9.07,
+    "shipping_cost": 5.99,
+    "total_amount": 124.03
+  }
+}

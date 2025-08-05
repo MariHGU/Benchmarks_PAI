@@ -1,0 +1,1 @@
+sudo setenforce 0

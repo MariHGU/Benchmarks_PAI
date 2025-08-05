@@ -1,0 +1,28 @@
+{
+  "order_receipt": {
+    "order_id": "123456",
+    "customer": {
+      "name": "John Doe",
+      "email": "johndoe@example.com",
+      "address": {
+        "street": "123 Main St.",
+        "city": "Anytown",
+        "state": "CA",
+        "zip": "12345"
+      }
+    },
+    "items": [
+      {
+        "product_name": "Example Product 1",
+        "quantity": 2,
+        "price": 10.99
+      },
+      {
+        "product_name": "Example Product 2",
+        "quantity": 1,
+        "price": 15.99
+      }
+    ],
+    "total": 37.97
+  }
+}

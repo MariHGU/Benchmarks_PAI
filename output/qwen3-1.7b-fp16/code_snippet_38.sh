@@ -1,0 +1,1 @@
+curl -X POST http://localhost:8000/api/endpoint -H "Content-Type: application/json" -d '{"user": "Smith"}'

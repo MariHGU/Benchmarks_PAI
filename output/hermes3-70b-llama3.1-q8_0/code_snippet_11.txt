@@ -1,0 +1,13 @@
+● docker.service - Docker Application Container Engine
+    Loaded: loaded (/usr/lib/systemd/system/docker.service; disabled; preset: disabled)
+   Drop-In: /usr/lib/systemd/system/service.d
+            └─10-timeout-abort.conf
+    Active: active (running) since Thu 2023-07-06 15:36:12 WITA; 1h 28min ago
+   TriggeredBy: ● docker.socket
+      Docs: https://docs.docker.com
+   Main PID: 6250 (dockerd)
+      Tasks: 19
+     Memory: 25.1M
+        CPU: 1.129s
+     CGroup: /system.slice/docker.service
+             └─6250 /usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock.

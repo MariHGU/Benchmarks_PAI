@@ -1,0 +1,1 @@
+SHOW COLUMNS FROM table_name LIKE 'old_col_name';

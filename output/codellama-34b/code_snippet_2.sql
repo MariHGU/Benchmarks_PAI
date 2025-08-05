@@ -1,0 +1,1 @@
+ALTER TABLE customers CHANGE customer_id cust_id;

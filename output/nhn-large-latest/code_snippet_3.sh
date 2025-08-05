@@ -1,0 +1,1 @@
+conda init --no-auto-activate

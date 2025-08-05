@@ -1,0 +1,14 @@
+android {
+    compileSdkVersion 33 // Update this line
+
+    defaultConfig {
+        ...
+        targetSdkVersion 33 // Update this line
+        ...
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}

@@ -1,0 +1,15 @@
+android {
+    compileSdk 33
+
+    defaultConfig {
+        applicationId "your.app.id"
+        minSdk 21
+        targetSdk 32 // You can keep this as is unless you want to upgrade it too
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    ...
+}

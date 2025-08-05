@@ -1,0 +1,1 @@
+failed to start daemon, ensure docker is not running or delete /var/run/docker.pid: process with PID 6250 is still running

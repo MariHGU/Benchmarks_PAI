@@ -1,0 +1,4 @@
+$ which conda
+/Users/geoff/anaconda2/bin/conda
+$ echo $CONDA_DEFAULT_ENV
+(empty)

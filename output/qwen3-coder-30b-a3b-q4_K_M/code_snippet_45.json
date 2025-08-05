@@ -1,0 +1,46 @@
+{
+  "order_id": "ORD-2024-001573",
+  "order_date": "2024-01-15T14:30:00Z",
+  "customer_info": {
+    "customer_id": "CUST-8472",
+    "name": "John Smith",
+    "email": "john.smith@email.com",
+    "phone": "+1-555-0123",
+    "address": {
+      "street": "123 Main Street",
+      "city": "Anytown",
+      "state": "CA",
+      "zip_code": "90210",
+      "country": "USA"
+    }
+  },
+  "items": [
+    {
+      "item_id": "ITEM-001",
+      "name": "Wireless Bluetooth Headphones",
+      "quantity": 1,
+      "unit_price": 79.99,
+      "total_price": 79.99
+    },
+    {
+      "item_id": "ITEM-002",
+      "name": "Phone Case - Black",
+      "quantity": 2,
+      "unit_price": 19.99,
+      "total_price": 39.98
+    },
+    {
+      "item_id": "ITEM-003",
+      "name": "USB-C Charging Cable",
+      "quantity": 1,
+      "unit_price": 12.50,
+      "total_price": 12.50
+    }
+  ],
+  "subtotal": 132.47,
+  "tax_amount": 10.59,
+  "shipping_cost": 5.99,
+  "total": 148.05,
+  "payment_method": "Credit Card",
+  "status": "Completed"
+}

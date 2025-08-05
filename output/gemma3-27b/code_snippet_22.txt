@@ -1,0 +1,14 @@
+android {
+    compileSdkVersion 33
+    defaultConfig {
+        applicationId "your.package.name"
+        minSdkVersion 21  // Or your desired minimum SDK version
+        targetSdkVersion 33 // Or your desired target SDK version
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    // ... other configurations ...
+}

@@ -1,0 +1,1 @@
+String cleanedXml = xml.replace("<THIS-IS-PART-OF-DESCRIPTION>", "");

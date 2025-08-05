@@ -1,0 +1,31 @@
+{
+  "order_id": "ORD2023001",
+  "customer_info": {
+    "name": "John Doe",
+    "email": "john.doe@example.com",
+    "phone": "555-1234",
+    "address": {
+      "street": "456 Oak Ave",
+      "city": "Somewhere",
+      "state": "NY",
+      "zip_code": "56789"
+    }
+  },
+  "items": [
+    {
+      "product_id": "P1001",
+      "name": "Wireless Headphones",
+      "quantity": 1,
+      "price_per_unit": 99.99,
+      "total_price": 99.99
+    },
+    {
+      "product_id": "P2002",
+      "name": "USB Cable",
+      "quantity": 3,
+      "price_per_unit": 5.99,
+      "total_price": 17.97
+    }
+  ],
+  "total": 117.96
+}

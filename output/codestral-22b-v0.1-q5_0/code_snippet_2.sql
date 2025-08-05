@@ -1,0 +1,1 @@
+UPDATE table_name SET new_col_name = old_col_name;

@@ -1,0 +1,1 @@
+ALTER TABLE table_name RENAME COLUMN `old col name` TO `new col name`;

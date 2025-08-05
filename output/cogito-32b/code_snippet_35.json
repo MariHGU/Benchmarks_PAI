@@ -1,0 +1,44 @@
+{
+  "order_id": "ORD-20231056789",
+  "timestamp": "2023-10-15T14:30:45Z",
+  "customer_info": {
+    "name": "John Doe",
+    "email": "john.doe@email.com",
+    "phone": "+1-555-123-4567",
+    "address": {
+      "street": "123 Main Street",
+      "city": "Springfield",
+      "state": "IL",
+      "zip_code": "62701",
+      "country": "USA"
+    }
+  },
+  "items": [
+    {
+      "item_id": "PROD-456789",
+      "name": "Wireless Headphones",
+      "quantity": 1,
+      "unit_price": 89.99,
+      "subtotal": 89.99
+    },
+    {
+      "item_id": "PROD-456790",
+      "name": "Bluetooth Speaker",
+      "quantity": 2,
+      "unit_price": 39.99,
+      "subtotal": 79.98
+    }
+  ],
+  "summary": {
+    "sub_total": 169.97,
+    "tax_rate": 0.08,
+    "tax_amount": 13.5976,
+    "shipping_cost": 5.99,
+    "total": 189.56
+  },
+  "payment_method": {
+    "type": "Credit Card",
+    "last4_digits": "1234",
+    "card_type": "Visa"
+  }
+}

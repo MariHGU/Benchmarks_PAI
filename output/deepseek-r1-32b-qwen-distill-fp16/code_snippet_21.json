@@ -1,0 +1,54 @@
+{
+  "order_id": "ORD-20231001-001",
+  "customer_info": {
+    "name": "John Doe",
+    "email": "john.doe@example.com",
+    "phone": "+1 (555) 123-4567",
+    "address": {
+      "street": "123 Main Street",
+      "city": "New York",
+      "state": "NY",
+      "country": "USA",
+      "postal_code": "10001"
+    }
+  },
+  "items": [
+    {
+      "item_id": "PROD-0001",
+      "name": "Laptop",
+      "quantity": 1,
+      "unit_price": 999.99,
+      "total_price": 999.99
+    },
+    {
+      "item_id": "PROD-0002",
+      "name": "Mouse",
+      "quantity": 2,
+      "unit_price": 29.99,
+      "total_price": 59.98
+    }
+  ],
+  "tax": {
+    "amount": 87.96,
+    "rate": 8.5
+  },
+  "shipping_info": {
+    "address": {
+      "street": "123 Main Street",
+      "city": "New York",
+      "state": "NY",
+      "country": "USA",
+      "postal_code": "10001"
+    },
+    "shipping_method": "Standard Shipping"
+  },
+  "payment_info": {
+    "method": "Credit Card",
+    "status": "Paid",
+    "card_last_four": "4242"
+  },
+  "subtotal": 1059.97,
+  "total": 1147.93,
+  "discount": 0.00,
+  "created_at": "2023-10-01T14:30:00Z"
+}

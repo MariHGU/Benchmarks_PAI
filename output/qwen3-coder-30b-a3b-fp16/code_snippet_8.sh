@@ -1,0 +1,1 @@
+conda init bash --no-activate

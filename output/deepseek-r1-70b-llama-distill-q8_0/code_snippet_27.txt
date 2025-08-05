@@ -1,0 +1,4 @@
+android {
+       compileSdkVersion 33
+       // Other configurations...
+   }

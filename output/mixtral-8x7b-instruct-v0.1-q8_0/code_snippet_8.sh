@@ -1,0 +1,1 @@
+sudo journalctl -fu docker.service --no-pager

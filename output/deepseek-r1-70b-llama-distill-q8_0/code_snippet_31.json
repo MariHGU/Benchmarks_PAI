@@ -1,0 +1,37 @@
+{
+  "order_id": "ORD-2023-001",
+  "order_date": "2023-07-20T14:30:00Z",
+  "customer_info": {
+    "name": "John Doe",
+    "email": "john.doe@example.com",
+    "phone": "+1 (555) 123-4567",
+    "address": {
+      "street": "123 Main Street",
+      "city": "New York",
+      "state": "NY",
+      "zip": "10001"
+    }
+  },
+  "items": [
+    {
+      "product_id": "PROD-001",
+      "name": "Laptop Computer",
+      "quantity": 1,
+      "price": 999.99,
+      "subtotal": 999.99
+    },
+    {
+      "product_id": "PROD-002",
+      "name": "Smartphone",
+      "quantity": 2,
+      "price": 699.99,
+      "subtotal": 1399.98
+    }
+  ],
+  "totals": {
+    "subtotal": 2399.97,
+    "tax": 191.99,
+    "grand_total": 2591.96
+  },
+  "payment_method": "Credit Card"
+}

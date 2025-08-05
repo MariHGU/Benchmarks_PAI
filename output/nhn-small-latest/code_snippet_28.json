@@ -1,0 +1,44 @@
+{
+  "order_id": "ORD-2023-1745",
+  "customer_info": {
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "john.doe@example.com",
+    "phone": "+1-555-123-4567",
+    "address": {
+      "street": "123 Main St",
+      "city": "Anytown",
+      "state": "CA",
+      "zip_code": "90210"
+    }
+  },
+  "items": [
+    {
+      "item_id": "ITEM-001",
+      "name": "Premium Coffee Blend",
+      "quantity": 2,
+      "price_per_unit": 8.50,
+      "total_price": 17.00
+    },
+    {
+      "item_id": "ITEM-002",
+      "name": "Croissant",
+      "quantity": 3,
+      "price_per_unit": 2.99,
+      "total_price": 8.97
+    },
+    {
+      "item_id": "ITEM-003",
+      "name": "Espresso",
+      "quantity": 1,
+      "price_per_unit": 4.50,
+      "total_price": 4.50
+    }
+  ],
+  "subtotal": 30.47,
+  "tax_rate": 0.08,  // 8% tax rate
+  "tax_amount": 2.44,
+  "total": 32.91,
+  "order_date": "2023-06-15T14:30:00Z",
+  "payment_method": "Credit Card"
+}

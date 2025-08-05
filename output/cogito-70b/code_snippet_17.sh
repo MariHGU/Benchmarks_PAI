@@ -1,0 +1,1 @@
+journalctl -u docker.service --since "10 minutes ago"

@@ -1,0 +1,33 @@
+{
+  "order_id": "ORD123456",
+  "customer_info": {
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "johndoe@example.com",
+    "phone_number": "+1-555-123-4567"
+  },
+  "items": [
+    {
+      "product_id": "PROD001",
+      "name": "Wireless Headphones",
+      "quantity": 1,
+      "price": 99.99
+    },
+    {
+      "product_id": "PROD002",
+      "name": "Smartphone Case",
+      "quantity": 2,
+      "price": 19.99
+    },
+    {
+      "product_id": "PROD003",
+      "name": "USB Cable",
+      "quantity": 1,
+      "price": 9.99
+    }
+  ],
+  "total": 149.95,
+  "taxes": 12.50,
+  "shipping_fee": 5.00,
+  "payment_method": "Credit Card"
+}

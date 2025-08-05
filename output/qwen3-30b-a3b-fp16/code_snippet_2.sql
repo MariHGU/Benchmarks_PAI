@@ -1,0 +1,1 @@
+ALTER TABLE employees CHANGE old_name new_name VARCHAR(255);

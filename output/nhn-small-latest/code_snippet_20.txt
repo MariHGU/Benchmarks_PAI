@@ -1,0 +1,9 @@
+android {
+    compileSdkVersion 33
+    
+    buildToolsVersion "33.0.0" // Add or update this line
+    
+    defaultConfig {
+        ...
+    }
+}

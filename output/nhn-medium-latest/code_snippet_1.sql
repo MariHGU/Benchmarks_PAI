@@ -1,0 +1,1 @@
+CREATE TABLE table_name_backup AS SELECT * FROM table_name;
