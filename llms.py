@@ -98,7 +98,10 @@ class OllamaLocalModel(OllamaModel):
         chat_model = self.load_model(async_mode=True)
         response: ChatResponse = await chat_model.chat(
             model=self.model_name,
-            messages=[{"role": "user", "content": prompt}],
+            messages=[{
+                "role": "user", 
+                "content": prompt
+                }],
             format=schema.model_json_schema() if schema else None,
             options={
                 "temperature": self.temperature,

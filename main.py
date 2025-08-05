@@ -1,16 +1,15 @@
 from use_case_metrics import generate_responses, eval_responses
 from utils import TestType
 
-MODEL = "hermes3:70b"
 JUDGE_MODEL1 = "nhn-large:latest" # "deepseek-r1:32b-qwen-distill-fp16" # OLLAMA
-JUDGE_MODEL2 = "nhn-medium:latest" # "devstral:24b-small-2505-fp16" # OLLAMA 
+JUDGE_MODEL2 = "nhn-medium:latest" # "devstral:24b-small-2505-fp16" # OLLAMA
 JUDGE_MODEL3 = "hermes3:70b-llama3.1-fp16" # OLLAMA
 JUDGE_SEED = 42
 JUDGE_TEMPERATURE = 0.2
 JUDGE_TOP_K = 10
 
 if __name__ == "__main__":
-    
+
 
     #   +-------------------------------------------------------------------------------------+
     #   |                                                                                     |
@@ -35,18 +34,18 @@ if __name__ == "__main__":
 
     NUM_RESPONSES = 3
     # EVAL_RANGE = (10, 100)
-    
+
+    MODELS = ["hermes3:70b-llama3.1-q8_0"]
 
     # generate_responses(test_type=TestType.PROMPT_ALIGNMENT, models=[MODEL], n_responses=NUM_RESPONSES)
     # generate_responses(test_type=TestType.HELPFULNESS, models=[MODEL], n_responses=NUM_RESPONSES)
-    # generate_responses(test_type=TestType.SUMMARIZATION, model=MODEL, n_responses=NUM_RESPONSES)
-    
+    # generate_responses(test_type=TestType.SUMMARIZATION, models=MODELS, n_responses=NUM_RESPONSES)
+
     JUDGE1 = (JUDGE_MODEL1, JUDGE_SEED, JUDGE_TEMPERATURE, JUDGE_TOP_K)
     JUDGE2 = (JUDGE_MODEL2, JUDGE_SEED, JUDGE_TEMPERATURE, JUDGE_TOP_K)
     JUDGE3 = (JUDGE_MODEL3, JUDGE_SEED, JUDGE_TEMPERATURE, JUDGE_TOP_K)
-    JUDGES = [JUDGE2, JUDGE3]
+    JUDGES = [JUDGE1, JUDGE3]
 
-    alignment = eval_responses(test_type=TestType.PROMPT_ALIGNMENT, judges=JUDGES, eval_range=(14, 100))
-    helpfulness = eval_responses(test_type=TestType.HELPFULNESS, judges=JUDGES)
-    # summaries = eval_responses(test_type=TestType.SUMMARIZATION, judges=JUDGES)
-
+    # alignment = eval_responses(test_type=TestType.PROMPT_ALIGNMENT, judges=JUDGES)
+    # helpfulness = eval_responses(test_type=TestType.HELPFULNESS, judges=JUDGES)
+    summaries = eval_responses(test_type=TestType.SUMMARIZATION, judges=JUDGES)
