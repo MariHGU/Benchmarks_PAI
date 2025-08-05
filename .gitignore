@@ -18,7 +18,6 @@ debug.log
 
 # Ignore results and output files
 results.xlsx
-output/
 responses/
 
 # Ignore temporary files
