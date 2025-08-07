@@ -8,19 +8,9 @@ from ollama import AsyncClient, ChatResponse
 from openpyxl import load_workbook
 from code_retrieval import retrieveCode
 from code_validation import runCodeValidation
-from utils import write_to_xlsx, initNewExcel, TestType
+from utils import write_to_xlsx, initNewExcel, TestType, get_api_key
 
 filename = "test.xlsx"  # Excel file name
-
-# -- Initialize the client with appropriate host and authorization token --
-def get_api_key(file_path='.api_key') -> str:
-    try:
-        with open(file_path, 'r') as f:
-            api_key = f.read().strip()
-        return api_key
-    except FileNotFoundError:
-        print(f"API key file not found: {file_path}")
-        raise
 
 # -- Get the API key from a file outside the git repo --
 api_key_file = Path.cwd().parent / ".api_key"

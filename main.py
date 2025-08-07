@@ -1,7 +1,9 @@
+import asyncio
+from benchmarking import initBenchmarking
 from use_case_metrics import generate_responses, eval_responses
 from utils import TestType
 
-JUDGE_MODEL1 = "nhn-large:latest" # "deepseek-r1:32b-qwen-distill-fp16" # OLLAMA
+JUDGE_MODEL1 = "nhn-large:latest" # "qwen3-coder:30b-a3b-q8_0" # OLLAMA
 JUDGE_MODEL2 = "nhn-medium:latest" # "devstral:24b-small-2505-fp16" # OLLAMA
 JUDGE_MODEL3 = "hermes3:70b-llama3.1-fp16" # OLLAMA
 JUDGE_SEED = 42
@@ -49,3 +51,6 @@ if __name__ == "__main__":
     # alignment = eval_responses(test_type=TestType.PROMPT_ALIGNMENT, judges=JUDGES)
     # helpfulness = eval_responses(test_type=TestType.HELPFULNESS, judges=JUDGES)
     summaries = eval_responses(test_type=TestType.SUMMARIZATION, judges=JUDGES)
+
+    # -- Run Benchmarking --
+    asyncio.run(initBenchmarking(newExcel=False))
