@@ -59,16 +59,6 @@ def get_api_key(file_path='.api_key') -> str:
         print(f"API key file not found: {file_path}")
         raise
 
-# -- Get the API key from a file outside the git repo --
-api_key_file = Path.cwd().parent / ".api_key" # Adjust the path as needed
-api_key = get_api_key(api_key_file)
-
-client = AsyncClient(
-    host="https://beta.chat.nhn.no/ollama",     # Swap to chat.nhn.no for main website performance
-    headers={
-        'Authorization': f'{api_key}'
-    }
-)
 
 def create_time_hash() -> str:
     """

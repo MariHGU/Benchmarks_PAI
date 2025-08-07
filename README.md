@@ -1,3 +1,11 @@
 # Benchmarks_PAI
 
-Benchmarking scripts for analysing performance of smaller LLMs.
+Getting started
+
+'''
+pip install -r requirements.txt
+'''
+
+'''Run the main script to generate responses and evaluate them
+python main.py
+'''
