@@ -8,7 +8,7 @@ from ollama import AsyncClient, ChatResponse
 from openpyxl import load_workbook
 from code_retrieval import retrieveCode
 from code_validation import runCodeValidation
-from utils import write_to_xlsx, initNewExcel, TestType, get_api_key
+from utils import write_to_xlsx, initNewExcel, TypeOfTest, get_api_key
 
 filename = "test.xlsx"  # Excel file name
 
@@ -87,7 +87,7 @@ def write_to_txt(purpose: str, response: str) -> None:
 
 
 # -- Test LLM performance --
-async def test_llm_performance(prompts: list, purpose: str, model: str, TestType: TestType) -> pd.DataFrame:
+async def test_llm_performance(prompts: list, purpose: str, model: str, TestType: TypeOfTest) -> pd.DataFrame:
     """
     Performs the actual testing of the model, and writes individual prompt-performance to excel file.
 

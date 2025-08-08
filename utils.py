@@ -8,7 +8,7 @@ from ollama import AsyncClient
 from openpyxl import load_workbook
 import pandas as pd
 
-class TestType(IntEnum):
+class TypeOfTest(IntEnum):
     SUMMARIZATION = 1
     PROMPT_ALIGNMENT = 2
     HELPFULNESS = 3
@@ -171,7 +171,7 @@ def read_responses_from_csv(file_name: str) -> pd.DataFrame:
     return df
 
 
-def write_to_xlsx(df: pd.DataFrame, file_name: str, sheet_name: str, test_type: TestType) -> None:
+def write_to_xlsx(df: pd.DataFrame, file_name: str, sheet_name: str, test_type: TypeOfTest) -> None:
     """
     Write data to an Microsoft Excel file (.xlsx), appending to a specified sheet.
     If the sheet does not exist, it will be created.
@@ -200,16 +200,16 @@ def write_to_xlsx(df: pd.DataFrame, file_name: str, sheet_name: str, test_type: 
     with pd.ExcelWriter(file_name, engine='openpyxl', mode='a', if_sheet_exists='overlay') as writer:
         df.to_excel(writer, sheet_name=sheet_name, index=False, header=header, startrow=startrow)
 
-def initNewExcel(test_type: TestType, fileName: str):
+def initNewExcel(test_type: TypeOfTest, fileName: str):
     """
     Initiates blank excel with headers
     """
     match test_type:
-        case TestType.SUMMARIZATION | TestType.PROMPT_ALIGNMENT | TestType.HELPFULNESS:
+        case TypeOfTest.SUMMARIZATION | TypeOfTest.PROMPT_ALIGNMENT | TypeOfTest.HELPFULNESS:
             sheet_map = {
-                TestType.SUMMARIZATION: "SummarizationResults",
-                TestType.PROMPT_ALIGNMENT: "PromptAlignmentResults",
-                TestType.HELPFULNESS: "HelpfulnessResults"
+                TypeOfTest.SUMMARIZATION: "SummarizationResults",
+                TypeOfTest.PROMPT_ALIGNMENT: "PromptAlignmentResults",
+                TypeOfTest.HELPFULNESS: "HelpfulnessResults"
             }
 
             df_header = pd.DataFrame({
@@ -228,7 +228,7 @@ def initNewExcel(test_type: TestType, fileName: str):
             with pd.ExcelWriter(filepath) as writer:
                 df_header.to_excel(writer, index=False, sheet_name=sheet_map[test_type])
 
-        case TestType.BENCHMARKING:
+        case TypeOfTest.BENCHMARKING:
             df = pd.DataFrame({
                 'Model': [],
                 'Digest': [],
@@ -268,7 +268,7 @@ def initNewExcel(test_type: TestType, fileName: str):
 
     
 def save_eval_results_to_xlsx(
-        type_of_test: TestType,
+        type_of_test: TypeOfTest,
         model_name: str,
         results: List[tuple],
         file_name: str,
@@ -298,15 +298,15 @@ def save_eval_results_to_xlsx(
     """
     if not file_name.endswith('.xlsx'):
         raise ValueError("File name is not an .xlsx file")
-    if not isinstance(type_of_test, TestType):
+    if not isinstance(type_of_test, TypeOfTest):
         raise TypeError("type_of_test must be a TestType enum")
     
     match type_of_test:
-        case TestType.SUMMARIZATION:
+        case TypeOfTest.SUMMARIZATION:
             sheet_name = "SummarizationResults"
-        case TestType.PROMPT_ALIGNMENT:
+        case TypeOfTest.PROMPT_ALIGNMENT:
             sheet_name = "PromptAlignmentResults"
-        case TestType.HELPFULNESS:
+        case TypeOfTest.HELPFULNESS:
             sheet_name = "HelpfulnessResults"
         case _:
             raise ValueError("Invalid test type provided. Use TestType.SUMMARIZATION, TestType.PROMPT_ALIGNMENT, or TestType.HELPFULNESS.")
