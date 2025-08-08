@@ -1,1 +1,0 @@
-groups $USER | grep docker

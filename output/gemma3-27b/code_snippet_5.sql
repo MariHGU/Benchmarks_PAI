@@ -1,1 +1,0 @@
-ALTER TABLE table_name RENAME COLUMN old_col_name TO `group`;  -- Example with 'group'

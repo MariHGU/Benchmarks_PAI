@@ -1,1 +1,0 @@
-ALTER TABLE employees CHANGE salary monthly_salary DECIMAL(10,2);

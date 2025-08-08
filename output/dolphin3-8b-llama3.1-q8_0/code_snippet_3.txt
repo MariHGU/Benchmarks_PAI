@@ -1,2 +1,0 @@
-sudo dnf remove docker-ce docker-compose
-sudo dnf install docker-ce docker-compose

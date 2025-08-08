@@ -1,1 +1,0 @@
-sudo chmod 660 /var/run/docker.sock

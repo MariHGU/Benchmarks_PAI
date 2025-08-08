@@ -1,1 +1,0 @@
-ALTER TABLE table_name CHANGE COLUMN age user_age INT;

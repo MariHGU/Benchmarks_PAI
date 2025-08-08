@@ -1,1 +1,0 @@
-ls -l /var/run/docker.sock

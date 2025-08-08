@@ -1,3 +1,0 @@
-{
-  "hosts": ["unix:///home/yourusername/.docker.sock"]
-}

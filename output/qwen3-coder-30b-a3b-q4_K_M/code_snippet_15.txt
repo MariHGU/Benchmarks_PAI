@@ -1,1 +1,0 @@
-Loaded: loaded (/usr/lib/systemd/system/docker.service; disabled; preset: disabled)

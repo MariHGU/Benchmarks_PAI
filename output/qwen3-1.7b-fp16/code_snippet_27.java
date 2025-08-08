@@ -1,1 +1,0 @@
-XMLReader reader = parser.getXMLReader();

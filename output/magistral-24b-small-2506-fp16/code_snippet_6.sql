@@ -1,1 +1,0 @@
-ALTER TABLE test CHANGE old_column new_column VARCHAR(100) DEFAULT 'default';

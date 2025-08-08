@@ -1,1 +1,0 @@
-SAXParserFactory factory = SAXParserFactory.newInstance();

@@ -1,1 +1,0 @@
-source "/Users/geoff/anaconda2/etc/profile.d/conda.sh"

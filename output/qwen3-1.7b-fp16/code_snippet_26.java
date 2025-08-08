@@ -1,1 +1,0 @@
-SAXParser parser = factory.newSAXParser();

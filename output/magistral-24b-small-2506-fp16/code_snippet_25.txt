@@ -1,1 +1,0 @@
-Key differences include syntax, type systems, and collection handling methods.

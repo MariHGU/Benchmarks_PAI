@@ -1,1 +1,0 @@
-conda init --no-base

@@ -1,1 +1,0 @@
-Failed to connect to the Docker daemon: permission denied

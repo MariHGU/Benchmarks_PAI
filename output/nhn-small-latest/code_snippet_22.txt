@@ -1,9 +1,0 @@
-buildscript {
-    ext {
-        compose_version = '1.4.0'
-        kotlin_version = '1.8.20'
-        minSdkVersion = 23 // or whatever minimum SDK version you support
-        targetSdkVersion = 33 // Update this to 33
-        compileSdkVersion = 33 // Update this to 33
-    }
-}

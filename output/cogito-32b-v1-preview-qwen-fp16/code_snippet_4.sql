@@ -1,1 +1,0 @@
-ALTER TABLE employees CHANGE salary monthly_salary INT NOT NULL DEFAULT 0 COMMENT 'Monthly Salary';

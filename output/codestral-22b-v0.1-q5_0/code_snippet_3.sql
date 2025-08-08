@@ -1,1 +1,0 @@
-ALTER TABLE table_name CHANGE COLUMN new_col_name new_col_name datatype constraint;

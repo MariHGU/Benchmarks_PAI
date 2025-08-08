@@ -1,2 +1,0 @@
-CONDA_ALWAYS_YES=false
-     export SHELLOPTS

@@ -1,3 +1,0 @@
-DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-dbf.setValidating(false);
-// Other configurations...

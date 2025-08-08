@@ -1,3 +1,0 @@
-# # >>> conda initialize >>>
-# ...
-# <<< conda initialize <<<

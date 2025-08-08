@@ -1,7 +1,0 @@
-In this example, the JSON object contains a single key-value pair, where the key is `order_receipt` and the value is another object that contains the order details. The `order_id` field is a string that uniquely identifies the order. The `customer_info` field is an object that contains the customer's name, email address, and shipping address.
-
-The `items` field is an array of objects, where each object represents a single item in the order. Each item object has its own unique `item_id`, as well as fields for the item's name, quantity, and price. Finally, the `total` field is a decimal number that represents the total cost of the order, including any taxes or shipping fees.
-
-Of course, this is just one example of what an order receipt JSON file might look like, and there are many different ways to structure this data depending on your specific needs and use case. here are some simple functions in Ruby, C#, C++, and Go that print "Hello, World!" to the console.
-
-Ruby:

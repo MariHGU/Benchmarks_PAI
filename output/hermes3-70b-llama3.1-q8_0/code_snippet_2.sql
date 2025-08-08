@@ -1,1 +1,0 @@
-ALTER TABLE users CHANGE username user_name VARCHAR(50);

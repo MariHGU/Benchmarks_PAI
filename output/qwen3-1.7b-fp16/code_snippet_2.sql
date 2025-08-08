@@ -1,1 +1,0 @@
-ALTER TABLE table_name RENAME COLUMN `new_col_name` TO `new_col_name`;

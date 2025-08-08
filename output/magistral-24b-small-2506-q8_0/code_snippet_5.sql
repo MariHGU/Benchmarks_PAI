@@ -1,1 +1,0 @@
-ALTER TABLE employees CHANGE COLUMN old_name new_name VARCHAR(50);

@@ -1,1 +1,0 @@
-ALTER TABLE table_name DROP COLUMN old_col_name;

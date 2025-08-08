@@ -1,3 +1,0 @@
-Here are implementations of a function that sums an array in four different programming languages:
-
-### Ruby

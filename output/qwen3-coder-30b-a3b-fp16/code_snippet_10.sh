@@ -1,1 +1,0 @@
-conda config --show auto_activate_base

@@ -1,1 +1,0 @@
-sudo kill -9 6250  # Replace with actual PID if different

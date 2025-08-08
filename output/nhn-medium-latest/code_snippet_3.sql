@@ -1,3 +1,0 @@
-INSERT INTO new_table_name (new_col_name, -- other columns...)
-SELECT old_col_name, -- other columns...
-FROM table_name;

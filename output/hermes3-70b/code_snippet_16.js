@@ -1,5 +1,0 @@
-let axios = require('axios');
-data = { user: 'smith' };
-axios.post('http://localhost:8000', null, { params: data })
-    .then(response => (console.log(response.url)))
-    .catch(error => console.error(error));

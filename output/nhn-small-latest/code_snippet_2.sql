@@ -1,1 +1,0 @@
-ALTER TABLE employees RENAME COLUMN old_salary TO salary;

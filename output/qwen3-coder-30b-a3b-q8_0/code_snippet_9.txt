@@ -1,3 +1,0 @@
-PermissionError: [Errno 13] Permission denied
-...
-requests.exceptions.ConnectionError: ('Connection aborted.', PermissionError(13, 'Permission denied'))

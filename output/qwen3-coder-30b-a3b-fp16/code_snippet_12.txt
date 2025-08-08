@@ -1,8 +1,0 @@
-PLU 12345: Missing 50 images
-PLU 67890: Missing 100 images
-
-Dataset is NOT balanced. Augmenting...
-Folder '12345' needs 50 more images.
-✅ Saved rotated 90° image: out_data/12345/abc_cropped_rot90_0.png
-✅ Saved horizontal flip image: out_data/12345/abc_cropped_flipH_1.png
-...

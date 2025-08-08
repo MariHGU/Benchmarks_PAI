@@ -1,1 +1,0 @@
-conda shell.bash deactivate

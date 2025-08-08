@@ -1,1 +1,0 @@
-nano ~/.bash_profile

@@ -1,1 +1,0 @@
-ALTER TABLE users CHANGE user_id id INT;

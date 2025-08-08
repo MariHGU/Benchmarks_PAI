@@ -1,2 +1,0 @@
-sudo dnf remove docker docker-client docker-buildx-plugin docker-ce docker-ce-cli container-selinux docker-compose-plugin
-sudo dnf install docker docker-client docker-buildx-plugin docker-ce docker-ce-cli container-selinux docker-compose-plugin

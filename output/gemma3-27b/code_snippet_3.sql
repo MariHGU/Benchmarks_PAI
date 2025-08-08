@@ -1,1 +1,0 @@
-SHOW GRANTS FOR 'your_username'@'your_host';

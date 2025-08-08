@@ -1,1 +1,0 @@
-SHOW COLUMNS FROM table_name WHERE Field = 'old_col_name';

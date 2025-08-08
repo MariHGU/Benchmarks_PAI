@@ -1,6 +1,0 @@
-android {
-    compileSdkVersion 33
-    minSdkVersion 26 // eller en annen versjon som passer deg
-    targetSdkVersion 33
-    // ...
-}

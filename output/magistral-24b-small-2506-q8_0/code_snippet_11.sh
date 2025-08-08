@@ -1,1 +1,0 @@
-sudo restorecon -Rv /var/run/docker.sock

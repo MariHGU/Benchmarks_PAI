@@ -1,3 +1,0 @@
-<uses-sdk
-    android:minSdkVersion="your_min_sdk_version"
-    android:targetSdkVersion="33" />

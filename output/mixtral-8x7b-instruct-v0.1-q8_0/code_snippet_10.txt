@@ -1,8 +1,0 @@
-SELECT   Payments.payment_method, COUNT(*) as order_count
-FROM     Orders
-JOIN     Payments ON Orders.order_id = Payments.order_id
-JOIN     OrderItems ON Orders.order_id = OrderItems.order_id
-JOIN     Products ON OrderItems.product_id = Products.product_id
-GROUP BY Payments.payment_method
-ORDER BY SUM(OrderItems.quantity) DESC
-LIMIT    5;

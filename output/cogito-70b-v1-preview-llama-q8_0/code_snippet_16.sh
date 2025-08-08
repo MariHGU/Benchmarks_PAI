@@ -1,1 +1,0 @@
-sudo lsof /var/run/docker.sock

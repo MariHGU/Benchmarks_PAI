@@ -1,3 +1,0 @@
-Processing class 'cat' - Need 50 more images.
-Processing class 'dog' - Need 30 more images.
-Class 'bird' already has 305 images. Skipping.

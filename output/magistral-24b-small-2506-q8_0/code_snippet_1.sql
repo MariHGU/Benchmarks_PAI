@@ -1,5 +1,0 @@
-SELECT COLUMN_TYPE, IS_NULLABLE, COLUMN_DEFAULT
-   FROM information_schema.COLUMNS
-   WHERE TABLE_SCHEMA = DATABASE()
-   AND TABLE_NAME = 'table_name'
-   AND COLUMN_NAME = 'old_col_name';

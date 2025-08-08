@@ -1,1 +1,0 @@
-ALTER TABLE employees CHANGE employee_id emp_id INT;

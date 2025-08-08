@@ -1,1 +1,0 @@
-journalctl -u docker --since "1 hour ago"

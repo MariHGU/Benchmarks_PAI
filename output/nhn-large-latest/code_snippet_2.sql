@@ -1,2 +1,0 @@
-ALTER TABLE table_name
-   CHANGE old_col_name new_col_name datatype;

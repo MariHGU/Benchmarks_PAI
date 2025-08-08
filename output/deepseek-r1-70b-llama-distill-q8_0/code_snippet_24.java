@@ -1,1 +1,0 @@
-String cleanedXml = xmlInput.replaceAll("<", "&lt;").replaceAll(">", "&gt;");

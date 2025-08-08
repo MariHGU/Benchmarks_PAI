@@ -1,6 +1,0 @@
-SELECT   OrderItems.product_id, Products.name, SUM(OrderItems.quantity * OrderItems.unit_price) as total_earned
-FROM     OrderItems
-JOIN     Products ON OrderItems.product_id = Products.product_id
-GROUP BY OrderItems.product_id, Products.name
-ORDER BY total_earned DESC
-LIMIT    1;

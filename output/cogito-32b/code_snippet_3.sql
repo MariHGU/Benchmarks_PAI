@@ -1,1 +1,0 @@
-SHOW CREATE TABLE table_name\G

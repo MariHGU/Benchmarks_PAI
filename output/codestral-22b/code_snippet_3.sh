@@ -1,1 +1,0 @@
-export PATH="/Users/geoff/anaconda2/bin:$PATH"
