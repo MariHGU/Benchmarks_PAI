@@ -6,12 +6,12 @@ from deepeval.metrics import SummarizationMetric, GEval, PromptAlignmentMetric
 from deepeval.test_case import LLMTestCase, LLMTestCaseParams
 from ollama import Client, ChatResponse
 import utils
-from utils import TypeOfTest
+from utils import TestType
 from llms import GroqModel, OllamaLocalModel
 
 
 def generate_responses(
-        test_type: TypeOfTest,
+        test_type: TestType,
         models: List[str],
         n_responses: int = 1,
     ) -> None:
@@ -37,13 +37,13 @@ def generate_responses(
         Logger.info("Loading prompts from file...")
 
         match test_type:
-            case TypeOfTest.SUMMARIZATION:
+            case TestType.SUMMARIZATION:
                 prompts_file = "prompts/summarization_prompts.txt"
                 save_file = "responses/summaries.csv"
-            case TypeOfTest.PROMPT_ALIGNMENT:
+            case TestType.PROMPT_ALIGNMENT:
                 prompts_file = "prompts/alignment_prompts.txt"
                 save_file = "responses/alignment_responses.csv"
-            case TypeOfTest.HELPFULNESS:
+            case TestType.HELPFULNESS:
                 prompts_file = "prompts/helpfulness_prompts.txt"
                 save_file = "responses/helpfulness_responses.csv"
             case _:
@@ -53,7 +53,7 @@ def generate_responses(
             prompts = [line.strip() for line in f if line.strip()]
 
         for i, prompt in enumerate(prompts):
-            if test_type == TypeOfTest.PROMPT_ALIGNMENT:
+            if test_type == TestType.PROMPT_ALIGNMENT:
                 # For prompt alignment, we need to include the prompt instructions
                 prompt_sections = prompt.split("<|INSTRUCTIONS|>")
                 if len(prompt_sections) != 2:
@@ -91,7 +91,7 @@ def generate_responses(
 
 
 def eval_responses( 
-        test_type: TypeOfTest,
+        test_type: TestType,
         judges: List[Tuple[str, int, float, int]],
         write_results: bool = True,
         result_file: str = "results.xlsx",
@@ -121,11 +121,11 @@ def eval_responses(
     Logger = utils.CustomLogger()
 
     match test_type:
-        case TypeOfTest.SUMMARIZATION:
+        case TestType.SUMMARIZATION:
             load_file = "responses/summaries.csv"
-        case TypeOfTest.PROMPT_ALIGNMENT:
+        case TestType.PROMPT_ALIGNMENT:
             load_file = "responses/alignment_responses.csv"
-        case TypeOfTest.HELPFULNESS:
+        case TestType.HELPFULNESS:
             load_file = "responses/helpfulness_responses.csv"
         case _:
             raise ValueError("Invalid test type provided. Use TestType.SUMMARIZATION, TestType.PROMPT_ALIGNMENT, or TestType.HELPFULNESS.")
@@ -152,19 +152,19 @@ def eval_responses(
             )
 
             match test_type:
-                case TypeOfTest.SUMMARIZATION:
+                case TestType.SUMMARIZATION:
                     metric = SummarizationMetric(
                         threshold=0.5,
                         model=JudgeLLM
             )
-                case TypeOfTest.PROMPT_ALIGNMENT:
+                case TestType.PROMPT_ALIGNMENT:
                     prompt_instructions = row['prompt instructions'].split(';') if ';' in row['prompt instructions'] else [row['prompt instructions']]
                     metric = PromptAlignmentMetric(
                         prompt_instructions=prompt_instructions,
                         model=JudgeLLM,
                         include_reason=True,
                     )
-                case TypeOfTest.HELPFULNESS:
+                case TestType.HELPFULNESS:
                     metric = GEval(
                         name="Helpfulness",
                         criteria = "Determine whether the `actual output` is helpful in answering the `input`.",
