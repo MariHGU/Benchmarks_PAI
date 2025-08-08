@@ -50,9 +50,3 @@
    python main.py
    ```
 5. View generated responses and evaluation results.
-
----
-
-This structure makes it much easier for new users to follow the setup without missing important details.
-
-If you want, I can also add **a visual diagram** showing how the API key, model configuration, and script fit together in the workflow. That would make onboarding even smoother.
