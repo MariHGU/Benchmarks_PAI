@@ -3,11 +3,9 @@ from typing import Optional, Tuple, Union, Dict
 from deepeval.models import DeepEvalBaseLLM, OllamaModel
 from ollama import Client, AsyncClient
 from ollama import ChatResponse
-from groq import Groq, AsyncGroq
 from pydantic import BaseModel
 
 BASE_URL = "https://beta.chat.nhn.no/ollama"
-GROQ_MODEL = "llama-3.3-70b-versatile" # GROQ MODEL
 
 def load_api_key(path: str = ".api_key.txt") -> str:
     """
@@ -150,64 +148,3 @@ class OllamaLocalModel(OllamaModel):
     
     def get_top_k(self) -> int:
         return self.top_k
-
-class GroqModel(DeepEvalBaseLLM):
-    """A class to interact with Groq's LLMs.
-    This class extends DeepEvalBaseLLM to provide methods for generating text
-    using Groq's API.
-    
-    Attributes:
-        model_name (str): The name of the Groq model to use.
-    
-    """
-    def __init__(self, 
-                 model_name: str = GROQ_MODEL, 
-                 async_mode: bool = False, 
-                 seed: int = 42,
-                 temperature: float = 0,
-                 ):
-        super().__init__(model_name=model_name)
-        self.seed = seed
-        self.temperature = temperature
-
-    def load_model(self, async_mode: bool = False) -> Groq:
-        api_key = load_api_key(path=".groq_api_key.txt")
-        if not async_mode:
-            return Groq(api_key = api_key)
-        else:
-            return AsyncGroq(api_key = api_key)
-        
-    def generate(self, prompt: str) -> str:
-        groq_client = self.load_model(async_mode=False)
-        response = groq_client.chat.completions.create(
-            messages= [{
-                "role": "user", 
-                "content": prompt,
-            }],
-            seed= self.seed,
-            temperature= self.temperature,
-            model=self.model_name,
-        )
-        return response.choices[0].message.content
-    
-    async def a_generate(self, prompt: str) -> str:
-        groq_client = self.load_model(async_mode=True)
-        response = await groq_client.chat.completions.create(
-            messages= [{
-                "role": "user", 
-                "content": prompt,
-            }],
-            seed= self.seed,
-            temperature= self.temperature,
-            model=self.model_name,
-        )
-        return response.choices[0].message.content
-    
-    def get_model_name(self) -> str:
-        return self.model_name
-    
-    def get_seed(self) -> int:
-        return self.seed
-    
-    def get_temperature(self) -> float:
-        return self.temperature
