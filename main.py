@@ -9,6 +9,7 @@ JUDGE_MODEL3 = "hermes3:70b-llama3.1-fp16" # OLLAMA
 JUDGE_SEED = 42
 JUDGE_TEMPERATURE = 0.2
 JUDGE_TOP_K = 10
+TestType = TestType.BENCHMARKING # Swap for desired test type
 
 if __name__ == "__main__":
 
@@ -48,9 +49,13 @@ if __name__ == "__main__":
     JUDGE3 = (JUDGE_MODEL3, JUDGE_SEED, JUDGE_TEMPERATURE, JUDGE_TOP_K)
     JUDGES = [JUDGE1, JUDGE3]
 
-    # alignment = eval_responses(test_type=TestType.PROMPT_ALIGNMENT, judges=JUDGES)
-    # helpfulness = eval_responses(test_type=TestType.HELPFULNESS, judges=JUDGES)
-    summaries = eval_responses(test_type=TestType.SUMMARIZATION, judges=JUDGES)
+    if TestType == TestType.PROMPT_ALIGNMENT:
+        generate_responses(test_type=TestType.PROMPT_ALIGNMENT, judges=JUDGES)
+    if TestType == TestType.HELPFULNESS:
+        generate_responses(test_type=TestType.HELPFULNESS, judges=JUDGES)
+    if TestType == TestType.SUMMARIZATION:
+        summaries = eval_responses(test_type=TestType.SUMMARIZATION, judges=JUDGES)
 
     # -- Run Benchmarking --
-    asyncio.run(initBenchmarking(newExcel=False))
+    if TestType == TestType.BENCHMARKING:
+        asyncio.run(initBenchmarking(newExcel=False))

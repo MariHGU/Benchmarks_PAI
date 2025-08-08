@@ -190,8 +190,8 @@ async def initBenchmarking(newExcel: bool = False) -> None:
     """
 
     purpose = list(map(lambda x: x.split('_')[0], os.listdir('prompts')))   # Retrieve purposes from prompts folder
-    models = ['qwen3-coder:30b-a3b-q8_0']     # Names of models to test
-    #models = retrieve_untested_models()                                     # Retrieve untested models from models.csv
+    #models = ['qwen3-coder:30b-a3b-q8_0']     # Names of models to test
+    models = retrieve_untested_models()                                     # Retrieve untested models from models.csv
     TestType = 4                                                            # Benchmarking - allows for proper function of utils-functions
     
 
